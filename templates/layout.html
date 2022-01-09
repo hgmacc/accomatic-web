@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css')}}">
+
+    <script src="clipboard.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyan': '#264653',
+                        'myteal': '#2a9d84',
+                        'yellow': '#e9c46a',
+                        'orange': '#f4a261',
+                        'rouge': '#e76f51',
+                        'peach': '#F5C18E',
+                        'background': '#F4E0B8'
+
+                    }
+                }
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <header class="border-b border-cyan py-4 px-4 overflow-hidden">
+        <div class="container mx-auto flex items-center justify-between relative px-4">
+            <a href="www.accomatic.ca">
+                <image src="/static/accomatic-logo.svg" width="300" alt="AccomaticLogo"></image>
+            </a>
+            <nav>
+                <ul class="vertical-align:middle">
+                    <li>
+                        <a href="/contact"
+                           class="px-6 py-3 transition active bg-gradient-to-r from-yellow to-orange hover:from-orange hover:to-rouge text-cyan rounded-md flex md:inline-flex font-lato text-lg cursor-pointer transition ">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 " fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            Get in touch
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    {% block content %}{% endblock %}
+    <section class="bg-gradient-to-r from-background to-myteal -mt-48 py-4">
+        <div class="h-48">
+            <div class="border border-peach"> </div>
+        </div>
+        <div class="h-48"> </div>
+        <div class="h-48"> </div>
+
+    </section>
+</body>
+</html>

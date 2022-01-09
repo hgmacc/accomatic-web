@@ -1,0 +1,160 @@
+{% extends "layout.html" %}
+{% block content %}
+<body>
+    <!Main middle content>
+    <section class="hero py-4 py-6 md:py-16 relative">
+        <div class="container mx-auto items-center justify-between relative text-center">
+            <h1 class="text-6xl text-cyan bg-clip-text block font-lato font-bold">
+                A Tool for GST Modeling. </h1>
+            <p class="text-2xl text-cyan ma-w-3xl mx-auto mt-5 font-light font-lato"> <strong
+                    class="font-bold text-myteal">
+                Model testing  </strong> and <strong class="font-bold text-myteal"> comparative ranking</strong> right
+                at your
+                finger tips.
+            </p>
+            <a href="/walkthrough"
+               class="px-5 py-4 rounded-md active transition active bg-gradient-to-r text-white from-yellow to-myteal hover:from-orange hover:to-teal-700  rounded-md cursor-pointer transition inline-flex align-items-center mt-4 font-lato font-bold text-xl">
+                Take a Walkthrough
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2 mt-1" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecaps="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+    </section>
+    <!Fun info container, centered>
+    <section class="relative py-4">
+        <div class="container mx-auto ">
+            <div class="bg-gray-100 rounded-xl shadow-2xl border flex divide-x" style="box-shadow: 0px 0px 50px
+            rgba(0,0,0,0.25);">
+                <div class="p-8 flex-1">
+                    <div class="flex text-cyan">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                        </svg>
+                        <h2 class="text-4xl font-lato">
+                            Compare your models.
+
+                        </h2>
+                    </div>
+                    <p class="font-lato text-cyan font-light text-gray-600 ">
+                        Accomatic can be run on your local machine.
+                    </p>
+                    <h3 class="font-lato text-cyan mt-6 text-lg font-lato font-bold">
+                        As simple as:
+                    </h3>
+                    <div
+                            class="bg-gray-200 p-4 text-cyan rounded-md mt-2 h-50 divide-y-[2px] divide-orange relative">
+                        <div class="flex items-center py-1 text-sm">
+                            <code>
+                                pip install accomatic <br>
+                            </code>
+                        </div>
+                        <div class="flex items-center py-2 text-sm" style="user-select: all" id="accoCode">
+                            <code>
+                                model1 = pickle(csvData1) <br>
+                                model2 = pickle(csvData2) <br>
+                                observations = pickle(csvObsData) <br>
+                                accomatic(observations, model1, model2) <br>
+                            </code>
+                        </div>
+                    </div>
+
+                    <a href="#/"
+                       class="px-4 py-3 rounded-md active transition active bg-gradient-to-r from-yellow to-orange hover:from-orange hover:to-rouge text-cyan rounded-md inline-flex cursor-pointer transition align-items-center mt-4 font-lato font-bold pointer-events-auto ">
+
+                        <button class="btn"
+                                data-clipboard-action="copy" data-clipboard-target="#accoCode" id="btnCopy"> Copy
+                            Code </button>
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                        </svg>
+
+                        <script>
+                            new ClipboardJS('.btn');
+
+                            const dropdownButton = document.querySelector("#btnCopy");
+                            const dropdownList = document.querySelector("#btnCopy + div.hidden");
+
+                            dropdownButton.addEventListener("click", () => {
+                                dropdownList.classList.toggle("hidden");
+                            });
+                        </script>
+                    </a>
+
+                </div>
+                <div class="p-8 flex-1">
+                    <div class="flex items-center">
+                        <div
+                                class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-cyan sm:mx-0 sm:h-10 sm:w-10 bg-gray-200 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                        </div>
+                        <h2 class="text-3xl text-cyan font-medium ml-4">
+                            What does Accomatic do?
+                        </h2>
+                    </div>
+                    <p class="text-gray-600 pl-6 mt-4">
+                       This software performes a <strong class="font-bold"> suite of comparisons</strong>,
+                        including:
+                    </p>
+                    <div class="divide-y text-cyan text-lg">
+                        <div class="flex items-center py-4">
+                            <div
+                                    class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-cyan sm:mx-0 ">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                Temporal variability - a seasonal comparison
+                            </div>
+                        </div>
+                        <div class="flex items-center py-4">
+                            <div
+                                    class="text-cyan inline-flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 sm:mx-0 ">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                 Spatial variability - shifts in terrain type
+                            </div>
+                        </div>
+                        <div class="flex items-center py-4">
+                            <div
+                                    class="text-cyan inline-flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 sm:mx-0 ">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                Accordance measure selection - RMSE vs E_1
+                            </div>
+                        </div>
+                        <div class="flex items-center py-4">
+                            <div
+                                    class="text-cyan inline-flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 sm:mx-0 ">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                Handles periods of missing observational data
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+{% endblock content %}

@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block content %}
+<body>
+<section class="hero py-4 py-6 md:py-16 relative">
+    <div class="container mx-auto items-center justify-between relative text-left">
+        <h1 class=" text-2xl text-cyan bg-clip-text block font-lato font-bold ">
+            Give us a shout. </h1>
+        <p class="text-gray-600  text-xl text-cyan ma-w-3xl mx-auto mt-5 font-light font-lato"> If you have
+            any trouble accessing Accomatic or in following the data format guidelines, send us an e-mail and you can expect to hear back as
+            soon as possible! <br><br> Click the button below to copy the email address to your clipboard.
+        </p>
+        <br>
+
+        <a href="#"
+           class="px-5 py-4 rounded-md active transition active bg-gradient-to-r text-white from-yellow to-myteal hover:from-orange hover:to-teal-700  rounded-md cursor-pointer transition inline-flex align-items-center mt-3 font-lato font-bold text-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2 " fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+
+            <button class="btn"
+                    data-clipboard-action="copy" data-clipboard-text="fake-email">
+                hanah.macdonell@carleton.ca
+            </button>
+
+        </a>
+
+    </div>
+</section>
+
+</section>
+<section class="bg-gradient-to-r from-background to-myteal -mt-30 py-4">
+    <div class="h-48">
+        <div class="border border-peach"> </div>
+    </div>
+    <div class="h-48"> </div>
+    <div class="h-48"> </div>
+
+</section>
+</body>
+{% endblock content %}
