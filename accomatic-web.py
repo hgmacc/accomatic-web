@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for
 
 
 app = Flask(__name__)  # Special python variable to pass in name
+app.config['SECRET KEY'] = "secret123"
 
 
 @app.route("/")  # '/' for the root page of our website
@@ -21,5 +22,5 @@ def walkthrough():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
 
