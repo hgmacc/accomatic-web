@@ -1,6 +1,0 @@
-"""
-filePath
-name
-dataframe
-dateExtent
-"""
