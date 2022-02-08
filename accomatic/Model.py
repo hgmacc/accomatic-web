@@ -6,9 +6,8 @@ class Model(DataFileReader):
     type: str    # Differentiate between model and obs
 
     def __init__(self, file_path=''):
-        super().__init__(file_path)
+        super().__init__(file_path, "Model")
         self.stats = {}
-        self.type = 'Model'
 
     def get_stats(self) -> dict:
         return self.stats

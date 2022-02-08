@@ -8,8 +8,7 @@ class Observation(DataFileReader):
     type: str  # Individual results ultimately stored here
 
     def __init__(self, file_path=''):
-        super().__init__(file_path)
-        self.type = "Obs"
+        super().__init__(file_path, "Obs")
 
     def get_type(self) -> str:
         return self.type
