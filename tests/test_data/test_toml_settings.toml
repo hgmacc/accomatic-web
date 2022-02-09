@@ -1,0 +1,25 @@
+title = "Accomatic Control File"
+
+[data]
+
+pickled = true
+
+[experiment]
+
+# Time extent
+beg = '2016/01/01'
+end = '2016/12/31'
+
+# List of accordance measures
+accordance = []
+
+# List of experiments
+accordance_measure = true
+seasonal = true
+terrain = true
+
+[results]
+
+output_terminal_summary = true
+output_plots = true
+# Section here on how you'd like your output to look
