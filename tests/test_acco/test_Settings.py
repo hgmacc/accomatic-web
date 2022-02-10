@@ -9,7 +9,7 @@ def test_settings():
     assert a.exp_terrain == True
     assert a.output_plots == True
     assert a.output_terminal_summary == True
-    assert a.acco_list == []
+    assert a.accordance_measures == []
     assert a.exp_time_extent == ['2016/01/01', '2016/12/31']
     pass
 

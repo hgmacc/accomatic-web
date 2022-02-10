@@ -46,7 +46,7 @@ class Settings:
         return self._exp_time_extent
 
     @property
-    def acco_list(self) -> List[str]:
+    def accordance_measures(self) -> List[str]:
         return self._acco_list
 
     @property
