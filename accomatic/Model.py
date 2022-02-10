@@ -5,7 +5,7 @@ class Model(DataFileReader):
     _stats: dict  # Individual results ultimately stored here
     _type: str  # Differentiate between model and obs
 
-    def __init__(self, file_path=''):
+    def __init__(self, file_path=""):
         super().__init__(file_path, "Model")
         self._stats = {}
 

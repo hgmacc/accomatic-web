@@ -10,11 +10,11 @@ class DataFileReader:
     df: pd.DataFrame  # Data contents
     type: str
 
-    def __init__(self, file_path='', type=''):
+    def __init__(self, file_path="", type=""):
 
-        self._name = os.path.basename(file_path).split('.')[0]
+        self._name = os.path.basename(file_path).split(".")[0]
         self._file_path = file_path
-        self._df = pd.read_csv(file_path, index_col='Date')
+        self._df = pd.read_csv(file_path, index_col="Date")
         self._type = type
 
     @property
@@ -42,4 +42,3 @@ class DataFileReader:
             raise ValueError("This is a silly name!")
         else:
             self._name = n
-

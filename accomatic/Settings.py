@@ -1,6 +1,7 @@
 from typing import List
 import toml
 
+
 class Settings:
     _file_path: str
     _pickled_data: bool
@@ -12,18 +13,23 @@ class Settings:
     _exp_time_extent: List[str]
     _acco_list: List[str]
 
-    def __init__(self, file_path=''):
+    def __init__(self, file_path=""):
         setting_toml = toml.load(file_path)
 
         self._file_path = file_path
-        self._pickled_data = setting_toml['data']['pickled']
-        self._exp_acco = setting_toml['experiment']['accordance_measure']
-        self._exp_season = setting_toml['experiment']['seasonal']
-        self._exp_terrain = setting_toml['experiment']['terrain']
-        self._output_plots = setting_toml['results']['output_plots']
-        self._output_terminal_summary = setting_toml['results']['output_terminal_summary']
-        self._exp_time_extent = [setting_toml['experiment']['beg'], setting_toml['experiment']['end']]
-        self._acco_list = setting_toml['experiment']['accordance']
+        self._pickled_data = setting_toml["data"]["pickled"]
+        self._exp_acco = setting_toml["experiment"]["accordance_measure"]
+        self._exp_season = setting_toml["experiment"]["seasonal"]
+        self._exp_terrain = setting_toml["experiment"]["terrain"]
+        self._output_plots = setting_toml["results"]["output_plots"]
+        self._output_terminal_summary = setting_toml["results"][
+            "output_terminal_summary"
+        ]
+        self._exp_time_extent = [
+            setting_toml["experiment"]["beg"],
+            setting_toml["experiment"]["end"],
+        ]
+        self._acco_list = setting_toml["experiment"]["accordance"]
 
     @property
     def pickled_data(self) -> bool:
@@ -56,7 +62,3 @@ class Settings:
     @property
     def output_terminal_summary(self) -> bool:
         return self._output_terminal_summary
-
-
-
-

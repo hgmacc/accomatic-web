@@ -1,6 +1,7 @@
 from typing import List
 import pandas as pd
 
+
 class Site:
     _name: str
     _elevation: float

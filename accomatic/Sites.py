@@ -21,7 +21,6 @@ class Sites:
             )
             self._list.append(site)
 
-
     @property
     def list(self) -> List["Site"]:
         return self._list
