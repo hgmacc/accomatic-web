@@ -4,7 +4,8 @@ from accomatic.Observation import Observation
 from typing import List, Dict
 import pandas as pd
 
-class Data(Model, Observation):
+
+class Data:
     _obs: Observation  # Data contents
     _models: List["Model"]  # Must be unique
     _model_count: int
