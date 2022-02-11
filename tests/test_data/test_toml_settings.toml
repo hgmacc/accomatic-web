@@ -15,11 +15,11 @@ accordance = []
 
 # List of experiments
 accordance_measure = true
-seasonal = true
-terrain = true
+seasonal = false
+terrain = false
 
 [results]
 
 output_terminal_summary = true
-output_plots = true
+output_plots = false
 # Section here on how you'd like your output to look
