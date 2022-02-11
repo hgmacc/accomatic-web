@@ -1,20 +1,33 @@
-"""
+import os
+from accomatic.Model import Model
+from accomatic.Sites import Sites
+from accomatic.Settings import Settings
+from accomatic.Data import Data
+from accomatic.Observation import Observation
+from accomatic.Experiment import Experiment
+from typing import List
 
-Disclaimer: requires some data pre-processing. Can be in csv or pickle.
 
-df with dt index and each col = different site
+def accomatic(mod_dir, obs_csv, set_toml, sit_csv):
 
-1. Upload observations & model output + (optional) site info
-    - test: all sites have same col names & apropriate min time for comparison (i.e. doesn't have to be exact same days)
-2. Par file? (web can generate this for you)
-    - pickle? csv?
-    - time start / time end / auto
-    - accordance measures
-    - site info? (terrain comparison)
-    - temporal granularity (daily average?)
-    - what kind of output do you want?
-3. run python accomatic.py (will look at par and csv files - begin)
-"""
+    # Collect model csvs
+    mod_list: List['Model'] = []
+    for mod_file in os.listdir(mod_dir):
+        mod_file = os.path.join(mod_dir, mod_file)
+        if os.path.isfile(mod_file):
+            mod_list.append(Model(mod_file))
 
-def another_sum(a, b):
-    return a + b
+    # Initiate obs data, settings, sites
+    obs: Observation = Observation(obs_csv)
+    sett: Settings = Settings(set_toml)
+    sites: Sites = Sites(sit_csv)
+    data: Data = Data(obs, mod_list)
+
+    exp: Experiment = Experiment(data, sett, sites)
+
+    return True
+
+
+
+
+
