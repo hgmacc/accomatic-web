@@ -48,10 +48,6 @@ class Settings:
         return self._exp_terrain
 
     @property
-    def exp_time_extent(self) -> List[str]:
-        return self._exp_time_extent
-
-    @property
     def accordance_measures(self) -> List[str]:
         return self._acco_list
 
