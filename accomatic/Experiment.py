@@ -1,3 +1,45 @@
+from accomatic.Sites import *
+from accomatic.Settings import *
+from accomatic.Data import *
+
+
+class Experiment:
+    _data: Data
+    _sett: Settings
+    _sites: Sites
+
+    def __init__(self, data: Data, sett: Settings, sites: Sites):
+        self._data = data
+        self._sett = sett
+        self._sites = sites
+
+    @property
+    def data(self) -> Data:
+        return self._data
+
+    @property
+    def sett(self) -> Settings:
+        return self._sett
+
+    @property
+    def sites(self) -> List['Sites']:
+        return self._sites
+
+    def run(self) -> None:
+        if self.sett.exp_acco:
+            # Runs accordance test
+            pass
+        if self.sett.exp_season:
+            # Runs season test
+            pass
+        if self.sett.exp_terrain:
+            # Runs terrain test
+            pass
+
+
+
+
+
 """
 
     # holds models
@@ -15,11 +57,3 @@ for m in all_accordance_funcs:
     accordance_min[m] = all_accordance_results[m].min()
 
 """
-from accomatic.Sites import *
-
-
-class Experiment(Data, Sites, Settings):
-
-    Data(models + obs)
-    Sites
-    Settings
