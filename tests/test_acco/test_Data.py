@@ -2,8 +2,8 @@ from accomatic.Data import *
 import pandas as pd
 
 def test_data():
-    obs: Observation = Observation("tests/test_data/test_csv_data.csv")
-    mod: List['Model'] = [Model("tests/test_data/test_csv_overlap.csv")]
+    obs: Observation = Observation("tests/test_data/test_obs_data.csv")
+    mod: List['Model'] = [Model("tests/test_data/test_mod_data.csv")]
     data: Data = Data(obs, mod)
     assert data.count == 1
     assert type(data.obs.df.index) == pd.DatetimeIndex
