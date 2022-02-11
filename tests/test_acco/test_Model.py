@@ -3,9 +3,9 @@ import pandas as pd
 
 
 def test_Model():
-    a = Model("tests/test_data/test_mod_data.csv")
+    a = Model("tests/test_data/test_mod_dir/test_mod_data.csv")
     assert a.name == "test_mod_data"
-    assert a.file_path == "tests/test_data/test_mod_data.csv"
+    assert a.file_path == "tests/test_data/test_mod_dir/test_mod_data.csv"
     assert bool(a.stats) == False
     assert type(a.df.index) == pd.DatetimeIndex
     assert a.stats == {}
