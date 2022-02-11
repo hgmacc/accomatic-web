@@ -11,10 +11,15 @@ class DataFileReader:
     type: str
 
     def __init__(self, file_path="", type=""):
+        if os.path.exists(file_path):
+            self._file_path = file_path
+            self._name = os.path.basename(file_path).split(".")[0]
+        else:
+            raise FileNotFoundError('File path {} could not be found. Try again.'.format(file_path))
 
-        self._name = os.path.basename(file_path).split(".")[0]
-        self._file_path = file_path
-        self._df = pd.read_csv(file_path, index_col="Date")
+        dtypes = {'Date': 'str', '0.1': 'float'}
+        parse_dates = ['Date']
+        self._df = pd.read_csv(file_path, index_col="Date", header=0, dtype=dtypes, parse_dates=parse_dates)
         self._type = type
 
     @property
@@ -30,15 +35,14 @@ class DataFileReader:
         return self._file_path
 
     @property
-    def time_extent(self) -> List:
-        # Test this to make sure valid index is actually datetime obj
-        beg = self._df.first_valid_index()
-        end = self._df.last_valid_index()
-        return [beg, end]
+    def time_extent(self) -> dict:
+        beg = pd.Timestamp(self._df.first_valid_index())
+        end = pd.Timestamp(self._df.last_valid_index())
+        return {'beg': beg, 'end': end}
 
     @name.setter
     def name(self, n: str) -> None:
         if len(n) > 5:
-            raise ValueError("This is a silly name!")
+            raise ValueError("This name is longer than 5 char. Try again.")
         else:
             self._name = n

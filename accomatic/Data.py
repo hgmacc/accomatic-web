@@ -1,32 +1,44 @@
-from accomatic.Model import *
-from accomatic.Observation import *
+from accomatic.Model import Model
+from accomatic.Observation import Observation
 
 from typing import List
 
-
 class Data(Model, Observation):
-    # [observation_df, [models]]
-
-    obs: Observation  # Data contents
-    models: List["Model"]  # Must be unique
-    model_count: int
+    _obs: Observation  # Data contents
+    _models: List["Model"]  # Must be unique
+    _model_count: int
 
     def __init__(self, obs=Observation, models=List["Model"]):
-        self.obs = obs
-        self.models = models
-        self.model_count = len(models)
+        self._obs = obs
+        self._models = models
+        self._model_count = len(models)
 
-    def get_obs(self) -> Observation:
-        return self.obs
 
-    def get_models(self) -> List["Model"]:
-        return self.models
+    @property
+    def obs(self) -> Observation:
+        return self._obs
 
-    def get_model_count(self) -> int:
-        return self.model_count
+    @property
+    def models(self) -> List["Model"]:
+        return self._models
 
+    @property
+    def count(self) -> int:
+        return self._model_count
+
+    @property
     def date_overlap(self) -> List[str]:
-        # Returns overlap between all df
-        overlap: List[str]
+        """
+        Clip all model output to obs dataset.
+
+        :return: overlap: dict = {'beg': datetime, 'end' : datetime}
+        """
+        overlap = self._obs.time_extent
+        for mod in self._models:
+            if mod.time_extent['beg'] > overlap['beg']:
+                overlap['beg'] = mod.time_extent['beg']
+
+            if mod.time_extent['end'] < overlap['end']:
+                overlap['end'] = mod.time_extent['end']
 
         return overlap

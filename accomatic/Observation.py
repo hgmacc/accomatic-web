@@ -16,7 +16,7 @@ class Observation(DataFileReader):
         return self._type
 
     @property
-    def missing_data_profile(self) -> str:
-        # Report # of NAN in each col (one col = one site)
+    def missing_data_profile(self) -> float:
+        percent = self.df.iloc[:, 0].isna().sum() / len(self.df.index) * 100
+        return round(percent, 2)
 
-        return "Not done yet"

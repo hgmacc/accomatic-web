@@ -14,10 +14,6 @@ class Model(DataFileReader):
         return self._stats
 
     @property
-    def stats(self) -> dict:
-        return self._stats
-
-    @property
     def type(self) -> str:
         return self._type
 

@@ -1,4 +1,5 @@
 from accomatic.Model import *
+import pandas as pd
 
 
 def test_Model():
@@ -7,5 +8,6 @@ def test_Model():
     assert a.file_path == "tests/test_data/test_csv_data.csv"
     assert bool(a.stats) == False
     assert a.stats == {}
-    assert a.time_extent == ["2016-01-01 00:00:00", "2016-12-31 21:00:00"]
+    assert a.time_extent['beg'] == pd.Timestamp("2016-01-01 00:00:00")
+    assert a.time_extent['end'] == pd.Timestamp("2016-12-31 21:00:00")
     pass
