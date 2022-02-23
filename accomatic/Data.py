@@ -6,18 +6,13 @@ import pandas as pd
 
 
 class Data:
-    _obs: Observation  # Data contents
-    _models: List["Model"]  # Must be unique
+    _obs: Observation
+    _models: List["Model"]
     _model_count: int
 
     def __init__(self, obs, models):
         self._obs = obs
         self._model_count = len(models)
-
-        clip: Dict['pd.Timestamp'] = self.obs.time_extent
-
-        for mod in models:
-            mod.df = mod.df.loc[clip['beg']:clip['end']]
         self._models = models
 
     @property
@@ -32,15 +27,15 @@ class Data:
     def count(self) -> int:
         return self._model_count
 
+"""
+
+Clip all model output to obs dataset.
+
+:return: overlap: dict = {'beg': datetime, 'end' : datetime}
+overlap = self._obs.time_extent
+        
     @property
     def date_overlap(self) -> List[str]:
-        """
-        Clip all model output to obs dataset.
-
-        :return: overlap: dict = {'beg': datetime, 'end' : datetime}
-        """
-        overlap = self._obs.time_extent
-
         for mod in self._models:
             if mod.time_extent['beg'] >= self._obs.time_extent['beg']:
                 overlap['beg'] = mod.time_extent['beg']
@@ -49,5 +44,6 @@ class Data:
                 overlap['end'] = mod.time_extent['end']
 
         return overlap
+"""
 
 
