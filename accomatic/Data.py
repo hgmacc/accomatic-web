@@ -1,8 +1,9 @@
+from typing import Dict, List
+
+import pandas as pd
+
 from accomatic.Model import Model
 from accomatic.Observation import Observation
-
-from typing import List, Dict
-import pandas as pd
 
 
 class Data:
@@ -27,6 +28,7 @@ class Data:
     def count(self) -> int:
         return self._model_count
 
+
 """
 
 Clip all model output to obs dataset.
@@ -45,5 +47,3 @@ overlap = self._obs.time_extent
 
         return overlap
 """
-
-

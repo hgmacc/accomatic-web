@@ -1,4 +1,5 @@
 from typing import List
+
 import pandas as pd
 
 
@@ -23,6 +24,7 @@ class Site:
     @property
     def name(self):
         return self._name
+
 
 class Sites:
     _file_path: str

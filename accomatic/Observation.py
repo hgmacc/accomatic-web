@@ -1,12 +1,13 @@
-from accomatic.DataFileReader import DataFileReader
 from typing import Dict
+
+from accomatic.DataFileReader import DataFileReader
 
 
 class Observation(DataFileReader):
     _missing_data: Dict[str, float]
 
     def __init__(self, file_path=""):
-        super().__init__(file_path, 'obs')
+        super().__init__(file_path, "obs")
         self._missing_data = {}
         for site in self.df_dict:
             df = self.df_dict[site]
@@ -16,4 +17,3 @@ class Observation(DataFileReader):
     @property
     def missing_data(self) -> Dict[str, float]:
         return self._missing_data
-

@@ -1,6 +1,6 @@
-from accomatic.Sites import *
-from accomatic.Settings import *
 from accomatic.Data import *
+from accomatic.Settings import *
+from accomatic.Sites import *
 
 
 class Experiment:
@@ -22,7 +22,7 @@ class Experiment:
         return self._sett
 
     @property
-    def sites(self) -> List['Sites']:
+    def sites(self) -> List["Sites"]:
         return self._sites
 
     def run(self) -> None:
@@ -35,9 +35,6 @@ class Experiment:
         if self.sett.exp_terrain:
             # Runs terrain test
             pass
-
-
-
 
 
 """

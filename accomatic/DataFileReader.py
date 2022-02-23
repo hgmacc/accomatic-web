@@ -1,8 +1,9 @@
-import pandas as pd
-from typing import List, Dict
 import datetime
 import os
 import pickle
+from typing import Dict, List
+
+import pandas as pd
 
 # Model = dictionary of 'point':'dataframe'
 # obs = dictionary of 'point':'dataframe'
@@ -15,12 +16,14 @@ class DataFileReader:
     _type: str
     _sites: List[str]
 
-    def __init__(self, file_path='', type=''):
+    def __init__(self, file_path="", type=""):
         if os.path.exists(file_path):
             self._file_path = file_path
             self._name = os.path.basename(file_path).split(".")[0]
         else:
-            raise FileNotFoundError('File path {} could not be found. Try again.'.format(file_path))
+            raise FileNotFoundError(
+                "File path {} could not be found. Try again.".format(file_path)
+            )
 
         self._df_dict = pd.read_pickle(file_path)
         self._type = type
@@ -54,8 +57,9 @@ class DataFileReader:
             self._name = n
 
     @df_dict.setter
-    def df_dict(self, df_dict = Dict[str, pd.DataFrame]) -> None:
+    def df_dict(self, df_dict=Dict[str, pd.DataFrame]) -> None:
         self._df_dict = df_dict
+
 
 """
     @property
