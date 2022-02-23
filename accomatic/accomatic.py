@@ -6,24 +6,28 @@ from accomatic.Data import Data
 from accomatic.Observation import Observation
 from accomatic.Experiment import Experiment
 from typing import List
+import glob
+
+# ASSUME PICKLED DICTIONARIES
+# { str = pd.DataFrame }
 
 
-def accomatic(mod_dir, obs_csv, set_toml, sit_csv):
+def accomatic(model_dir, obs_pth, settings_toml, sites_csv):
 
     # Collect model csvs
     mod_list: List['Model'] = []
-    for mod_file in os.listdir(mod_dir):
-        mod_file = os.path.join(mod_dir, mod_file)
-        if os.path.isfile(mod_file):
-            mod_list.append(Model(mod_file))
+    for mod_file in glob.glob(model_dir + '/*.pickle'):
+        print('success')
+        mod_list.append(Model(mod_file))
 
     # Initiate obs data, settings, sites
-    obs: Observation = Observation(obs_csv)
-    sett: Settings = Settings(set_toml)
-    sites: Sites = Sites(sit_csv)
+    obs: Observation = Observation(obs_pth)
+    sett: Settings = Settings(settings_toml)
+    sites: Sites = Sites(sites_csv)
     data: Data = Data(obs, mod_list)
 
     exp: Experiment = Experiment(data, sett, sites)
+    # exp.run()
 
     return True
 
