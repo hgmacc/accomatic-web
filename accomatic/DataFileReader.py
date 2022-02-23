@@ -1,14 +1,19 @@
 import pandas as pd
-from typing import List
+from typing import List, Dict
 import datetime
 import os
+import pickle
+
+# Model = dictionary of 'point':'dataframe'
+# obs = dictionary of 'point':'dataframe'
 
 
 class DataFileReader:
     _file_path: str
     _name: str
-    _df: pd.DataFrame  # Data contents
+    _df_dict: Dict[str, pd.DataFrame]
     _type: str
+    _sites: List[str]
 
     def __init__(self, file_path='', type=''):
         if os.path.exists(file_path):
@@ -17,17 +22,17 @@ class DataFileReader:
         else:
             raise FileNotFoundError('File path {} could not be found. Try again.'.format(file_path))
 
-        self._df = pd.read_csv(file_path, header=0, converters={'Date': pd.to_datetime}, dtype={'0.1': float},
-                               index_col='Date')
+        self._df_dict = pd.read_pickle(file_path)
         self._type = type
+        self._sites = self._df_dict.keys()
 
     @property
     def name(self) -> str:
         return self._name
 
     @property
-    def df(self) -> pd.DataFrame:
-        return self._df
+    def df_dict(self) -> pd.DataFrame:
+        return self._df_dict
 
     @property
     def file_path(self) -> str:
@@ -38,10 +43,8 @@ class DataFileReader:
         return self._type
 
     @property
-    def time_extent(self) -> dict:
-        beg = pd.Timestamp(self._df.first_valid_index())
-        end = pd.Timestamp(self._df.last_valid_index())
-        return {'beg': beg, 'end': end}
+    def sites(self) -> List[str]:
+        return self._sites
 
     @name.setter
     def name(self, n: str) -> None:
@@ -50,6 +53,14 @@ class DataFileReader:
         else:
             self._name = n
 
-    @df.setter
-    def df(self, df: pd.DataFrame) -> None:
-        self._df = df
+    @df_dict.setter
+    def df_dict(self, df_dict = Dict[str, pd.DataFrame]) -> None:
+        self._df_dict = df_dict
+
+"""
+    @property
+    def time_extent(self, site) -> Dict[str, pd.Timestamp]:
+        beg = pd.Timestamp(self._df_dict[site].first_valid_index())
+        end = pd.Timestamp(self._df_dict[site].last_valid_index())
+        return {'beg': beg, 'end': end}
+"""
