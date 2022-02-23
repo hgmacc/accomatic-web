@@ -2,12 +2,13 @@ from accomatic.Observation import *
 import pandas as pd
 
 def test_observation():
-    a = Observation("tests/test_data/test_obs_data.csv")
-    assert a.name == "test_obs_data"
-    assert a.file_path == "tests/test_data/test_obs_data.csv"
+    a = Observation("tests/test_data/test_obs_dir/test_obs.pickle")
+    assert a.name == "test_obs"
+    assert a.file_path == "tests/test_data/test_obs_dir/test_obs.pickle"
     assert a.type == "obs"
-    assert type(a.df.index) == pd.DatetimeIndex
-    assert a.time_extent['beg'] == pd.Timestamp("2016-01-01 00:00:00")
-    assert a.time_extent['end'] == pd.Timestamp("2016-12-31 21:00:00")
-    assert a.missing_data == 0.06
+    assert len(a.sites) == 5
+    assert type(a.df_dict['NGO-DD-1004_ST01'].index) == pd.DatetimeIndex
+    # assert a.missing_data['NGO-DD-1004_ST01'] == 0.06
     pass
+
+

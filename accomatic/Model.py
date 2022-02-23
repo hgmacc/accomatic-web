@@ -1,17 +1,19 @@
 from accomatic.DataFileReader import DataFileReader
+from typing import Dict
 
 
 class Model(DataFileReader):
-    _stats: dict  # Individual results ultimately stored here
+    _stats: Dict[str, float]  # Individual results ultimately stored here
 
     def __init__(self, file_path=""):
         super().__init__(file_path, 'mod')
         self._stats = {}
 
     @property
-    def stats(self) -> dict:
+    def stats(self) -> Dict[str, float]:
         return self._stats
 
     @stats.setter
-    def stats(self, stat_dictionary: dict) -> None:
+    def stats(self, stat_dictionary: Dict[str, float]) -> None:
         self._stats = stat_dictionary
+

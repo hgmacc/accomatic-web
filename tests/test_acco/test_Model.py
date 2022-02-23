@@ -1,14 +1,21 @@
 from accomatic.Model import *
 import pandas as pd
+import glob, os
+import re
+from typing import List
 
 
 def test_Model():
-    a = Model("tests/test_data/test_mod_dir/test_mod_data.csv")
-    assert a.name == "test_mod_data"
-    assert a.file_path == "tests/test_data/test_mod_dir/test_mod_data.csv"
-    assert bool(a.stats) == False
-    assert type(a.df.index) == pd.DatetimeIndex
-    assert a.stats == {}
-    assert a.time_extent['beg'] == pd.Timestamp("2016-06-01 00:00:00")
-    assert a.time_extent['end'] == pd.Timestamp("2017-05-31 23:00:00")
+    mod_list: List['Model'] = []
+
+    for mod_file in glob.glob('tests/test_data/test_mod_dir/*.pickle'):
+        mod_list.append(Model(mod_file))
+
+    for a in mod_list:
+        assert bool(re.search("test_.*_mod", a.name))
+        assert len(a.sites) == 5
+        assert bool(re.search("tests/test_data/test_mod_dir/test_.*_mod.pickle", a.file_path))
+        assert bool(a.stats) == False
+        assert type(a.df_dict['NGO-DD-1004_ST01'].index) == pd.DatetimeIndex
+        assert a.stats == {}
     pass
