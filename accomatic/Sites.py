@@ -10,7 +10,7 @@ class Site:
     _lat: float
     _lon: float
 
-    def __init__(self, name, terr, lon, lat, ele):
+    def __init__(self, name='', terr='', lon=0, lat=0, ele=0):
         self._name = name
         self._terrain = terr
         self._lon = lon
