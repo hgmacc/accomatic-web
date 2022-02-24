@@ -22,4 +22,5 @@ def test_Model():
         assert bool(a.stats) == False
         assert type(a.df_dict["NGO-DD-1004_ST01"].index) == pd.DatetimeIndex
         assert a.stats == {}
+        assert a.time_extent['NGO-DD-1004_ST01'][0] == pd.Timestamp("2016-01-01 00:00:00")
     pass

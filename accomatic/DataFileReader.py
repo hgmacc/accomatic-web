@@ -5,8 +5,9 @@ from typing import Dict, List
 
 import pandas as pd
 
-# Model = dictionary of 'point':'dataframe'
-# obs = dictionary of 'point':'dataframe'
+# Model = dictionary of {'point':'dataframe'}
+# Obs = dictionary of {'point':'dataframe'}
+# _time_extent:  observation.time_extent['site'] = [beg, end]
 
 
 class DataFileReader:
@@ -15,6 +16,7 @@ class DataFileReader:
     _df_dict: Dict[str, pd.DataFrame]
     _type: str
     _sites: List[str]
+    _time_extent: Dict[str, List[pd.DatetimeIndex]]
 
     def __init__(self, file_path="", type=""):
         if os.path.exists(file_path):
@@ -28,6 +30,11 @@ class DataFileReader:
         self._df_dict = pd.read_pickle(file_path)
         self._type = type
         self._sites = self._df_dict.keys()
+        self._time_extent = {}
+        for site in self._df_dict.keys():
+            beg = pd.Timestamp(self._df_dict[site].first_valid_index())
+            end = pd.Timestamp(self._df_dict[site].last_valid_index())
+            self._time_extent[site] = [beg, end]
 
     @property
     def name(self) -> str:
@@ -49,6 +56,10 @@ class DataFileReader:
     def sites(self) -> List[str]:
         return self._sites
 
+    @property
+    def time_extent(self) -> Dict[str, List[pd.DatetimeIndex]]:
+        return self._time_extent
+
     @name.setter
     def name(self, n: str) -> None:
         if len(n) > 15:
@@ -60,11 +71,3 @@ class DataFileReader:
     def df_dict(self, df_dict=Dict[str, pd.DataFrame]) -> None:
         self._df_dict = df_dict
 
-
-"""
-    @property
-    def time_extent(self, site) -> Dict[str, pd.Timestamp]:
-        beg = pd.Timestamp(self._df_dict[site].first_valid_index())
-        end = pd.Timestamp(self._df_dict[site].last_valid_index())
-        return {'beg': beg, 'end': end}
-"""

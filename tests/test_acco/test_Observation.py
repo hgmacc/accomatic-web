@@ -9,5 +9,7 @@ def test_observation():
     assert a.type == "obs"
     assert len(a.sites) == 5
     assert type(a.df_dict["NGO-DD-1004_ST01"].index) == pd.DatetimeIndex
-    # assert a.missing_data['NGO-DD-1004_ST01'] == 0.06
+    assert a.time_extent['NGO-DD-1004_ST01'][0] == pd.Timestamp("2016-01-01 00:00:00")
+    assert a.time_extent['NGO-DD-1004_ST01'][1] == pd.Timestamp("2016-12-31 23:00:00")
+    assert a.missing_data['NGO-DD-1004_ST01'] == 0.0
     pass
