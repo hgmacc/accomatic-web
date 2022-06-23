@@ -1,7 +1,7 @@
+import sys
 from typing import List
 
 import toml
-import sys
 
 
 class Settings:
@@ -27,14 +27,16 @@ class Settings:
             self._terr = setting_toml["experiment"]["terrain"]
             self._output_plots = setting_toml["output"]["plots"]
             self._output_terminal_summary = setting_toml["output"]["terminal_summary"]
-            
+
         except KeyError as e:
-            print(f"Settings could not be configured due to {e} key error in TOML file.")
+            print(
+                f"Settings could not be configured due to {e} key error in TOML file."
+            )
             sys.exit()
 
     @property
     def model_pth(self) -> bool:
-        return self._model_pth    \
+        return self._model_pth
 
     @property
     def obs_pth(self) -> bool:
