@@ -1,25 +1,18 @@
 title = "Accomatic Control File"
 
 [data]
-
-pickled = true
+model_pth = '../tests/test_data/test_data.nc'
+observations_pth = '../tests/test_data/obs.nc'
+manifest = '../tests/test_data/folder_manifest.csv'
 
 [experiment]
+acco_list = ['RMSE','MAE','R2']  # List of acco measures
 
-# Time extent
-beg = '2016/01/01'
-end = '2016/12/31'
-
-# List of accordance measures
-accordance = []
-
-# List of experiments
-accordance_measure = true
+accordance = true
 seasonal = false
 terrain = false
 
-[results]
+[output]
 
-output_terminal_summary = true
-output_plots = false
-# Section here on how you'd like your output to look
+terminal_summary = false
+plots = false
