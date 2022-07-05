@@ -1,5 +1,3 @@
-from os import path
-
 from NcReader import *
 from Settings import Settings
 
@@ -9,5 +7,30 @@ if exp.acco:
     m = Dataset(exp.model_pth)
     o = Dataset(exp.obs_pth)
     a = path.join(path.dirname(exp.model_pth), "acco.nc")
-    print(a)
-    create_acco_nc(a, exp)
+
+    if not path.exists(a):
+        create_acco_nc(a, exp)
+        print(f'New accomatic nc file created at {a}')
+
+    simulations = read_manifest(exp.manifest)
+
+    if exp.acco:
+
+        print(simulations[71:74])
+
+        print(len(simulations[72:].site.unique()))
+        print(len(simulations[72:].model.unique()))
+
+        print(len(simulations[:72].site.unique()))
+        print(len(simulations[:72].model.unique()))
+
+        #run_acco(m, o, simulations)
+
+    #print(m['geotop']['simulation'][:3])
+    #print(simulations.head())
+
+    # 6 simulations per site ( 3 param x 2 reanalysis data types)
+    # monthly average of just jra data
+
+
+

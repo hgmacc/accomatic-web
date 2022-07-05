@@ -1,7 +1,7 @@
 title = "Accomatic Control File"
 
 [data]
-model_pth = '../tests/test_data/test_data.nc'
+model_pth = '../tests/test_data/result_soil_temperature.nc'
 observations_pth = '../tests/test_data/obs.nc'
 manifest = '../tests/test_data/folder_manifest.csv'
 
@@ -13,6 +13,9 @@ seasonal = false
 terrain = false
 
 [output]
-
+out_pth = '..tests/test_data' # Where you'd like any output to go
 terminal_summary = false
 plots = false
+
+
+# USE MAP / FILTER / REDUCE TO NOT USE LOOPS IN ANALYSIS
