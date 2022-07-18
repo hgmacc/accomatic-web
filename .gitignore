@@ -3,4 +3,7 @@
 .DS_Store
 .cdsapirc
 notebooks/erddap.py
-
+/bin
+/lib
+/include
+/lib64
