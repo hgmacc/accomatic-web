@@ -3,7 +3,8 @@
 .DS_Store
 .cdsapirc
 notebooks/erddap.py
-/bin
-/lib
-/include
-/lib64
+accomatic/bin
+accomatic/lib
+accomatic/include
+accomatic/lib64
+accomatic/share
