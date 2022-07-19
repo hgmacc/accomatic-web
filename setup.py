@@ -27,10 +27,18 @@ setuptools.setup(
             'accomatic = accomatic-web.accomatic:main',
         ]},
 
-    install_requires=['numpy',
+    install_requires=['xarray',
+                      'tomlkit',
+                      'numpy',
                       'pandas',
                       'netCDF4',
                       'scipy',
-                      'pydap',
+                      'scikit-learn',
+                      'pandas',
+                      'typing',
+                      'datetime',
+                      'matplotlib',
+                      're',
                       'tomlkit']
+                      
 )

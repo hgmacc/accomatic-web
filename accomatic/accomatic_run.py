@@ -2,8 +2,9 @@ from NcReader import *
 from Settings import Settings
 
 exp = Settings("../tests/test_data/test_toml_settings.toml")
+nope = False
 
-if exp.acco:
+if exp.acco and nope:
     m = Dataset(exp.model_pth)
     o = Dataset(exp.obs_pth)
     a = path.join(path.dirname(exp.model_pth), "acco.nc")
@@ -33,4 +34,6 @@ if exp.acco:
     # monthly average of just jra data
 
 
+o = xr.open_dataset('/home/hma000/obs.nc')
+print(o['platform_id'][:])
 
