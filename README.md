@@ -80,6 +80,8 @@ for (row in 1:nrow(df)) {
     df[row, "elevation_in_metres"] = tmp$elevation_in_metres
     df[row, 'comment'] <- gsub(".*;","", tmp$comment)
 }
+
+write.csv(df, '/fs/yedoma/usr-storage/hma000/LDG/ldg_field_forms.csv')
 ```
 
 
