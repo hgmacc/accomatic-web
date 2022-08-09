@@ -34,11 +34,7 @@ if exp.acco and nope:
     # monthly average of just jra data
 
 
-o = xr.open_dataset('/home/hma000/accomatic-web/tests/test_data/obs.nc')
+o = xr.open_dataset('/fs/yedoma/usr-storage/hma000/KDI/_KDI_obs.nc')
 for i in o['platform_id'][:]:
     print(i)
 
-import os
-
-for name, value in os.environ.items():
-    print("{0}: {1}".format(name, value))

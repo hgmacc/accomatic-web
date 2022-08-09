@@ -7,5 +7,4 @@ scipy
 scikit-learn
 pandas
 typing
-datetime
 matplotlib

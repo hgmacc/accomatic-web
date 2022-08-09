@@ -1,4 +1,4 @@
-fxid,site,directory,model,forcing,parameters
+id,site,directory,model,forcing,parameters
 badd1d75428e458cab0e18abcf1b4ab1,KDI-E-Org2,geotop_KDIEOrg_scaled_merr_575dd25,geotop,scaled_merra2_1h_scf1.5_kdiBoreholes,basicgeotop:/project/s/stgruber/gjo713/gtpem-dev/gtpem/gtpem/parameters/Geotop/SoilTypes/Gubler/Peat.inpts
 403a9bc512f3465cac660ec913db4664,KDI-E-Org2,geotop_KDIEOrg_scaled_merr_1d69abf,geotop,scaled_merra2_1h_scf1.5_kdiBoreholes,basicgeotop:/project/s/stgruber/gjo713/gtpem-dev/gtpem/gtpem/parameters/Geotop/SoilTypes/Gubler/Rock.inpts
 752c8f55a5334f9dbc3ca31bdb438de4,KDI-E-Org2,geotop_KDIEOrg_scaled_merr_59b6954,geotop,scaled_merra2_1h_scf1.5_kdiBoreholes,basicgeotop:/project/s/stgruber/gjo713/gtpem-dev/gtpem/gtpem/parameters/Geotop/SoilTypes/Gubler/Clay.inpts
