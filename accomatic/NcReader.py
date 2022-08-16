@@ -53,15 +53,43 @@ def create_acco_nc(m_file, exp):
 
     acco.close()
 
+     
+def getdf(file):
+        # Get dataset
+        o = xr.open_dataset(file['obs'])
+        odf = o.to_dataframe()
+        
+        # Clean up columns
+        odf = odf.drop(['latitude', 'longitude', 'elevation', 'depth'], axis=1).rename({'platform_id': 'sitename'}, axis=1) 
 
+        # Fix index
+        odf = odf.reset_index(level=(1), drop=True)
+        odf.sitename = [line.decode("utf-8") for line in odf.sitename]
+        odf = odf.set_index(odf.sitename, append=True)
+        odf = odf.drop(['sitename'], axis=1)
+        
+        # Get dataset
+        m = xr.open_dataset(file["mod"], group='geotop')
+        mdf = m.to_dataframe()
+        
+        # Drop dumb columns and rename things
+        mdf = mdf.drop(['model', 'pointid'], axis=1).rename({'Date': 'time', 'Tg': 'soil_temperature'}, axis=1) 
+        mdf = mdf.reset_index(level=(0,1), drop=True)
+        mdf = mdf.reset_index(drop=False)
 
+        # Merge simulation and sitename colummn 
+        mdf.simulation = mdf.sitename  + ',' + mdf.simulation 
+        mdf.sitename = [line.strip("_site") for line in mdf.sitename]
+
+        # Setting up time index
+        mdf.time = pd.to_datetime(mdf['time']).dt.date
+        mdf = mdf.set_index([mdf.time, mdf.sitename], append=True)
+        mdf = mdf.drop(['time', 'sitename'], axis=1)
+
+        return(odf, mdf)
 
 def read_manifest(manifest_file_pth):
-    """
-    Takes weird geotop output to establish driving data, model and sitename.
-    :param manifest_file_pth: a string that is the folder name
-    :return: [model, driving data, site]
-    """
+
     df = pd.read_csv(manifest_file_pth, usecols=['site', 'model', 'forcing', 'parameters'])
     df.parameters = [line.replace('/', '.').split('.')[-2] for line in df.parameters]  # '.../*/Peat.inputs --> 'Peat'
     df.forcing = [line.split('_')[1] for line in df.forcing]  # 'scaled_merra2_1h_scf1.5_kdiBoreholes' --> 'merra2'

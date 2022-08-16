@@ -1,68 +1,126 @@
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from NcReader import *
+import xarray as xr
+import seaborn as sns
+from matplotlib.dates import DateFormatter
 
-FILE = {'mod': '/home/hma000/accomatic-web/tests/test_data/KDI_10CM_23Sites.nc',
+
+remote_file = {'mod': '/home/hma000/accomatic-web/tests/test_data/KDI_10CM_23Sites.nc',
         'obs': '/fs/yedoma/usr-storage/hma000/KDI/KDI_obs.nc'}
+local_file = {'mod': '/Users/hannahmacdonell/Documents/projects/accomatic-web/tests/test_data/KDI_10CM_23Sites.nc',
+        'obs': '/Users/hannahmacdonell/Documents/projects/accomatic-web/tests/test_data/KDI_obs.nc'}
+(odf, mdf) = getdf(local_file)
 
-def df_prep():
-    f = xr.open_dataset(FILE['obs'])
-    odf = f.soil_temperature.to_dataframe()
+print("-------------------------------------------------------------------")
+print('\n\n')
 
 
-    # Get dataset
-    f = xr.open_dataset(FILE['mod'], group='geotop')
-    mdf = f.to_dataframe()
+s, e = odf.index[0], odf.index[-1]
+#print(s[0], e[0])
+
+#test = odf.query("sitename == 'KDI-E-Org2_01'")
+
+def plot():
+    palette = ["#1CE1CE", "#008080", "#F3700E", "#F50B00", "#59473C"]
+    sns.set_palette(sns.color_palette(palette))
+    sns.set_context('poster')
+    sns.despine()
+
+    fig, ax = plt.subplots(figsize=(30, 12))
+
+    sns.lineplot(x='time', y='soil_temperature', hue='sitename', data=odf, legend=False)
+
+    # Set title and labels for axes
+    ax.set(xlabel="Date",
+        ylabel="GST (C)")
+
+    # Define the date format
+    date_form = DateFormatter("%m-%Y")
+    ax.xaxis.set_major_formatter(date_form)
+
+    plt.rcParams["font.family"] = "Times New Roman"
+    plt.rc('font', size=24)
+    plt.savefig("obs2.png", dpi=300, transparent=True) 
+
+plot()
+
+def create_acco_df(mod_nc):
+    """
+    Generate model stat summary df from simulations nc file.
     
-    # Drop dumb columns and rename things
-    mdf = mdf.drop(['model', 'pointid'], axis=1).rename({'Date': 'time', 'Tg': 'soil_temperature'}, axis=1) 
-    mdf = mdf.reset_index(level=(0,1), drop=True)
-    mdf = mdf.reset_index(drop=False)
-
-    # Merge simulation and sitename colummn 
-    mdf.simulation = mdf.sitename  + ',' + mdf.simulation 
-
-    # Setting up time index
-    mdf.time = pd.to_datetime(mdf['time'])
-    mdf.index = mdf.time
-    mdf = mdf.drop(['time', 'sitename'], axis=1)
-
-    return (mdf, odf)
-
-
-def run_acco(m_nc, o_nc, mdf):
+    :param mod_nc: a netcdf4 data object
+    :return acco_df: pd.Dataframe
     """
-    This function runs accomatic processes and populated acco nc group accordingly.
-    :param m_nc: NC files with model groups and acco group
-    :param o_nc: observational data for comparison
-    :return: NA: Populates acco group of ncfile
+    simulation = mod_nc.simulation.to_dataframe().simulation.to_list()
+    sim_id = [line.split('_')[-1] for line in simulation]
+    forcing = [line.split('_')[3] for line in simulation]
+    site = [line.split('_site')[0] for line in mod_nc.sitename.to_dataframe().sitename.to_list()]
+    acco_df = pd.DataFrame(columns=['MAE', 'RMSE', 'R2'], index=[sim_id, forcing, site])
+    return acco_df
+
+def get_time_window(obs_nc):
     """
+    Helper function for clip_mod().
+    Returns start and end time of observational dataset. 
+    
+    :param obs_nc: a netcdf4 data object
+    :return tuple(Datetime): 
+    """
+    return obs_nc.time[0], obs_nc.time[-1]
 
-    rmse, r2, mae = [], [], []
-    model = 'geotop'
-    # 72 = 12 * (3 Model + 3 Param)
-    for o_site_index in range(12):
-        for m_site_index in range(3):
-            m_time = m_nc[model]["Date"]
 
-            ref = date2num(
-                datetime(1970, 1, 1, 0, 0, 0), units=m_time.units, calendar="standard"
-            )
+def clip_mod(obs_nc, mod_df):
+    """
+    Clips mod_df object to obs_nc start and end time. 
+        
+    :param obs_nc: netCDF4 data object
+    :param mod_df: pd.Dataframe 
+    :return mod_df: pd.Dataframe 
+    """
+    start, end = get_time_window(obs_nc)
 
-            start, end = o_nc["time"][0], o_nc["time"][-1]
-            m_time = m_time - ref
-            time_select = np.logical_and(m_time[:] > start, m_time[:] < end)
+    mod_df.time = mod_df.time - date2num(datetime(1970, 1, 1, 0, 0, 0), units='days since 1-1-1 0:0:0', calendar="standard")
+    
+    # Line below is wrong --> rewite for Dataframe when you have WIFI
+    # time_select = np.logical_and(mod_df.time[:] > start, mod_df.time[:] < end)
+    
+    return mod_df
 
-            x = o_nc["soil_temperature"][o_site_index][:-1]
-            y = m_nc[model]["Tg"][m_site_index, time_select, 0]
+def generate_stats(x, y):
+    rmse = mean_squared_error(x, y, squared=False)
+    mae = mean_absolute_error(x, y)
+    r2 = r2_score(x, y)
+    
+    stats_dict = {'RMSE' : rmse, 'mae': mae, 'r2': r2}
+    
+    return stats_dict
 
-            rmse.append(mean_squared_error(x, y, squared=False))
-            mae.append(mean_absolute_error(x, y))
-            r2.append(r2_score(x, y)) 
-    print(rmse, r2, mae)
-    #mdf['RMSE'], mdf['R2'], mdf['MAE'] = rmse, r2, mae
-    return mdf
 
-m = Dataset('/home/hma000/accomatic-web/tests/test_data/KDI_10CM_23Sites.nc')
-o = Dataset('/home/hma000/accomatic-web/tests/test_data/obs.nc')
-simulations = read_manifest('/home/hma000/accomatic-web/tests/test_data/folder_manifest.csv')
-run_acco(m, o, simulations)
+"""
+N sites
+obs = N sites
+mod = M mods
+
+sims = M mods x N sites
+
+23 sites
+obs = 23 sites
+mod = 3 mods x 23 sites 
+
+simulations = 3 mods x 23 sites = 69 sims
+
+for site in obs:
+    find start & end time (function)
+    get M sims 
+    clip to start & end time
+    add stat results to df columns 
+    
+DF
+
+                                    RMSE       MAE      R2
+site            model     szn
+KDI-W-Org1      merr     winter     xx          xx      xx        
+KDI-W-Org2      era5     summer     xx          xx      xx
+KDI-W-Org3      jra      spring     xx          xx      xx
+
+Multi-index dataframe: season, model, terrain type ("site")
+"""
