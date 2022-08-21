@@ -7,70 +7,82 @@ import sys
 from matplotlib.dates import DateFormatter
 
         
-def getdf():
-        # Get dataset
-        o = xr.open_dataset(file['obs'])
-        odf = o.to_dataframe()
-        
-        # Clean up columns
-        odf = odf.drop(['latitude', 'longitude', 'elevation', 'depth'], axis=1).rename({'platform_id': 'sitename'}, axis=1) 
+def get_single_df():
+    filepth = '/home/hma000/accomatic-web/tests/test_data/terrain_output.nc'
+    # Get dataset
+    m = xr.open_dataset(filepth, group='geotop')
+    mdf = m.to_dataframe()
+    
+    # Drop dumb columns and rename things
+    mdf = mdf.drop(['model', 'pointid'], axis=1).rename({'Date': 'time', 'Tg': 'soil_temperature'}, axis=1) 
+    mdf = mdf.reset_index(level=(0,1), drop=True)
+    mdf = mdf.reset_index(drop=False)
 
-        # Fix index
-        odf = odf.reset_index(level=(1), drop=True)
-        odf.sitename = [line.decode("utf-8") for line in odf.sitename]
-        odf = odf.set_index(odf.sitename, append=True)
-        odf = odf.drop(['sitename'], axis=1)
-        
-        # Get dataset
-        m = xr.open_dataset(file["mod"], group='geotop')
-        mdf = m.to_dataframe()
-        
-        # Drop dumb columns and rename things
-        mdf = mdf.drop(['model', 'pointid'], axis=1).rename({'Date': 'time', 'Tg': 'soil_temperature'}, axis=1) 
-        mdf = mdf.reset_index(level=(0,1), drop=True)
-        mdf = mdf.reset_index(drop=False)
+    # Merge simulation and sitename colummn 
+    mdf.simulation = mdf.sitename  + ',' + mdf.simulation 
+    mdf.sitename = [line.strip("_site") for line in mdf.sitename]
 
-        # Merge simulation and sitename colummn 
-        mdf.simulation = mdf.sitename  + ',' + mdf.simulation 
+    # Setting up time index
+    mdf.time = pd.to_datetime(mdf['time']).dt.date
+    mdf = mdf.set_index([mdf.time, mdf.sitename], append=True)
+    mdf = mdf.drop(['time', 'sitename'], axis=1)
 
-        # Setting up time index
-        mdf.time = pd.to_datetime(mdf['time'])
-        mdf.index = df.time
-        df = mdf.drop(['time', 'sitename'], axis=1)
+    return mdf
 
+csv = False
+if csv:
+    filepth = '/home/hma000/accomatic-web/tests/test_data/terrain_output.nc'
+    # Get dataset
+    m = xr.open_dataset(filepth, group='geotop')
+    mdf = m.to_dataframe()
+    mdf = mdf.loc[mdf.sitename.str.contains('KDI-E-Org2_site'),:]
 
+    # Drop dumb columns and rename things
+    mdf = mdf.drop(['model', 'pointid'], axis=1).rename({'Date': 'time', 'Tg': 'soil_temperature'}, axis=1) 
+    mdf = mdf.reset_index(level=(0,1), drop=True)
+    mdf = mdf.reset_index(drop=False)
 
+    # Merge simulation and sitename colummn 
+    mdf.simulation = mdf.simulation.str[-7:]
+
+    # Setting up time index
+    mdf.time = pd.to_datetime(mdf['time'], format="%Y-%m-%d")
+    mdf = mdf[mdf.time.dt.month <= 9]
+    mdf = mdf.set_index([mdf.time, mdf.simulation], append=True)
+    df = mdf.drop(['time', 'sitename', 'simulation'], axis=1)
+    df.to_csv("terrains_df.csv")
 
 plot = True
 if plot:
-    df = getdf()
-    
+    df = pd.read_csv('terrains_df.csv')
+    df.time = pd.to_datetime(df['time'], format="%Y-%m-%d")
+    df = df[df.time.dt.month > 5]
+    df = df[df.time.dt.month < 9]
+    df = df.reset_index()
+    df = df.set_index(['time', 'simulation'])
     # Setting custom colour palette for seaborn plots
     palette = ["#1CE1CE", "#008080", "#F3700E", "#F50B00", "#59473C"]
     sns.set_palette(sns.color_palette(palette))
     sns.set_context('poster')
     sns.despine()
+    sns.set_style({'font.family':'serif', 'font.serif':'Times New Roman'})
     
     # Create figure and plot space
-    fig, ax = plt.subplots(figsize=(48, 12))
-
-    # Add x-axis and y-axis
-    #sns.lineplot(x='time', y='soil_temperature', data = df, ax=ax)
-    sns.lineplot(x='time', y='soil_temperature', data = df, ax=ax)
+    fig, ax = plt.subplots(figsize=(20, 10))
+    sns.lineplot(x='time', y='soil_temperature', linewidth = 4, data = df, ax=ax, hue='simulation')
 
     # Set title and labels for axes
     ax.set(xlabel="Date",
-        ylabel="GST (C˚)",
-        title="Ground Surface Temperatures (10 cm) at KDI n = 23")
-
+        ylabel="GST (C˚)")
+    
+    ax.legend(['Clay','Peat','Sand','Rock', 'Gravel'],loc='best')
+    
     # Define the date format
     date_form = DateFormatter("%m-%Y")
     ax.xaxis.set_major_formatter(date_form)
     
-    plt.rcParams["font.family"] = "Times New Roman"
-    plt.savefig(TYPE + ".png", dpi=100, transparent=True) 
+    plt.savefig("terrains_thick.png", dpi=300, legend=False, transparent=True)
     
-
 
 trial = False
 if trial:
