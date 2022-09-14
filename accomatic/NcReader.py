@@ -72,10 +72,10 @@ def average_obs_site(odf):
     return odf
 
 
-def getdf(file):
+def getdf(mod_file_pth, obs_file_pth):
 
         # Get dataset
-        m = xr.open_dataset(file["mod"], group='geotop')
+        m = xr.open_dataset(mod_file_pth, group='geotop')
         mdf = m.to_dataframe()
         
         # Drop dumb columns and rename things
@@ -97,7 +97,7 @@ def getdf(file):
         mdf = mdf.unstack(level=2).soil_temperature
 
         # Get dataset
-        o = xr.open_dataset(file['obs'])
+        o = xr.open_dataset(obs_file_pth)
         odf = o.to_dataframe()
                 
         # Clean up columns
@@ -113,17 +113,6 @@ def getdf(file):
         odf = average_obs_site(odf)
 
         return(odf, mdf)
-
-def read_manifest(manifest_file_pth):
-
-    df = pd.read_csv(manifest_file_pth, usecols=['site', 'model', 'forcing', 'parameters'])
-    df.parameters = [line.replace('/', '.').split('.')[-2] for line in df.parameters]  # '.../*/Peat.inputs --> 'Peat'
-    df.forcing = [line.split('_')[1] for line in df.forcing]  # 'scaled_merra2_1h_scf1.5_kdiBoreholes' --> 'merra2'
-    df['model'] = df[['model', 'forcing', 'parameters']].apply(lambda row: '_'.join(row.values.astype(str)), axis=1)
-    df = df.drop(['forcing', 'parameters'], axis=1)
-
-    return df
-
 
 
 

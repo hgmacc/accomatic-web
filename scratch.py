@@ -70,25 +70,3 @@ if plot:
     plt.rcParams["font.family"] = "Times New Roman"
     plt.savefig(TYPE + ".png", dpi=100, transparent=True) 
     
-
-
-trial = False
-if trial:
-
-    f = xr.open_dataset('/fs/yedoma/usr-storage/hma000/KDI/KDI_obs.nc')
-    month_length = f.time.dt.days_in_month
-
-    weights = (
-        month_length.groupby("time.season") / month_length.groupby("time.season").sum()
-    )
-
-    # Test that the sum of the weights for each season is 1.0
-    np.testing.assert_allclose(weights.groupby("time.season").sum().values, np.ones(4))
-
-    # Calculate the weighted average
-    f = f['soil_temperature']
-    ds_weighted = (f * weights).groupby("time.season").sum(dim="time")
-    # ds_unweighted = f.groupby("time.season").mean("time")
-
-    sns.lineplot(data = ds_weighted)
-    plt.savefig("weighted.png")
