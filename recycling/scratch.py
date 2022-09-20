@@ -52,3 +52,54 @@ if csv:
     df = mdf.drop(['time', 'sitename', 'simulation'], axis=1)
     df.to_csv("terrains_df.csv")
 
+
+def nse(obs, mod):
+    return 1-(np.sum((mod-obs)**2)/np.sum((obs-np.mean(obs))**2))
+
+# this could be super wrong
+def willmot_d(obs, mod):
+    return np.mean((1-(((obs-models[mod])**2)/(abs(models[mod]-np.mean(obs))+abs(obs-np.mean(obs))**2))))
+
+def bias(obs, mod):
+    return np.mean(mod-obs)
+
+def rmse(obs, mod):
+    return(mean_squared_error(obs, mod, squared=False))
+
+stats = {"RMSE" : rmse, 
+        "R2" : mean_absolute_error, 
+        "MAE" : r2_score,
+        "NSE" : nse,
+        "WILL" : willmot_d,
+        "BIAS" : bias}
+  
+# printing original dictionary
+res = stats['RMSE'](obs, mod)  # -> str(res) = '0.97'
+
+# for model in models       
+    # for acco in acco_list:
+        stats_dict[mod+'-'+szn] = [stat[](mod, obs), stat[](mod, obs), stat[](mod, obs)]
+result []
+for s in acco_list:
+    result.append(float(stats[s](obs, mod))
+stats_dict[mod+szn] = result
+
+
+def generate_stats(df, szn, acco_list):
+    # Set up x and y data for analysis
+    obs = df.soil_temperature
+    models = df.drop(['soil_temperature'], axis=1)
+
+    stats_dict = {}
+
+    for mod in models:
+        stats_dict[mod+szn] = map(func, acco_list)
+        
+        result []
+
+        for s in acco_list:
+            result.append(float(stats[s](obs, mod))
+        
+        stats_dict[mod+szn] = result
+
+    return stats_dict

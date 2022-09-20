@@ -10,15 +10,9 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset, date2num, num2date
 import xarray as xr
-import sklearn 
+import sklearn
 
-
-"""
-VAR NAMING CONVENTIONS
-*_file = file_path (str)
-*_nc = <netCDF4._netCDF4.Dataset>
-prefix = m(model), o(obs), a(acco)
-"""
+from tsp import readers
 
 
 def create_acco_nc(m_file, exp):
@@ -53,66 +47,83 @@ def create_acco_nc(m_file, exp):
 
     acco.close()
 
+
 def average_obs_site(odf):
-    # KDI-E-Org_02 -> KDI-E-Org 
-    odf['sitename'] = odf.index.get_level_values('sitename').str[:-3]
+    """
+    Averaging GST output for each site.
+    """
+    # KDI-E-Org_02 -> KDI-E-Org
+    odf["sitename"] = odf.index.get_level_values("sitename").str[:-3]
 
     # Drop sitename index so we can use new 'sitename' col to avg over non-unique sitenames
     odf = odf.reset_index(level=(1), drop=True)
 
     # Average 'soil_temperature' over 'sitename'
-    odf['temp_site_date'] = odf.sitename + odf.index.get_level_values('time').astype(str)
-    odf.soil_temperature = odf.groupby('temp_site_date')['soil_temperature'].transform('mean')
+    odf["temp_site_date"] = odf.sitename + odf.index.get_level_values("time").astype(
+        str
+    )
+    odf.soil_temperature = odf.groupby("temp_site_date")["soil_temperature"].transform(
+        "mean"
+    )
 
-    odf = odf.drop_duplicates(subset=["temp_site_date"], keep='first') 
+    odf = odf.drop_duplicates(subset=["temp_site_date"], keep="first")
 
     # Cleaning up so df format is still (time, sitename) : soil_temperature
     odf = odf.set_index(odf.sitename, append=True)
-    odf = odf.drop(['temp_site_date', 'sitename'], axis=1)
+    odf = odf.drop(["temp_site_date", "sitename"], axis=1)
     return odf
 
 
-def getdf(mod_file_pth, obs_file_pth):
+def read_geotop(file_path, sitename=""):
+    # Get dataset
+    m = xr.open_dataset(file_path, group="geotop")
 
-        # Get dataset
-        m = xr.open_dataset(mod_file_pth, group='geotop')
-        mdf = m.to_dataframe()
-        
-        # Drop dumb columns and rename things
-        mdf = mdf.drop(['model', 'pointid'], axis=1).rename({'Date': 'time', 'Tg': 'soil_temperature'}, axis=1) 
-        mdf = mdf.reset_index(level=(0,1), drop=True)
-        mdf = mdf.reset_index(drop=False)
+    m["sitename"] = m.sitename.str.replace(r"_site", "")
 
-        # Fix simulation and sitename colummn 
-        mdf.simulation = [line[-12:-8] for line in mdf.simulation] # (...)led_merr_3e66cca -> merr
-        mdf.sitename = [line[:-5] for line in mdf.sitename]  # KDI-W-Tbot_site -> KDI-W-Tbot
+    if sitename != "":
+        m = m.where(m.sitename == sitename, drop=True)
 
-        # Setting up time index
-        mdf.time = pd.to_datetime(mdf['time']).dt.date
-        mdf = mdf.set_index([mdf.time, mdf.sitename, mdf.simulation], append=True)
-        mdf = mdf.drop(['time', 'sitename', 'simulation'], axis=1)
-        mdf = mdf.reset_index(level=(0), drop=True)
+    mdf = m.to_dataframe()
 
-        # Breakup simulation data
-        mdf = mdf.unstack(level=2).soil_temperature
+    # Drop dumb columns and rename things
+    mdf = mdf.drop(["model", "pointid"], axis=1).rename(
+        {"Date": "time", "Tg": "soil_temperature"}, axis=1
+    )
+    mdf = mdf.reset_index(level=("time", "soil_depth"), drop=True)
+    mdf = mdf.reset_index(drop=False)
 
-        # Get dataset
-        o = xr.open_dataset(obs_file_pth)
-        odf = o.to_dataframe()
-                
-        # Clean up columns
-        odf = odf.drop(['latitude', 'longitude', 'elevation', 'depth'], axis=1).rename({'platform_id': 'sitename'}, axis=1) 
+    # Fix simulation colummn
+    mdf.simulation = [
+        line[-12:-8] for line in mdf.simulation
+    ]  # (...)led_merr_3e66cca -> merr
 
-        # Fix index
-        odf = odf.reset_index(level=(1), drop=True)
-        odf.sitename = [line.decode("utf-8") for line in odf.sitename]
-        odf = odf.set_index(odf.sitename, append=True)
-        odf = odf.drop(['sitename'], axis=1)
-        
-        # Average over sites
-        odf = average_obs_site(odf)
+    # Setting up time index
+    mdf.time = pd.to_datetime(mdf["time"]).dt.date
+    mdf = mdf.set_index([mdf.time, mdf.sitename, mdf.simulation], append=True)
+    mdf = mdf.drop(["time", "sitename", "simulation"], axis=1)
+    mdf = mdf.reset_index(level=(0), drop=True)
 
-        return(odf, mdf)
+    # Breakup simulation data
+    mdf = mdf.unstack(level=2).soil_temperature
+    return mdf
 
 
+def read_nc(file_path) -> pd.DataFrame:
+    # Get dataset
+    o = xr.open_dataset(file_path)
+    odf = o.to_dataframe()
 
+    # Clean up columns
+    odf = odf.drop(["latitude", "longitude", "elevation", "depth"], axis=1).rename(
+        {"platform_id": "sitename"}, axis=1
+    )
+
+    # Fix index
+    odf = odf.reset_index(level=(1), drop=True)
+    odf.sitename = [line.decode("utf-8") for line in odf.sitename]
+    odf = odf.set_index(odf.sitename, append=True)
+    odf = odf.drop(["sitename"], axis=1)
+
+    # Average over sites
+    odf = average_obs_site(odf)
+    return odf
