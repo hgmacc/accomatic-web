@@ -3,10 +3,11 @@ title = "Accomatic Control File"
 [data]
 model_pth = '/home/hma000/accomatic-web/tests/test_data/nc/KDI_10CM_23Sites.nc'
 observations_pth = '/fs/yedoma/usr-storage/hma000/KDI/KDI_obs.nc'
-sites_list = ['KDI-W-Tbot', 'KDI-W-Org2', 'KDI-R1', 'KDI-W-Wet1', 'KDI-W-Tbot', 'KDI-W-Wet1', 'KDI-W-Org2', 'KDI-W-Trees', 'KDI-W-Ttop', 'KDI-W-ShrubM2', 'KDI-E-Trees', 'KDI-W-Trees', 'KDI-E-Tbot', 'KDI-W-ShrubM1', 'KDI-E-Ttop', 'KDI-E-ShrubT', 'KDI-W-Wet1', 'KDI-R2', 'KDI-E-Tbot', 'KDI-R3', 'KDI-W-ShrubM1', 'KDI-R3', 'KDI-W-Wet2', 'KDI-E-ShrubT', 'KDI-E-Tslp', 'KDI-W-Wet2', 'KDI-W-Wet2', 'KDI-E-Wet', 'KDI-W-Org2', 'KDI-E-Tbot', 'KDI-E-ShrubM', 'KDI-R3', 'KDI-E-Wet', 'KDI-W-Org1', 'KDI-W-Tslp', 'KDI-R2', 'KDI-E-Wet', 'KDI-E-Trees', 'KDI-W-Tslp', 'KDI-W-Ttop', 'KDI-W-ShrubM2', 'KDI-W-Org1', 'KDI-W-Trees', 'KDI-W-Tslp', 'KDI-E-Ttop', 'KDI-E-ShrubM', 'KDI-R1', 'KDI-W-Snowdrift', 'KDI-W-ShrubM2', 'KDI-W-Tbot', 'KDI-W-Snowdrift', 'KDI-E-Org2', 'KDI-E-Org2', 'KDI-W-Org1', 'KDI-R1', 'KDI-E-Tslp', 'KDI-R2', 'KDI-E-Tslp', 'KDI-E-ShrubM', 'KDI-E-Org2', 'KDI-W-ShrubT', 'KDI-E-ShrubT', 'KDI-W-ShrubT', 'KDI-E-Ttop', 'KDI-W-ShrubT', 'KDI-W-Snowdrift', 'KDI-E-Trees', 'KDI-W-Ttop', 'KDI-W-ShrubM1']
+sites_list = ['KDI-R2', 'KDI-E-Ttop', 'KDI-E-Tbot', 'KDI-R3', 'KDI-W-Wet1', 'KDI-E-ShrubT', 'KDI-W-Snowdrift', 'KDI-W-Wet2', 'KDI-R1', 'KDI-E-ShrubM', 'KDI-E-Wet', 'KDI-W-Tslp', 'KDI-W-Org2', 'KDI-W-Trees', 'KDI-E-Org2', 'KDI-W-Ttop', 'KDI-W-ShrubT', 'KDI-W-Org1', 'KDI-E-Trees', 'KDI-W-ShrubM2', 'KDI-E-Tslp', 'KDI-W-Tbot', 'KDI-W-ShrubM1']
 
 [experiment]
 acco_list = ['RMSE', 'MAE', 'R2', 'MAE', 'NSE', 'BIAS']  # List of acco measures
 szn_list = ['ALL', 'DJF','MAM','JJA','SON']
+terr_list = ['Rock', 'NoSnow', 'Snow', 'Rock', 'Organic', 'Snow', 'Snow', 'Organic', 'Rock', 'Snow', 'Organic', 'NoSnow', 'Organic', 'Snow', 'Organic', 'NoSnow', 'Snow', 'Organic', 'NoSnow', 'Snow', 'NoSnow', 'Snow', 'Snow']
 
 # USE MAP / FILTER / REDUCE TO NOT USE LOOPS IN ANALYSIS

@@ -6,6 +6,7 @@ from netCDF4 import Dataset
 from tsp.readers import read_gtpem
 
 from Experiment import *
+from Stats import *
 
 
 def get_toml_pth(argv):
@@ -32,13 +33,10 @@ def get_toml_pth(argv):
     return arg_input
 
 
+# python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/SEP_KDI.toml
+
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
     e = Experiment(arg_input)
-    # Now run the stats. You're unsure as to whether you want to
-    # create a new class for results, put the values into acco.nc
-    # or just keep as a temp DF. I think writing to an .nc file might
-    # make sense if there's lots of post-processing.
-    # Then you could have "acco build" (produce acco.nc file)
-    # OR "acco analyse" (examine acco.nc file for summary)
-    # AND "acco visual" (produce high level pdf summary of findings)
+    print(e.results.head())
+    # create_acco_nc(e)

@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import List
-from accomatic.nc_reader import *
+from NcReader import *
 
 
 class Ensemble:

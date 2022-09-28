@@ -9,9 +9,11 @@ import toml
 class Settings:
     _model_pth: str
     _obs_pth: str
+    _out_acco_pth: str
     _acco_list: List[str]
     _szn_list: List[str]
     _sites_list: List[str]
+    _terr_list: List[str]
 
     def __init__(self, sett_file_path=""):
         setting_toml = toml.load(sett_file_path)
@@ -30,19 +32,25 @@ class Settings:
                 print(path_error % setting_toml["data"]["observations_pth"])
                 sys.exit()
 
-            self._acco_list = setting_toml["experiment"]["acco_list"]
             self._sites_list = setting_toml["data"]["sites_list"]
+            self._acco_list = setting_toml["experiment"]["acco_list"]
+            self._szn_list = setting_toml["experiment"]["szn_list"]
+            self._terr_list = setting_toml["experiment"]["terr_list"]
+
+            if len(self._terr_list) != len(self.sites_list):
+                print("ERROR: Terrains given in TOML file not equal to # of sites.")
+                sys.exit()
 
         except KeyError as e:
             print(f"ERROR: Settings {e} key error in TOML file.")
             sys.exit()
 
     @property
-    def model_pth(self) -> bool:
+    def model_pth(self) -> str:
         return self._model_pth
 
     @property
-    def obs_pth(self) -> bool:
+    def obs_pth(self) -> str:
         return self._obs_pth
 
     @property
@@ -56,6 +64,10 @@ class Settings:
     @property
     def szn_list(self) -> List[str]:
         return self._szn_list
+
+    @property
+    def terr_list(self) -> List[str]:
+        return self._terr_list
 
     def __repr__(self):
         return (

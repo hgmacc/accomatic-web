@@ -8,47 +8,24 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from netCDF4 import Dataset, date2num, num2date
 import xarray as xr
 import sklearn
+import os
 
 from tsp import readers
 
 
-def create_acco_nc(m_file, exp):
-    """
-    This function taked a gtpem netcf output and adds a group for Acco results.
-
-    :param m_file: NC file to add acco to
-    :return: Nothing. File is created.
-    """
-    acco = Dataset(m_file, mode="w", format="NETCDF4")
-
-    acco.createDimension("nchars", 255)
-
-    acco.createDimension("model")  # Model-Data pairing (for ranking)
-    acco.createVariable("model", chr, ("model", "nchars"))
-
-    acco.createDimension("sitename")  # Sitename
-    acco.createVariable("sitename", chr, ("sitename", "nchars"))
-
-    acco.createDimension("acco_name")  # Accordance measure name
-    acco.createVariable("acco_name", chr, ("acco_name", "nchars"))
-
-    acco.createDimension("time_id")  # Seasons, years etc.
-    acco.createVariable("time_id", int, ("time_id",))
-
-    acco.createVariable("stats", np.float32, ("model", "sitename", "acco_name"))
-
-    acco.comment = "Created from Accomatic"
-    acco.date_created = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-    acco.obs_source = f"Obs data source: {exp.obs_pth}"
-    acco.mod_source = f"Model data source: {exp.model_pth}"
+def create_acco_nc(exp) -> None:
+    acco = xr.Dataset(
+        str(exp.model_pth + "_acco_results.nc"), mode="w", format="NETCDF4"
+    )
+    # build stats
+    # populate file
 
     acco.close()
 
 
-def average_obs_site(odf):
+def average_obs_site(odf) -> pd.DataFrame:
     """
     Averaging GST output for each site.
     """
@@ -71,10 +48,11 @@ def average_obs_site(odf):
     # Cleaning up so df format is still (time, sitename) : soil_temperature
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["temp_site_date", "sitename"], axis=1)
+    odf = odf.rename(columns={"soil_temperature": "obs"})
     return odf
 
 
-def read_geotop(file_path, sitename=""):
+def read_geotop(file_path, sitename="") -> pd.DataFrame:
     # Get dataset
     m = xr.open_dataset(file_path, group="geotop")
 
