@@ -2,6 +2,7 @@ from re import M
 import sys
 import pandas as pd
 import os
+import itertools
 from typing import List, Dict
 
 import toml
@@ -55,11 +56,27 @@ class Experiment(Settings):
         }
 
     @results.setter
-    def results(self, df) -> None:
-        iterables = list(self.sites_list), list(self.szn_list)
-        index = pd.MultiIndex.from_product(iterables, names=["site", "season"])
-        df = pd.DataFrame(columns=self.acco_list, index=index)
-        self._results = df
+    def results(self, df):
+        a = list(itertools.product(self.sites_list, self.mod_names(), self.szn_list))
+        sites = [x[0] for x in a]
+        d = {
+            "site": sites,
+            "sim": [x[1] for x in a],
+            "szn": [x[2] for x in a],
+            "terr": [self.terr_dict()[x] for x in sites],
+            "data_avail": np.ones(len(a)) * -999,
+        }
+        for acco in self._acco_list:
+            d[acco] = np.ones(len(a)) * -999
+        self._results = pd.DataFrame(data=d)
+
+    def res_index(self, site, sim, szn):
+        index = self._results.loc[
+            (self._results["site"] == site)
+            & (self._results["sim"] == sim)
+            & (self._results["szn"] == szn)
+        ]
+        return index.index
 
     def mod(self, sitename) -> pd.DataFrame:
         return self._mod_dict[sitename].df
@@ -69,3 +86,6 @@ class Experiment(Settings):
 
     def terr(self) -> List:
         return list(zip(self._terr_list, self._sites_list))
+
+    def mod_names(self) -> pd.DataFrame:
+        return next(iter(self.mod_dict.values())).model_list

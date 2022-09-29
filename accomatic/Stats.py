@@ -51,46 +51,25 @@ time_code_months = {
 }
 
 
-def run_acco(o, m, exp, l=""):
-    for stat in exp.acco_list:
-        for sim in m.columns:
-            stats[stat](o, m[sim])
-            print(sim + " - " + stat + l)
-
-
-def run_szn(o, m, exp):
-    for szn in exp.szn_list:
-        run_acco(
-            o[o.index.month.isin(time_code_months[szn])],
-            m[m.index.month.isin(time_code_months[szn])],
-            exp,
-            " - " + szn,
-        )
-        # df.loc[('apple','banana','cherry'), :] = [4, 3]
-
-
-def run_terr(o, m, exp):
-    for site, terr in zip(exp.sites_list, exp.terr_list):
-        print(site, terr)
-        # run_szn(o, m, exp)
+def run(o, m, exp, site, szn, data_avail_val):
+    for sim in m.columns:
+        d = {"data_avail": data_avail_val}
+        for stat in exp.acco_list:
+            d[stat] = stats[stat](o, m[sim])
+        row = exp.res_index(site, sim, szn)
+        exp.results.loc[row, list(d.keys())] = list(d.values())
 
 
 def build(exp):
-    for site, terr in zip(exp.site_names, exp.terr_list):
+    for site in exp.sites_list:
         df = exp.obs(site).join(exp.mod(site)).dropna()
-        o, m = df.obs, df.drop(["obs"], axis=1)
-
-        run_szn(o, m, exp)
-
-        sys.exit()
-
-
-def builde(exp):
-    a = zip(list(exp.terr_list), list(exp.sites_list))
-    iterables = a, list(exp.szn_list)
-    index = pd.MultiIndex.from_product(iterables, names=["terr", "site", "season"])
-    df = pd.DataFrame(columns=exp.acco_list, index=index)
-    print(df.head(15))
-
-
-# run_acco(np.random.rand(3), np.random.rand(3))
+        o, m = df.obs.dropna(), df.drop(["obs"], axis=1)
+        for szn in exp.szn_list:
+            run(
+                o[o.index.month.isin(time_code_months[szn])],
+                m[m.index.month.isin(time_code_months[szn])],
+                exp,
+                site,
+                szn,
+                100,
+            )

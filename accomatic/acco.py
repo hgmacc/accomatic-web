@@ -38,5 +38,9 @@ def get_toml_pth(argv):
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
     e = Experiment(arg_input)
-    print(e.results.head())
-    # create_acco_nc(e)
+    build(e)
+    a = e.results.groupby(['szn', 'sim']).mean().drop(columns=['data_avail'])
+    a = a.groupby(['szn']).rank(method="max").astype(int)
+    print(e.results.groupby('site').RMSE.mean())
+
+

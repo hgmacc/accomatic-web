@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List
+from typing import List, Dict
 import re
 
 import toml
@@ -68,6 +68,9 @@ class Settings:
     @property
     def terr_list(self) -> List[str]:
         return self._terr_list
+
+    def terr_dict(self) -> Dict:
+        return dict(zip(self._sites_list, self._terr_list))
 
     def __repr__(self):
         return (
