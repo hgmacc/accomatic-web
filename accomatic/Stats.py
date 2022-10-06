@@ -12,15 +12,8 @@ def nse(obs, mod):
 
 # this could be super wrong
 def willmot_d(obs, mod):
-    return np.mean(
-        (
-            1
-            - (
-                ((obs - models[mod]) ** 2)
-                / (abs(models[mod] - np.mean(obs)) + abs(obs - np.mean(obs)) ** 2)
-            )
-        )
-    )
+    willmott = 1 - np.nansum(residuals**2) / np.nansum((np.abs(mod - np.nanmean(obs)) + np.abs(obs  - np.nanmean(obs)))**2)
+    return willmott
 
 
 def bias(obs, mod):
