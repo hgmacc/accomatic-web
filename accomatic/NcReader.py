@@ -95,7 +95,7 @@ def read_nc(file_path) -> pd.DataFrame:
     odf = odf.drop(["latitude", "longitude", "elevation", "depth"], axis=1).rename(
         {"platform_id": "sitename"}, axis=1
     )
-
+    
     # Fix index
     odf = odf.reset_index(level=(1), drop=True)
     odf.sitename = [line.decode("utf-8") for line in odf.sitename]

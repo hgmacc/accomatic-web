@@ -2,11 +2,11 @@ import sys
 import os
 import getopt
 import re
-from netCDF4 import Dataset
-from tsp.readers import read_gtpem
 
 from Experiment import *
 from Stats import *
+
+from Plotting import *
 
 
 def get_toml_pth(argv):
@@ -39,8 +39,11 @@ if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
     e = Experiment(arg_input)
     build(e)
-    a = e.results.groupby(['szn', 'sim']).mean().drop(columns=['data_avail'])
-    a = a.groupby(['szn']).rank(method="max").astype(int)
-    print(e.results.groupby('site').RMSE.mean())
+    xy_tmp(e)
+
+
+    # a = e.results.groupby(['szn', 'sim']).mean().drop(columns=['data_avail'])
+    # a = a.groupby(['szn']).rank(method="max").astype(int)
+    # print(e.results.groupby('site').RMSE.mean())
 
 
