@@ -10,6 +10,6 @@ lib/*
 pyvenv.cfg
 lib64
 notebooks/.ipynb_checkpoints/xr_data-checkpoint.ipynb
-accomatic/__pycache__/NcReader.cpython-37.pyc
-accomatic/__pycache__/Settings.cpython-37.pyc
 share/man/man1/ttx.1
+/accomatic-web/accomatic/__pycache__
+/accomatic-web/static
