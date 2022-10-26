@@ -13,3 +13,4 @@ notebooks/.ipynb_checkpoints/xr_data-checkpoint.ipynb
 share/man/man1/ttx.1
 /accomatic-web/accomatic/__pycache__
 /accomatic-web/static
+accomatic/plotter.ipynb

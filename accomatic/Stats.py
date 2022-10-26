@@ -43,6 +43,10 @@ time_code_months = {
     "THAW": [4, 5, 6, 7, 8, 9],
 }
 
+def bootstrap(o, m):
+    
+    pass
+
 
 def run(o, m, exp, site, szn, data_avail_val):
     for sim in m.columns:

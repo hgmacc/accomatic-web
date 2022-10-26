@@ -78,11 +78,17 @@ class Experiment(Settings):
         ]
         return index.index
 
-    def mod(self, sitename) -> pd.DataFrame:
-        return self._mod_dict[sitename].df
+    def mod(self, sitename="") -> pd.DataFrame:
+        if sitename == "":
+            return read_geotop(self._model_pth)
+        else:
+            return self._mod_dict[sitename].df
 
-    def obs(self, sitename) -> pd.DataFrame:
-        return self._obs_dict[sitename]
+    def obs(self, sitename="") -> pd.DataFrame:
+        if sitename == "":
+            return read_nc(self._obs_pth)
+        else:
+            return self._obs_dict[sitename]
 
     def terr(self) -> List:
         return list(zip(self._terr_list, self._sites_list))

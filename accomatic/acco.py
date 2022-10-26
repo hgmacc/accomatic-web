@@ -39,11 +39,13 @@ if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
     e = Experiment(arg_input)
     build(e)
-    xy_tmp(e)
+    a = e.results.groupby(['sim', 'szn']).mean().drop(columns=['data_avail'])
+    a = a.groupby(['szn']).rank(method="max").astype(int)
+    print(a.head(15))    
+    
+    #print(a.head(15))
 
-
-    # a = e.results.groupby(['szn', 'sim']).mean().drop(columns=['data_avail'])
     # a = a.groupby(['szn']).rank(method="max").astype(int)
     # print(e.results.groupby('site').RMSE.mean())
 
-
+ 
