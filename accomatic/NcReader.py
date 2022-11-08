@@ -77,11 +77,11 @@ def read_geotop(file_path, sitename="") -> pd.DataFrame:
 
     # Setting up time index
     mdf.time = pd.to_datetime(mdf["time"]).dt.date
+    
     mdf = mdf.set_index([mdf.time, mdf.sitename, mdf.simulation], append=True)
     mdf = mdf.drop(["time", "sitename", "simulation"], axis=1)
     mdf = mdf.reset_index(level=(0), drop=True)
-
-    # Breakup simulation data
+    
     mdf = mdf.unstack(level=2).soil_temperature
     return mdf
 

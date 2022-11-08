@@ -6,15 +6,41 @@ from matplotlib.dates import DateFormatter
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 
-def nse(obs, mod):
-    return 1 - (np.sum((mod - obs) ** 2) / np.sum((obs - np.mean(obs)) ** 2))
+def std_dev(mod_ensemble):
+    # From Luis (2020)
+    M = len(mod_ensemble.columns)
+    all_x_bars = []
+    for model in mod_ensemble:
+        all_x_bars.append(mod_ensemble[model].mean())
+    x_bars_mean = np.mean(all_x_bars)
+    return math.sqrt((((all_x_bars - x_bars_mean) ** 2).sum()) / (M - 1))
 
 
-# this could be super wrong
-def willmot_d(obs, mod):
-    willmott = 1 - np.nansum(residuals**2) / np.nansum((np.abs(mod - np.nanmean(obs)) + np.abs(obs  - np.nanmean(obs)))**2)
-    return willmott
+def variance(mod_ensemble):
+    # From Luis (2020)
+    M = len(mod_ensemble.columns)
+    all_x_bars = []
+    for model in mod_ensemble:
+        all_x_bars.append(mod_ensemble[model].mean())
+    x_bars_mean = np.mean(all_x_bars)
+    return (((all_x_bars - x_bars_mean) ** 2).sum()) / (M - 1)
 
+
+def willmott_refined_d(obs, mod):
+    # From Luis (2020)
+    o_mean = obs.mean()
+    a = sum(abs(mod - obs))
+    b = 2 * sum(abs(mod - o_mean))
+    if a <= b:
+        return 1 - (a / b)
+    else:
+        return (b / a) - 1
+
+def nse_one(prediction, observation):
+    o_mean = observation.mean()
+    a = sum(abs(observation - prediction))
+    b = sum(abs(observation - o_mean))
+    return 1 - (a / b)
 
 def bias(obs, mod):
     return np.mean(mod - obs)
@@ -27,9 +53,9 @@ def rmse(obs, mod):
 stats = {
     "RMSE": rmse,
     "R2": r2_score,
+    "E1": nse_one,
     "MAE": mean_absolute_error,
-    "NSE": nse,
-    "WILL": willmot_d,
+    "WILL": willmott_refined_d,
     "BIAS": bias,
 }
 
