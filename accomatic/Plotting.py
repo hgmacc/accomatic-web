@@ -1,13 +1,14 @@
-from NcReader import *
+import random
+
+import matplotlib.font_manager
 import matplotlib.image as image
 import matplotlib.pyplot as plt
-import matplotlib.font_manager
 import numpy as np
 import pandas as pd
-from scipy import stats
 import seaborn as sns
-import random
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from NcReader import *
+from scipy import stats
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]

@@ -1,9 +1,10 @@
 from operator import indexOf
-from NcReader import *
-import xarray as xr
+
 import seaborn as sns
+import xarray as xr
 from matplotlib.dates import DateFormatter
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from NcReader import *
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
 def std_dev(mod_ensemble):
@@ -36,11 +37,13 @@ def willmott_refined_d(obs, mod):
     else:
         return (b / a) - 1
 
+
 def nse_one(prediction, observation):
     o_mean = observation.mean()
     a = sum(abs(observation - prediction))
     b = sum(abs(observation - o_mean))
     return 1 - (a / b)
+
 
 def bias(obs, mod):
     return np.mean(mod - obs)
@@ -69,8 +72,9 @@ time_code_months = {
     "THAW": [4, 5, 6, 7, 8, 9],
 }
 
+
 def bootstrap(o, m):
-    
+
     pass
 
 

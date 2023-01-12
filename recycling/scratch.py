@@ -66,6 +66,8 @@ def bias(obs, mod):
 def rmse(obs, mod):
     return(mean_squared_error(obs, mod, squared=False))
 
+
+"""
 stats = {"RMSE" : rmse, 
         "R2" : mean_absolute_error, 
         "MAE" : r2_score,
@@ -85,6 +87,7 @@ for s in acco_list:
 stats_dict[mod+szn] = result
 
 
+"""
 def generate_stats(df, szn, acco_list):
     # Set up x and y data for analysis
     obs = df.soil_temperature
@@ -95,11 +98,14 @@ def generate_stats(df, szn, acco_list):
     for mod in models:
         stats_dict[mod+szn] = map(func, acco_list)
         
-        result []
+        result = []
 
         for s in acco_list:
-            result.append(float(stats[s](obs, mod))
+            result.append(float(stats[s](obs, mod)))
         
         stats_dict[mod+szn] = result
 
     return stats_dict
+
+
+

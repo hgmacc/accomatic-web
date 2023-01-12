@@ -1,7 +1,7 @@
 import os
-import sys
-from typing import List, Dict
 import re
+import sys
+from typing import Dict, List
 
 import toml
 

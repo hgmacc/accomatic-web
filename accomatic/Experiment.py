@@ -1,14 +1,14 @@
-from re import M
-import sys
-import pandas as pd
-import os
 import itertools
-from typing import List, Dict
+import os
+import sys
+from re import M
+from typing import Dict, List
 
+import pandas as pd
 import toml
-from Settings import *
-from NcReader import *
 from Ensemble import *
+from NcReader import *
+from Settings import *
 
 
 class Experiment(Settings):
