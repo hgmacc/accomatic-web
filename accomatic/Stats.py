@@ -4,7 +4,7 @@ import seaborn as sns
 import xarray as xr
 from matplotlib.dates import DateFormatter
 from NcReader import *
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
 def std_dev(mod_ensemble):
@@ -37,7 +37,10 @@ def willmott_refined_d(obs, mod):
     else:
         return (b / a) - 1
 
-
+def r_score(obs, mod):
+    return np.corrcoef(obs, mod)[0][1]
+    
+    
 def nse_one(prediction, observation):
     o_mean = observation.mean()
     a = sum(abs(observation - prediction))
@@ -55,7 +58,7 @@ def rmse(obs, mod):
 
 stats = {
     "RMSE": rmse,
-    "R2": r2_score,
+    "R": r_score,
     "E1": nse_one,
     "MAE": mean_absolute_error,
     "WILL": willmott_refined_d,

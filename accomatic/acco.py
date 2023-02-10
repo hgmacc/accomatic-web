@@ -8,7 +8,6 @@ from Experiment import *
 from NcReader import *
 from Stats import *
 
-
 def get_toml_pth(argv):
     arg_input = ""
     arg_help = "{0} -f <toml_file_path>".format(argv[0])
@@ -33,15 +32,20 @@ def get_toml_pth(argv):
     return arg_input
 
 
-# python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/OCT_NWT.toml
-
-# python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/SEP_KDI.toml
-
+# python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/NOV_NWT.toml
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
-    # e = Experiment(arg_input)
-    # build(e)
+
+    e = Experiment(arg_input)    
+    from Plotting import *
+
+    for i in e.sites_list:
+        print(i)
+        try: xy_site_plot(e, i)
+        except ValueError: 
+            print(f"No plot for {i}")
+            continue
 
     # a = e.results.groupby(['sim', 'szn']).mean().drop(columns=['data_avail'])
     # a = a.groupby(['szn']).rank(method="max").astype(int)

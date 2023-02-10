@@ -14,6 +14,7 @@ plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
 
+PLOT_PTH = '/home/hma000/accomatic-web/tests/plots/JAN31/'
 
 def heatmap_plot():
     df = pd.read_csv(
@@ -76,10 +77,10 @@ def heatmap_plot():
     sns.heatmap(spring, annot=True, ax=ax4, cmap="YlGnBu")
     sns.heatmap(fall, annot=True, ax=ax5, cmap="YlGnBu")
     plt.tight_layout()
-    plt.savefig("heatmap_plot.png", dpi=300)
+    plt.savefig(f'{PLOT_PTH}heatmap_plot.png', dpi=300)
 
 
-def allsites_timeseries_plot():
+def allsites_timeseries_plot(odf):
     pal = sns.dark_palette("#F3700E", 23)
     sns.set_context("poster")
     sns.despine()
@@ -89,21 +90,22 @@ def allsites_timeseries_plot():
 
     sns.lineplot(
         x="time",
-        y="soil_temperature",
+        y="obs",
         hue="sitename",
         data=odf,
         legend=False,
-        palette=pal,
+        #palette=pal,
     )
 
     # Set title and labels for axes
     ax.set(xlabel="Date", ylabel="GST (C)")
 
     # Define the date format
+    from matplotlib.dates import DateFormatter
     date_form = DateFormatter("%m-%Y")
     ax.xaxis.set_major_formatter(date_form)
 
-    plt.savefig("allsites_timeseries_plot.png", dpi=300, transparent=True)
+    plt.savefig(f'{PLOT_PTH}allsites_timeseries_plot.png', dpi=300, transparent=True)
 
 
 def terraintype_timeseries_plot():
@@ -132,20 +134,16 @@ def terraintype_timeseries_plot():
     ax.legend(["Clay", "Peat", "Sand", "Rock", "Gravel"], loc="best")
 
     # Define the date format
+    from matplotlib.dates import DateFormatter
     date_form = DateFormatter("%m-%Y")
     ax.xaxis.set_major_formatter(date_form)
 
     plt.savefig(
-        "terraintype_timeseries_plot.png", dpi=300, legend=False, transparent=True
+        f'{PLOT_PTH}terraintype_timeseries_plot.png', dpi=300, legend=False, transparent=True
     )
 
 
-def residual_timeseries_plot(exp):
-    # This function needs work
-    # But you're not supposed to be programming
-    obs = read_nc(exp.obs_pth)
-    mod = read_geotop(exp.model_pth)
-
+def residual_timeseries_plot(obs, mod):
     mod = mod.reset_index(drop=False)
     mod = mod.groupby("time").mean()
     obs = obs.reset_index(drop=False)
@@ -155,7 +153,7 @@ def residual_timeseries_plot(exp):
     mod = mod.dropna()
     mod = mod.resample("M").mean()
     plt.plot(mod)
-    plt.savefig("residual_timeseries_plot.png")
+    plt.savefig(f'{PLOT_PTH}residual_timeseries_plot.png')
 
 
 def std_dev(exp):
@@ -224,25 +222,23 @@ def streamline_plot(exp):
     ax.legend(df.columns)
 
     plt.ylabel("Modelled Temperature ˚C")
-    plt.savefig("streamline_plot.png")
+    plt.savefig(f'{PLOT_PTH}streamline_plot.png')
 
 
 def xy_plot(exp):
     df = exp.results
-    df = df.groupby(["sim", "site"]).mean()
+    df = df.groupby(["sim", "terr"]).mean()
 
-    xlims, ylims = (3, 15), (3, 15)
-    print(df.head())
     ax = sns.scatterplot(data=df, x="MAE", y="RMSE", hue="sim")
     ax.set(xlim=xlims, ylim=ylims)
     ax.plot(xlims, xlims, color="k")
     ax.set_aspect("equal", adjustable="box")
 
-    plt.savefig("xy_plot.png")
+    plt.savefig(f'{PLOT_PTH}xy_plot.png')
 
 
 def xy_stats_plot(exp):
-    df = exp.obs("KDI-E-ShrubT")
+    df = exp.obs()
     df = df.dropna().resample("W-MON").mean()
 
     df["Simulation (A)"] = df.obs + 3
@@ -321,4 +317,89 @@ def xy_stats_plot(exp):
     )
     plt.xlabel("Observations ˚C")
     plt.ylabel("Simulated Data ˚C")
-    plt.savefig("xy_stats_plot.png")
+    plt.savefig(f'{PLOT_PTH}xy_stats_plot.png')
+
+    
+def terr_timeseries_plot(exp, terr):
+    df = exp.obs()
+    ncol = len(df.index.get_level_values(1).unique())
+    terr_dict = exp.terr_dict()
+    terr_list = []
+    for i in df.index.get_level_values(1):
+        try: terr_list.append(terr_dict[i])
+        except KeyError:
+            terr_list.append(-1)
+    
+    df['terrain'] = terr_list
+    df = df[df.terrain == terr].drop(["terrain"], axis=1)
+
+    pal = sns.dark_palette("#F3700E", ncol)
+    sns.set_context("poster")
+    sns.despine()
+    sns.set_style({"font.family": "serif", "font.serif": "Times New Roman"})
+
+    fig, ax = plt.subplots(figsize=(30, 13.5))
+
+    sns.lineplot(
+        x="time",
+        y="obs",
+        hue="sitename",
+        data=df,
+        legend=False,
+    )
+
+    # Set title and labels for axes
+    ax.set(xlabel="Date", ylabel="GST (C)")
+
+    # Define the date format
+    from matplotlib.dates import DateFormatter
+    date_form = DateFormatter("%m-%Y")
+    ax.xaxis.set_major_formatter(date_form)
+    plt.title(f"Terrain No. {terr}")
+    plt.savefig(f'{PLOT_PTH}terrain_no{terr}_plot.png', dpi=300)#, transparent=True)
+
+
+def xy_site_plot(exp,site):
+    pth = '/home/hma000/accomatic-web/tests/plots/JAN31/xy_plots/'
+    odf = exp.obs(site)
+    mdf = exp.mod(site)
+    df = odf.join(mdf).dropna()
+    df = df.resample("W-MON").mean()
+    df['ens'] = df[['era5', 'jra55', 'merra2']].mean(axis=1)
+
+    
+    a, b = df.to_numpy().min(), df.to_numpy().max()
+    lims = [(a, a),(b,b)]
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=False, figsize=(10,13), squeeze=True)
+    
+    palette = ["#1CE1CE", "#008080", "#F3700E", "#F50B00", "#59473C"]
+
+    # XY SCATTER PLOT
+    plt.subplot(211)
+    ax1.set_aspect("equal")
+    plt.scatter(df.obs, df.jra55, s=5, c="#008080", label=f'JRA55 r={np.corrcoef(df.obs, df.jra55)[0][1]:.2f}')
+    plt.scatter(df.obs, df.era5, s=5, c="#1CE1CE", label=f'ERA5 r={np.corrcoef(df.obs, df.era5)[0][1]:.2f}')
+    plt.scatter(df.obs, df.merra2, s=5, c="#F3700E", label=f'MERRA2 r={np.corrcoef(df.obs, df.merra2)[0][1]:.2f}')
+    plt.scatter(df.obs, df.ens, s=5, c="#F50B00", label=f'ENSEMBLE r={np.corrcoef(df.obs, df.ens)[0][1]:.2f}')
+    plt.plot(lims, lims, 'k-', alpha=0.75, zorder=0)
+    plt.xlabel("Observed")
+    plt.title(f"{site}")
+    plt.ylabel("GEOtop")
+    plt.legend(fontsize='x-small')
+    plt.ylim((a,b))
+    plt.xlim((a,b))
+
+    # TIME SERIES 
+    plt.subplot(212)
+    for col, c in zip(df.columns, palette[:len(df.columns)]):
+        plt.plot(df[col], c=c, label=col)
+    #ax2.set_aspect(23)
+    plt.xlabel("Time")
+    plt.ylabel("Temperature ˚C")
+    plt.legend(fontsize='x-small')
+    plt.xticks(rotation=70)
+    fig.savefig(f'{pth}xy_{site}_plot.png')
+    fig.clf()
+    plt.close(fig)
+    sys.exit()

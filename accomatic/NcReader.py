@@ -44,8 +44,8 @@ def read_geotop(file_path, sitename="") -> pd.DataFrame:
 
     # Fix simulation colummn
     mdf.simulation = [
-        line[-12:-8] for line in mdf.simulation
-    ]  # (...)led_merr_3e66cca -> merr
+        line.split('_')[2] for line in mdf.simulation
+    ]  # (...)led_merr_3e66cca -> merra2
 
     # Setting up time index
     mdf.time = pd.to_datetime(mdf["time"]).dt.date
@@ -62,9 +62,10 @@ def average_obs_site(odf) -> pd.DataFrame:
     """
     Averaging GST output for each site.
     """
-
     # KDI-E-Org_02 -> KDI-E-Org
-    odf["sitename"] = odf.index.get_level_values("sitename").str[:-3]
+    #odf["sitename"] = odf.index.get_level_values("sitename").str[:-3]
+    odf["sitename"] = odf.index.get_level_values("sitename").str[:]
+    odf.sitename = [line.split('_')[0] for line in odf.sitename]  
 
     # Drop sitename index so we can use new 'sitename' col to avg over non-unique sitenames
     odf = odf.reset_index(level=(1), drop=True)
@@ -90,18 +91,17 @@ def read_nc(file_path) -> pd.DataFrame:
     # Get dataset
     o = xr.open_dataset(file_path)
     odf = o.to_dataframe()
-
     # Clean up columns
     odf = odf.drop(["latitude", "longitude", "elevation", "depth"], axis=1).rename(
         {"platform_id": "sitename"}, axis=1
     )
-
     # Fix index
     odf = odf.reset_index(level=(1), drop=True)
     odf.sitename = [line.decode("utf-8") for line in odf.sitename]
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["sitename"], axis=1)
-
+    
     # Average over sites
     odf = average_obs_site(odf)
+    odf = odf.dropna()
     return odf

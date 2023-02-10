@@ -74,7 +74,7 @@ class Settings:
 
     def __repr__(self):
         return (
-            "Experiment setup: \n"
+            "\nExperiment setup: \n"
             + f" Model Path:\t\t{self.model_pth}\n"
             + f" Observations Path:\t{self.obs_pth}\n"
             + f" Acco Measures:\t\t{self.acco_list}"
