@@ -1,5 +1,7 @@
 title = "Accomatic Control File"
 
+# ALL SITES
+
 [data]
 model_pth = '/home/hma000/accomatic-web/tests/test_data/nc/ykl_07feb.nc'
 observations_pth = '/home/hma000/storage/yk_kdi_ldg/ykl_gst_obs.nc'

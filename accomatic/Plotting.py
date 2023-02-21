@@ -367,7 +367,6 @@ def xy_site_plot(exp,site):
     df = df.resample("W-MON").mean()
     df['ens'] = df[['era5', 'jra55', 'merra2']].mean(axis=1)
 
-    
     a, b = df.to_numpy().min(), df.to_numpy().max()
     lims = [(a, a),(b,b)]
 
@@ -379,7 +378,7 @@ def xy_site_plot(exp,site):
     plt.subplot(211)
     ax1.set_aspect("equal")
     plt.scatter(df.obs, df.jra55, s=5, c="#008080", label=f'JRA55 r={np.corrcoef(df.obs, df.jra55)[0][1]:.2f}')
-    plt.scatter(df.obs, df.era5, s=5, c="#1CE1CE", label=f'ERA5 r={np.corrcoef(df.obs, df.era5)[0][1]:.2f}')
+    plt.scatter(df.obs, df.era5, s=5, c="#F50B00", label=f'ERA5 r={np.corrcoef(df.obs, df.era5)[0][1]:.2f}')
     plt.scatter(df.obs, df.merra2, s=5, c="#F3700E", label=f'MERRA2 r={np.corrcoef(df.obs, df.merra2)[0][1]:.2f}')
     plt.scatter(df.obs, df.ens, s=5, c="#F50B00", label=f'ENSEMBLE r={np.corrcoef(df.obs, df.ens)[0][1]:.2f}')
     plt.plot(lims, lims, 'k-', alpha=0.75, zorder=0)
@@ -402,4 +401,3 @@ def xy_site_plot(exp,site):
     fig.savefig(f'{pth}xy_{site}_plot.png')
     fig.clf()
     plt.close(fig)
-    sys.exit()

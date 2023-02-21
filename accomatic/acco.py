@@ -32,20 +32,16 @@ def get_toml_pth(argv):
     return arg_input
 
 
-# python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/NOV_NWT.toml
+# python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/OCT_NWT.toml
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
 
-    e = Experiment(arg_input)    
-    from Plotting import *
+    e = Experiment(arg_input)   
+    e.build() 
+    e.results.groupby(['sim', 'szn']).mean().drop(columns=['data_avail'])
 
-    for i in e.sites_list:
-        print(i)
-        try: xy_site_plot(e, i)
-        except ValueError: 
-            print(f"No plot for {i}")
-            continue
+    # xy_site_plot(e, "KDI-E-ShrubT")
 
     # a = e.results.groupby(['sim', 'szn']).mean().drop(columns=['data_avail'])
     # a = a.groupby(['szn']).rank(method="max").astype(int)
