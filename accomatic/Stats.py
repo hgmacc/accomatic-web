@@ -3,7 +3,7 @@ from operator import indexOf
 import seaborn as sns
 import xarray as xr
 from matplotlib.dates import DateFormatter
-from NcReader import *
+from accomatic.NcReader import *
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
@@ -56,7 +56,7 @@ def rmse(obs, mod):
     return mean_squared_error(obs, mod, squared=False)
 
 
-stats = {
+acco_measures = {
     "RMSE": rmse,
     "R": r_score,
     "E1": nse_one,

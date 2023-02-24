@@ -37,9 +37,9 @@ def get_toml_pth(argv):
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
 
-    e = Experiment(arg_input)   
-    e.build() 
-    e.results.groupby(['sim', 'szn']).mean().drop(columns=['data_avail'])
+    e = Experiment(arg_input)
+    build(e) 
+    #e.results.groupby(['sim', 'szn']).mean().drop(columns=['data_avail'])
 
     # xy_site_plot(e, "KDI-E-ShrubT")
 

@@ -5,10 +5,9 @@ from re import M
 from typing import Dict, List
 
 import pandas as pd
-import toml
-from Ensemble import *
-from NcReader import *
-from Settings import *
+from accomatic.Ensemble import *
+from accomatic.NcReader import *
+from accomatic.Settings import *
 
 
 class Experiment(Settings):

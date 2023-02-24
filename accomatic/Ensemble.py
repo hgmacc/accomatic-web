@@ -1,7 +1,7 @@
 from typing import List
 
 import pandas as pd
-from NcReader import *
+from accomatic.NcReader import *
 
 
 class Ensemble:

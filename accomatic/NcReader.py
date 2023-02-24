@@ -42,6 +42,7 @@ def read_geotop(file_path, sitename="") -> pd.DataFrame:
     mdf = mdf.reset_index(level=("time", "soil_depth"), drop=True)
     mdf = mdf.reset_index(drop=False)
 
+    
     # Fix simulation colummn
     mdf.simulation = [
         line.split('_')[2] for line in mdf.simulation
