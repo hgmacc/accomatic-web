@@ -1,0 +1,37 @@
+title = "Accomatic Control File"
+
+# ALL SITES
+
+[data]
+model_pth = '/home/hma000/accomatic-web/tests/test_data/nc/ykl_07mar_SCFv3.1.nc'
+observations_pth = '/home/hma000/accomatic-web/tests/test_data/nc/ykl_gst_obs.nc'
+
+sites_list = ['KDI-E-Org2', 'KDI-E-Trees', 'KDI-E-Tslp', 'KDI-E-Ttop', 
+                'KDI-E-Wet', 'KDI-W-Org1', 'KDI-W-Org2', 'KDI-W-ShrubM1', 
+                'KDI-W-ShrubM2', 'KDI-W-ShrubT', 'KDI-W-Snowdrift', 'KDI-W-Tbot', 
+                'KDI-W-Trees', 'KDI-W-Tslp', 'KDI-W-Wet1', 'KDI-W-Wet2', 
+                'NGO-DD-1004', 'NGO-DD-1005', 'NGO-DD-1009', 'NGO-DD-1010', 
+                'NGO-DD-1011', 'NGO-DD-1012', 'NGO-DD-2004', 'NGO-DD-2005', 
+                'NGO-DD-2006', 'NGO-DD-2007', 'NGO-DD-2008', 'NGO-DD-2009', 
+                'NGO-DD-2011', 'NGO-DD-2012', 'NGO-DD-2013', 'NGO-DD-2014', 
+                'NGO-DD-2015', 'NGO-DD-2016', 'NGO-DD-2018', 'NGO-DD-2019', 
+                'NGO-DD-2020', 'NGO-DD-2023', 'NGO-DD-2026', 'NGO-DD-2029', 
+                'NGO-DD-2030', 'NGO-DD-2032', 'NGO-DD-2033', 'NGO-DD-2034', 
+                'NGO-DD-2035', 'NGO-GU-1014', 'NGO-RC-162', 'NGO-RC-163', 
+                'NGO-RC-164', 'NGO-RC-165', 'NGO-RC-166', 'NGO-RC-167', 
+                'NGO-RC-168', 'NGO-RC-169', 'NGO-RC-170', 'NGO-RC-171', 
+                'NGO-RC-172', 'YK16-SO01', 'YK16-SO03', 'YK16-SO04', 
+                'YK16-SO06', 'YK16-SO07', 'YK16-SO08', 'YK16-SO09', 
+                'YK16-SO10', 'YK16-SO11', 'YK16-SO12', 'YK16-SO13']
+
+
+[experiment]
+acco_list = ['RMSE', 'WILL', 'E1', 'BIAS', 'R', 'MAE']  # List of acco measures
+szn_list = ['ALL', 'DJF','MAM','JJA','SON']
+
+terr_list = ['4', '4', '3', '3', '4', '4', '4', '2', '4', '4', '3', '3',
+             '3', '5', '4', '4', '1', '1', '1', '2', '3', '2', '1', '6', 
+             '6', '1', '2', '5', '1', '1', '6', '1', '2', '3', '3', '1', 
+             '5', '6', '5', '1', '1', '1', '6', '3', '1', '5', '2', '2', 
+             '1', '1', '2', '2', '2', '2', '1', '1', '3', '1', '4', '1', 
+             '5', '2', '3', '1', '5', '5', '1', '5']

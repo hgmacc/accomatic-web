@@ -1,0 +1,41 @@
+# GTPEM config
+
+[jobdata]
+title = "06mar_SCF3"
+date = 2023-01-18T12:00:00-04:00
+models = ['geotop']
+skipchecks = "False"
+
+# List of Globsim-style files
+forcing = ["/project/s/stgruber/hma000/talikForcing/ykl/scaled_merra2_1h_scf1.0.nc", 
+            "/project/s/stgruber/hma000/talikForcing/ykl/scaled_era5_1h_scf1.0.nc", 
+            "/project/s/stgruber/hma000/talikForcing/ykl/scaled_jra55_1h_scf1.0.nc"]
+
+workingdirectory = "/scratch/s/stgruber/hma000/gtpem_runs/ykl"
+backend = "NiagaraBackend"
+
+
+[models.geotop]
+binary = "/project/s/stgruber/hma000/gtpem-dev/binFiles/geotop/bin/geotop2"
+template = "/scratch/s/stgruber/hma000/gtpem_runs/ykl/parameter/generic"
+
+[backend.NiagaraBackend]
+nodecount = 1
+jobcount = 1
+duration = "06:00:00"
+account = "compute"
+
+[parameters.geotop]
+twi = [['selectivegeotop', '/scratch/s/stgruber/hma000/gtpem_runs/ykl/parameter/options/TWI/TWI_params.csv']]
+#veg = [['selectivegeotop', '/scratch/s/stgruber/hma000/gtpem_runs/ykl/parameter/options/VEG/VEG_params.csv']]
+#mat = [['selectivegeotop', '/scratch/s/stgruber/hma000/gtpem_runs/ykl/parameter/options/MAT/MAT_params.csv']]
+scf = [['selectivegeotop', '/scratch/s/stgruber/hma000/gtpem_runs/ykl/parameter/options/SCF/SCF_params.csv']]
+iso = [['selectivegeotop', '/scratch/s/stgruber/hma000/gtpem_runs/ykl/parameter/options/ISO/ISO_params.csv']]
+
+[aggregation]
+tar = false
+soil_temperature = true
+liquid_water = false
+ice_content = false
+#snow = true
+subsidence = false
