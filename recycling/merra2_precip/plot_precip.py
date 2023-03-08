@@ -1,7 +1,7 @@
 import pandas as pd
 import glob
 from read_data import *
-
+import sys
 sites_pth = '/home/hma000/storage/merra_precip_test/ykl_csvs/sites.csv'
 sites = get_sites(sites_pth)
 site_dict = dict(zip(sites.station_number, sites.station_name))
@@ -12,6 +12,7 @@ data = {'Downloaded': glob.glob('/home/hma000/storage/merra_precip_test/ykl_csvs
 merra_data = {'Downloaded': '/home/hma000/storage/merra_precip_test/ykl_csvs/merra2_downloaded.csv',
         'Interpolated': '/home/hma000/storage/merra_precip_test/ykl_csvs/merra2_interpolated.csv', 
         'Scaled': '/home/hma000/storage/merra_precip_test/ykl_csvs/merra2_scaled.csv'}
+
 
 
 def get_colour(f):
@@ -168,4 +169,41 @@ def swap_merra_precip_plot():
     era.close()
     jra.close()
     new_mer.close()
+
+
     
+def temp_merra_precip_plot():
+    """
+    Plots precipitation data from multiple differend scaled globsim files/ 
+    """
+
+    mer_1 = xr.open_mfdataset('/home/hma000/storage/merra_precip_test/ykl_ncs/ts_merra2_scaled.nc', engine="netcdf4")
+    mer_2 = xr.open_mfdataset('/home/hma000/storage/merra_precip_test/yk_merra_bandaid/MERRA2_fixed.nc', engine="netcdf4")
+    mer_3 = xr.open_mfdataset('/home/hma000/storage/merra_precip_test/temp/scaled_merra2_1h_scf3.0.nc', engine="netcdf4")
+    for i in range(14):
+        # Daily Avg -> .groupby('time.day').mean()
+        fig, ax = plt.subplots(figsize=(10,6))
+        
+        ax.plot(mer_1.AIRT_pl.isel(station=i).groupby('time.day').mean(), color="purple",  label='mer_1', alpha=0.5)
+        ax.plot(mer_2.AIRT_pl.isel(station=i).groupby('time.day').mean(), color="blue",  label='mer_2', alpha=0.5)
+        ax.plot(mer_3.AIRT_pl.isel(station=i).groupby('time.day').mean(), color="red",  label='mer_3', alpha=0.5, linestyle='dotted')
+        ax.set_ylabel('temperature')
+        
+        ax2=ax.twinx()
+        ax2.plot(mer_1.PREC_sur.isel(station=i).groupby('time.day').mean(), color="purple",  label='mer_1', alpha=0.5)
+        ax2.plot(mer_2.PREC_sur.isel(station=i).groupby('time.day').mean(), color="blue",  label='mer_2', alpha=0.5)
+        ax2.plot(mer_3.PREC_sur.isel(station=i).groupby('time.day').mean(), color="red",  label='mer_3', alpha=0.5, linestyle='dotted')
+
+        ax2.set_ylabel("precip")
+        
+        plt.legend()
+        plt.savefig(f'accomatic/merra2_precip/plots/06MAR/temp/merra_{i+1}.png')
+        plt.clf()
+        plt.close()
+        
+    mer_1.close()
+    mer_2.close()
+    mer_3.close()
+
+temp_merra_precip_plot()
+

@@ -55,7 +55,7 @@ def get_nc_point_data(pth, site_dict):
     df = pd.concat(df_list, axis=1).resample("W-MON").mean()
     return df
 
-def swap_precip():    
+def swap_all_merr_values():    
     mer = xr.open_mfdataset('/home/hma000/storage/yk_kdi_ldg/scaled/ykl/MERRA2.nc', engine="netcdf4")
     mer_fixed = xr.open_mfdataset('/home/hma000/storage/merra_precip_test/yk_merra_bandaid/scaled/scaled_merra2_1h_scf1.0.nc', engine="netcdf4")
     for var in ['PRESS_pl', 'AIRT_pl', 'AIRT_sur', 'PREC_sur', 'RH_sur', 'WSPD_sur', 'WDIR_sur', 'SW_sur', 'LW_sur', 'SH_sur']:
@@ -67,7 +67,21 @@ def swap_precip():
         print(f"{var} has been processed.")
     mer.to_netcdf(path='/home/hma000/storage/merra_precip_test/yk_merra_bandaid/MERRA2_fixed.nc', mode='w')
 
-    
+def swap_only_merr_precip_values():    
+    mer_fixed = xr.open_mfdataset('/home/hma000/storage/merra_precip_test/yk_merra_bandaid/MERRA2_fixed.nc', engine="netcdf4")
+    mer = xr.open_mfdataset('/home/hma000/storage/merra_precip_test/ykl_ncs/ts_merra2_scaled.nc', engine="netcdf4")
+
+    for var in ['PREC_sur']:
+        n = mer_fixed[var][:].values
+        n = np.repeat([n], 14, axis=0).T[0,:,:]
+        #print(mer[var][:,:14].values.shape)
+        #print(n.shape); sys.exit()
+        mer[var][:,:14] = n
+        print(f"{var} has been processed.")
+    mer.to_netcdf(path='/home/hma000/storage/merra_precip_test/temp/scaled_merra2_1h_scf3.0.nc', mode='w')
+
+swap_only_merr_precip_values()
+
 def get_mer_latlon(mdf, l):
     # Get lat lon indeces for merra data where l = [lat, lon]
     lat = mdf.iloc[(mdf['latitude']-l[0]).abs().argsort()[:1]].lat.values[0]

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import xlrd
 from Experiment import *
 from Stats import *
+from Plotting import *
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
@@ -48,7 +49,7 @@ def average_obs_site(odf) -> pd.DataFrame:
     return odf
 
 
-def read_nc(file_path) -> pd.DataFrame:
+def read_nc(file_path, avg=True) -> pd.DataFrame:
     # Get dataset
     o = xr.open_dataset(file_path)
     odf = o.to_dataframe()
@@ -65,7 +66,8 @@ def read_nc(file_path) -> pd.DataFrame:
     odf = odf.drop(["sitename"], axis=1)
 
     # Average over sites
-    odf = average_obs_site(odf)
+    if avg: odf = average_obs_site(odf)
+    
     return odf
 
 
@@ -111,6 +113,83 @@ def get_data():
     df = df.sort_index().dropna()
     return df
 
+
+def missing_days_cluster():
+    
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(10,10), squeeze=True)
+    fig.suptitle('Missing data plot for each NWT supersite cluster.')
+
+    df = read_nc('/home/hma000/accomatic-web/tests/test_data/nc/ykl_obs.nc', avg=False)
+    df = df[df.index.get_level_values("sitename").str.contains("AIR")==False]
+    df = df[df.index.get_level_values("sitename").str.contains("_")==True]
+    # Drop rows that don't contain an '_'
+
+    #df = df.reset_index(level=['sitename'])
+    df = df.rename_axis(index=('time', None))
+    df = df.soil_temperature.unstack(level=1)
+    times = pd.date_range(start=pd.to_datetime("2015-07-04"), end=pd.to_datetime("2021-08-18"), freq="1D").date
+    df = df.reindex(times)
+    
+    # YK
+    plt.subplot(int('311'))
+    yk_col = [col for col in df.columns if 'YK' in col]
+    a = ((len(df[yk_col].columns) - df[yk_col].isnull().sum(axis=1)) / len(df[yk_col].columns) * 100 )
+    plt.plot(a, c="#008080")
+    plt.title("Yellowknife")   
+        
+    # KDI
+    plt.subplot(312)
+    kdi_col = [col for col in df.columns if 'KDI' in col]
+    a = ((len(df[kdi_col].columns) - df[kdi_col].isnull().sum(axis=1)) / len(df[kdi_col].columns) * 100 )
+    plt.plot(a, c="#F50B00")
+    plt.ylabel("Percentage of Available Data")
+    plt.title("KDI")    
+    
+    # LDG
+    plt.subplot(313)
+    ldg_col = [col for col in df.columns if 'NGO' in col]
+    a = ((len(df[ldg_col].columns) - df[ldg_col].isnull().sum(axis=1)) / len(df[ldg_col].columns) * 100 )
+    plt.plot(a, c="#F3700E")
+    plt.title("Lac De Gras")    
+    
+    plt.savefig('/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/missing_data/missing_barplot_reindexed.png')
+
+
+def missing_days_terr(exp):
+    
+
+    num_plots = len(set(exp.terr_list))
+
+    fig, axs = plt.subplots(num_plots, 1, sharex=True, figsize=(10, num_plots+10))#, squeeze=True)
+    fig.suptitle('Missing data plot for each terrain type.')
+
+    df = read_nc('/home/hma000/accomatic-web/tests/test_data/nc/ykl_obs.nc', avg=True)
+    
+    # Pull out only dat
+    terr_list = []
+    for i in df.index.get_level_values(1):
+        try: terr_list.append(exp.terr_dict()[i])
+        except KeyError:
+            terr_list.append(-1)
+    
+    df['terrain'] = terr_list
+    palette = get_color_gradient("#b3e0dc", "#036c5f", num_plots)
+    for i in range(1,num_plots+1):
+        a = df[df.terrain == str(i)].drop(["terrain"], axis=1)
+        a = a.rename_axis(index=('time', None))
+        a = a.obs.unstack(level=1)
+        times = pd.date_range(start=pd.to_datetime("2015-07-04"), end=pd.to_datetime("2021-08-18"), freq="1D").date
+        a = a.reindex(times)
+        
+        plt.title(f"Terrain No. {i}")   
+        plt.subplot(int(f'{num_plots}1{i}'))
+        a = ((len(a.columns) - a.isnull().sum(axis=1)) / len(a.columns) * 100 )
+        plt.plot(a, c=palette[int(i)-1], label=f"Terrain No. {i}")
+    plt.savefig('/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/missing_data/missing_terr_plot_notsqueezed.png')
+
+
+e = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml')
+missing_days_terr(e)
 
 plot = False
 if plot:

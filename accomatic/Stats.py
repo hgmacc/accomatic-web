@@ -85,7 +85,7 @@ def run(o, m, exp, site, szn, data_avail_val):
     for sim in m.columns:
         d = {"data_avail": data_avail_val}
         for stat in exp.acco_list:
-            d[stat] = stats[stat](o, m[sim])
+            d[stat] = acco_measures[stat](o, m[sim])
         row = exp.res_index(site, sim, szn)
         exp.results.loc[row, list(d.keys())] = list(d.values())
 

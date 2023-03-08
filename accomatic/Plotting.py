@@ -378,7 +378,7 @@ def terr_timeseries_plot(exp, terr):
 
 
 def xy_site_plot(exp,site):
-    pth = '/home/hma000/accomatic-web/tests/plots/JAN31/xy_plots/'
+    pth = '/home/hma000/accomatic-web/tests/plots/xy_plots/'
     odf = exp.obs(site)
     mdf = exp.mod(site)
     df = odf.join(mdf).dropna()
@@ -390,15 +390,15 @@ def xy_site_plot(exp,site):
 
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex=False, figsize=(10,13), squeeze=True)
     
-    palette = ["#1CE1CE", "#008080", "#F3700E", "#F50B00", "#59473C"]
+    palette = ["#008080", "#F50B00", "#F3700E", "#F50B00"]
 
     # XY SCATTER PLOT
     plt.subplot(211)
     ax1.set_aspect("equal")
-    plt.scatter(df.obs, df.jra55, s=5, c="#008080", label=f'JRA55 r={np.corrcoef(df.obs, df.jra55)[0][1]:.2f}')
-    plt.scatter(df.obs, df.era5, s=5, c="#F50B00", label=f'ERA5 r={np.corrcoef(df.obs, df.era5)[0][1]:.2f}')
-    plt.scatter(df.obs, df.merra2, s=5, c="#F3700E", label=f'MERRA2 r={np.corrcoef(df.obs, df.merra2)[0][1]:.2f}')
-    plt.scatter(df.obs, df.ens, s=5, c="#F50B00", label=f'ENSEMBLE r={np.corrcoef(df.obs, df.ens)[0][1]:.2f}')
+    plt.scatter(df.obs, df.jra55, s=5, c=palette[0], label=f'JRA55 r={np.corrcoef(df.obs, df.jra55)[0][1]:.2f}')
+    plt.scatter(df.obs, df.era5, s=5, c=palette[1], label=f'ERA5 r={np.corrcoef(df.obs, df.era5)[0][1]:.2f}')
+    plt.scatter(df.obs, df.merra2, s=5, c=palette[2], label=f'MERRA2 r={np.corrcoef(df.obs, df.merra2)[0][1]:.2f}')
+    plt.scatter(df.obs, df.ens, s=5, c=palette[3], label=f'ENSEMBLE r={np.corrcoef(df.obs, df.ens)[0][1]:.2f}')
     plt.plot(lims, lims, 'k-', alpha=0.75, zorder=0)
     plt.xlabel("Observed")
     plt.title(f"{site}")
@@ -409,8 +409,10 @@ def xy_site_plot(exp,site):
 
     # TIME SERIES 
     plt.subplot(212)
-    for col, c in zip(df.columns, palette[:len(df.columns)]):
+    plt.plot(df['obs'], c='k', label='obs',linewidth=2)
+    for col, c in zip(df.drop(["obs"], axis=1).columns, palette):
         plt.plot(df[col], c=c, label=col)
+        
     #ax2.set_aspect(23)
     plt.xlabel("Time")
     plt.ylabel("Temperature ˚C")
@@ -419,3 +421,4 @@ def xy_site_plot(exp,site):
     fig.savefig(f'{pth}xy_{site}_plot.png')
     fig.clf()
     plt.close(fig)
+

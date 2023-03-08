@@ -23,7 +23,11 @@ plt.rcParams["font.size"] = "16"
 
 def get_data(site) -> pd.DataFrame:
     e = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/NOV_NWT.toml')
-    df = e.mod(site).join(e.obs(site)).dropna()
+    if site == 'all sites':
+        df = e.mod().join(e.obs()).dropna()
+        df = df.groupby('time').mean()
+    else:
+        df = e.mod(site).join(e.obs(site)).dropna()
     df['ens'] = df[['era5','merra2','jra55']].mean(axis=1)
     return df
 
@@ -67,8 +71,6 @@ def plot_ts_missing_days(df, site) -> None:
 # As chunk_size increases, how do bootstrap results change?
 # As reps increases, how do bootstrap results change?
 
-# Write bootstrap function :) 
-
 def boot(df, sim, acco, boot_size=1000, consecutive_days_slice=10):
     nrows = range(df.shape[0])
     res = []
@@ -80,37 +82,123 @@ def boot(df, sim, acco, boot_size=1000, consecutive_days_slice=10):
 
     res = np.array(sorted(res)[50:950])
     res = res[(res<10) & (res>-10)]
-
+    print('One done')
     return res
 
+def simple_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, reps=1):
+    res = []
+    df = df[['obs', sim]]
+    for i in range(boot_size):
+        a = remove_days(df, chunk_size=chunk_size, reps=reps, reindex=False)
+        res.append(acco_measures[acco](a.obs, a[sim]))
+    res = np.array(sorted(res)[50:950])
+    res = res[(res<10) & (res>-10)]
+    return res
 
-def boot_plot(data, site, stat, labels):
+def boot_boxplot(data, site, stat, labels):
     fig, ax = plt.subplots(figsize=(len(data)+2, 10))
-    bp = ax.boxplot(data, whis=1.5, patch_artist=True)
-    ax.set_title(f"{stat} at {site}.")
+    bp = ax.boxplot(data, whis=1, 
+                    showbox=False, 
+                    showfliers=False, 
+                    patch_artist=True, 
+                    meanline=True, 
+                    medianprops=dict(linewidth=0, linestyle=None), 
+                    meanprops= dict(linestyle='-', linewidth=2.5, color='black'), 
+                    boxprops=dict(linewidth=1),
+                    showmeans=True)
+    """
     for patch, color in zip(bp['boxes'], get_color_gradient("#036c5f", "#b3e0dc", len(data))):
         patch.set_facecolor(color)
+    
     for median in bp['medians']:
         median.set_color('#59473C')
+    """    
+    ax.set_title(f"{OPT}: {stat} at {site}.")
     ax.set_xticklabels(labels)
-    ax.set_xlabel(TITLE)
-    plt.savefig(f'/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/bs_{OPT}_{stat}_{site}_rep.png')
+    ax.set_xlabel(TITLES[OPT])
+    ax.set_ylim(bottom=1)
+    plt.savefig(f'/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/box_{OPT}_{stat}_{site}_rep.png')
     plt.clf()
-    
 
-def bs_threshold_exp(site, stat):
-    df = get_data(site)[['ens', 'obs']]
-    rep_list = [0, 25, 50, 75, 100]
-    if OPT == 'chunk':
-        data = [boot(remove_days(df, chunk_size=i, reps=1, reindex=False), 'ens', stat) for i in rep_list]
-    if OPT == 'reps':
-        data = [boot(remove_days(df, chunk_size=1, reps=i, reindex=False), 'ens', stat) for i in rep_list]        
-    boot_plot(data, site, stat, rep_list)
-    
-#OPT = 'chunk' # 'reps' or 'chunk'
-#TITLE = 'n consective days removed once.' 
-OPT = 'reps' 
-TITLE = 'one single day removed n times'
-#bs_threshold_exp(site='NGO-DD-2035', stat='MAE')#, title='Consecutive number of days removed ONCE.')
+def boot_vioplot(data, site, stat, sim, label):
+    fig, ax = plt.subplots(figsize=(len(data)+2, 10))
+    bp = ax.violinplot(data, showmeans=True)
 
-plot_ts_missing_days(remove_days(get_data('NGO-DD-2035')[['ens', 'obs']], chunk_size=100, reps=1, reindex=True), 'NGO-DD-2035')
+    for patch, color in zip(bp['bodies'], get_color_gradient("#b3e0dc", "#036c5f", len(label))):
+        patch.set_facecolor(color) 
+        patch.set_alpha(1.0)
+        
+    for partname in ('cbars','cmins','cmaxes','cmeans'):
+        vp = bp[partname]
+        vp.set_edgecolor('#000000')
+        vp.set_linewidth(1)
+     
+    # This is the most annoying line of code I've ever written. 
+    ax.set_xticks([i for i in range(0, len(label), 2)], labels=[str(i) for i in label[::2]])
+    
+    ax.set_title(f"{sim} at {site}")
+    ax.set_xlabel(TITLES[OPT])
+    ax.set_ylabel(stat)
+    if stat != 'R': ax.set_ylim(bottom=0, top=1.5)
+    plt.savefig(f'/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/vio_{OPT}_{stat}_{site}_rep.png')
+    plt.clf()
+
+def bs_threshold_exp(stat, site='all sites', sim='ens'): 
+    df = get_data(site)[[sim, 'obs']]    
+    rep_list = [i for i in range(0, 1000, 50)]
+    if OPT == 'c':
+        data = [simple_boot(df, sim, stat, chunk_size=i) for i in rep_list]
+    if OPT == 'r':
+        data = [simple_boot(df, sim, stat, reps=i) for i in rep_list]
+    boot_vioplot(data, site, stat, sim, rep_list)
+    
+def boot_terrain(data, site, stat, sim, label, terr):    
+    sites = exp.sites_list
+    terr = exp.terr_list
+
+    terr_dict = {sites[i]: terr[i] for i in range(len(sites))}
+    num_plots = len(set(terr))
+
+    fig, axs = plt.subplots(num_plots, 1, sharex=True, figsize=(10, num_plots+10))#, squeeze=True)
+    fig.suptitle('Missing data plot for each terrain type.')
+
+    df = read_nc('/home/hma000/accomatic-web/tests/test_data/nc/ykl_obs.nc', avg=True)
+    
+    # Pull out only dat
+    terr_list = []
+    for i in df.index.get_level_values(1):
+        try: terr_list.append(terr_dict[i])
+        except KeyError:
+            terr_list.append(-1)
+    
+    df['terrain'] = terr_list
+
+    a = df[df.terrain == str(i)].drop(["terrain"], axis=1)
+    a = a.rename_axis(index=('time', None))
+    a = a.obs.unstack(level=1)
+
+def bs_threshold_terr_exp(stat, terr, site='all sites', sim='ens'): 
+    df = get_data(site)[[sim, 'obs']]    
+    rep_list = [i for i in range(0, 1000, 50)]
+    if OPT == 'c':
+        data = [simple_boot(df, sim, stat, chunk_size=i) for i in rep_list]
+    if OPT == 'r':
+        data = [simple_boot(df, sim, stat, reps=i) for i in rep_list]
+    boot_vioplot(data, site, stat, sim, rep_list)
+  
+# OPT = 'chunk' # 'reps' or 'chunk'
+OPT = 'c' 
+TITLES = {'r': 'one single day removed n times', 
+          'c': 'n consective days removed once.'}
+
+
+#bs_threshold_exp(stat='R', site='all sites', sim='jra55')
+#bs_threshold_terr_exp(stat='R', terr='1', site='all sites', sim='jra55')
+exp = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml')
+
+for i in exp.terr_dict():
+    print(i)
+sys.exit()
+exp = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml')
+for i in exp.terr_dict:
+    bs_threshold_terr_exp(stat='R', terr=int(i), site='all sites', sim='jra55')
