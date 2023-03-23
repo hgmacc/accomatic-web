@@ -6,14 +6,15 @@ sites_pth = '/home/hma000/storage/merra_precip_test/ykl_csvs/sites.csv'
 sites = get_sites(sites_pth)
 site_dict = dict(zip(sites.station_number, sites.station_name))
 
-data = {'Downloaded': glob.glob('/home/hma000/storage/merra_precip_test/ykl_csvs/*downloaded.csv'),
+data1 = {'Downloaded': glob.glob('/home/hma000/storage/merra_precip_test/ykl_csvs/*downloaded.csv'),
         'Interpolated': glob.glob('/home/hma000/storage/merra_precip_test/ykl_csvs/*interpolated.csv'), 
         'Scaled': glob.glob('/home/hma000/storage/merra_precip_test/ykl_csvs/*scaled.csv')}
 merra_data = {'Downloaded': '/home/hma000/storage/merra_precip_test/ykl_csvs/merra2_downloaded.csv',
         'Interpolated': '/home/hma000/storage/merra_precip_test/ykl_csvs/merra2_interpolated.csv', 
         'Scaled': '/home/hma000/storage/merra_precip_test/ykl_csvs/merra2_scaled.csv'}
-
-
+kdi_test = {'Downloaded': glob.glob('/home/hma000/storage/merra_precip_test/KDI_test/csvs/*downloaded.csv'),
+        'Interpolated': glob.glob('/home/hma000/storage/merra_precip_test/KDI_test/csvs/*interpolated.csv'), 
+        'Scaled': glob.glob('/home/hma000/storage/merra_precip_test/KDI_test/csvs/*scaled.csv')}
 
 def get_colour(f):
     if 'merra2' in os.path.basename(f):
@@ -25,7 +26,7 @@ def get_colour(f):
     else:
         return (f'{f} is not a pth with a colour.')
 
-def all_precip_plots():
+def all_precip_plots(sites, data):
     """
     Plots precipitation for five sites throughout YKL clusters for: downloaded, interpolated and scaled reanalysis data. 
     JRA55 MERRA2 and ERA5 all plotted. 
@@ -37,19 +38,23 @@ def all_precip_plots():
         fig.suptitle(f'Precipitation at {site}', fontsize=16)
 
         a = list(data.keys())
-        
-        for f in data[a[0]]:
+        print('/n/n Site:')
+        # Downloaded
+        for f in data[a[0]]:  
             df = pd.read_csv(f, parse_dates=True, index_col='time')
             df = df[df.index.year == 2018]
             ax0.plot(df[site], label=os.path.basename(f).split('_')[0], c=get_colour(f))
             ax0.legend()
             ax0.set_title(a[0])
-            
+            if os.path.basename(f) == 'merra2_downloaded.csv':
+                print(df.head(1))
+        
+        # Interpolated
         for f in data[a[1]]:
             df = pd.read_csv(f, parse_dates=True, index_col='time')
-            
-            if f == '/home/hma000/storage/merra_precip_test/ykl_csvs/jra55_interpolated.csv':
+            if os.path.basename(f) == 'jra55_interpolated.csv':
                 df[site] = df[site] / 86400
+            print(df.head())
             df = df[df.index.year == 2018]
             ax1.plot(df[site], c=get_colour(f))
             ax1.set_ylabel('Weekly Precip Average (kg m-2 s-1)')
@@ -61,14 +66,15 @@ def all_precip_plots():
             df = df[df.index.year == 2018]
             ax2.plot(df[site], c=get_colour(f))
             ax2.set_title(a[2])
-
+            if os.path.basename(f) == 'merra2_scaled.csv':
+                print(df.head(1))
+                
         plt.ylim([0, 0.00035])
         plt.xlabel('Time')
         plt.xticks(rotation=70)
-        plt.savefig(f'/home/hma000/accomatic-web/accomatic/merra2_precip/plots/20FEB/{site}.png')
+        plt.savefig(f'/home/hma000/accomatic-web/accomatic/merra2_precip/plots/13MAR/{site}.png')
         plt.clf()
         plt.close()
-        print(site)
 
 def globsim_scf():   
     """
@@ -104,8 +110,6 @@ def globsim_scf():
         plt.clf()
         plt.close()
         print(site)
-
-
 # Plot all merra data for all five sites
 def all_merra_precip():
     """
@@ -142,8 +146,7 @@ def all_merra_precip():
     plt.xlabel('Time')
     plt.xticks(rotation=70)
     plt.savefig(f'/home/hma000/accomatic-web/accomatic/merra2_precip/plots/20FEB/merra2_precip.png')
-    
-    
+
 def swap_merra_precip_plot():
     """
     Plots precipitation data from multiple differend scaled globsim files/ 
@@ -169,8 +172,6 @@ def swap_merra_precip_plot():
     era.close()
     jra.close()
     new_mer.close()
-
-
     
 def temp_merra_precip_plot():
     """
@@ -204,6 +205,4 @@ def temp_merra_precip_plot():
     mer_1.close()
     mer_2.close()
     mer_3.close()
-
-temp_merra_precip_plot()
 

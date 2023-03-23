@@ -378,7 +378,7 @@ def terr_timeseries_plot(exp, terr):
 
 
 def xy_site_plot(exp,site):
-    pth = '/home/hma000/accomatic-web/tests/plots/xy_plots/'
+    pth = '/home/hma000/accomatic-web/tests/plots/xy_plots/tmp/'
     odf = exp.obs(site)
     mdf = exp.mod(site)
     df = odf.join(mdf).dropna()

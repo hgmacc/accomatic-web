@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib.ticker import PercentFormatter
 import numpy as np
+import os
 
 from accomatic.NcReader import *
 from accomatic.Experiment import *
@@ -21,12 +22,16 @@ plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
 
 
-def get_data(site) -> pd.DataFrame:
-    e = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/NOV_NWT.toml')
+def get_data(e, site) -> pd.DataFrame:
     if site == 'all sites':
+        # Average over all sites
         df = e.mod().join(e.obs()).dropna()
         df = df.groupby('time').mean()
+    elif site == 'terr':
+        # Return all sites
+        df = e.mod().join(e.obs()).dropna()
     else:
+        # Return only one site
         df = e.mod(site).join(e.obs(site)).dropna()
     df['ens'] = df[['era5','merra2','jra55']].mean(axis=1)
     return df
@@ -67,11 +72,9 @@ def plot_ts_missing_days(df, site) -> None:
     plt.legend()
     plt.xticks(rotation = 18)
     plt.savefig(f"/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/ts_{site}.png")
-    
-# As chunk_size increases, how do bootstrap results change?
-# As reps increases, how do bootstrap results change?
 
-def boot(df, sim, acco, boot_size=1000, consecutive_days_slice=10):
+
+def ten_day_boot(df, sim, acco, boot_size=1000, consecutive_days_slice=10):
     nrows = range(df.shape[0])
     res = []
     for i in range(boot_size):
@@ -83,6 +86,33 @@ def boot(df, sim, acco, boot_size=1000, consecutive_days_slice=10):
     res = np.array(sorted(res)[50:950])
     res = res[(res<10) & (res>-10)]
     print('One done')
+    return res
+
+def get_10_days(df, nrows):
+    consecutive_days_slice=10
+    ix = random.randint(nrows.start, nrows.stop-(consecutive_days_slice+1))
+    a = df.iloc[ix:ix+consecutive_days_slice, :]
+    counter = 0
+    while a.ens.isna().sum() > 0 and counter !=10:
+        ix = random.randint(nrows.start, nrows.stop-(consecutive_days_slice+1))
+        a = df.iloc[ix:ix+consecutive_days_slice, :]
+        counter = counter + 1
+    if counter == 10:
+        print('yikes'); sys.exit()
+    return a
+        
+def simple_10_day_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, reps=1):
+    res = []
+    df = df[['obs', sim]]
+    df = remove_days(df, chunk_size=chunk_size, reps=reps)
+    nrows = range(df.shape[0])
+    
+    for i in range(boot_size):
+        a = get_10_days(df, nrows)
+        res.append(acco_measures[acco](a.obs, a[sim]))
+
+    res = np.array(sorted(res)[50:950])
+    res = res[(res<10) & (res>-10)]
     return res
 
 def simple_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, reps=1):
@@ -120,8 +150,8 @@ def boot_boxplot(data, site, stat, labels):
     plt.savefig(f'/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/box_{OPT}_{stat}_{site}_rep.png')
     plt.clf()
 
-def boot_vioplot(data, site, stat, sim, label):
-    fig, ax = plt.subplots(figsize=(len(data)+2, 10))
+def boot_vioplot(data, site, stat, sim, label, title=''):
+    fig, ax = plt.subplots(figsize=(len(data)+4, 12))
     bp = ax.violinplot(data, showmeans=True)
 
     for patch, color in zip(bp['bodies'], get_color_gradient("#b3e0dc", "#036c5f", len(label))):
@@ -134,17 +164,22 @@ def boot_vioplot(data, site, stat, sim, label):
         vp.set_linewidth(1)
      
     # This is the most annoying line of code I've ever written. 
-    ax.set_xticks([i for i in range(0, len(label), 2)], labels=[str(i) for i in label[::2]])
-    
+    # ax.set_xticks([i for i in range(0, len(label), 2)], labels=[str(i) for i in label[::2]])
+
     ax.set_title(f"{sim} at {site}")
     ax.set_xlabel(TITLES[OPT])
     ax.set_ylabel(stat)
-    if stat != 'R': ax.set_ylim(bottom=0, top=1.5)
-    plt.savefig(f'/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/vio_{OPT}_{stat}_{site}_rep.png')
+    ax.set_ylim(bottom=0, top=2.5)
+    
+    ax.set_xticks(range(1, len(label)+1), labels=label, rotation=70)
+
+    if title == '':
+        title = f"vio_{OPT}_{stat}_{site}_rep"
+    plt.savefig(f'{os.path.dirname(os.path.realpath(__file__))}/{title}.png')
     plt.clf()
 
 def bs_threshold_exp(stat, site='all sites', sim='ens'): 
-    df = get_data(site)[[sim, 'obs']]    
+    df = get_data(EXP, site)[[sim, 'obs']]    
     rep_list = [i for i in range(0, 1000, 50)]
     if OPT == 'c':
         data = [simple_boot(df, sim, stat, chunk_size=i) for i in rep_list]
@@ -152,53 +187,29 @@ def bs_threshold_exp(stat, site='all sites', sim='ens'):
         data = [simple_boot(df, sim, stat, reps=i) for i in rep_list]
     boot_vioplot(data, site, stat, sim, rep_list)
     
-def boot_terrain(data, site, stat, sim, label, terr):    
-    sites = exp.sites_list
-    terr = exp.terr_list
-
-    terr_dict = {sites[i]: terr[i] for i in range(len(sites))}
-    num_plots = len(set(terr))
-
-    fig, axs = plt.subplots(num_plots, 1, sharex=True, figsize=(10, num_plots+10))#, squeeze=True)
-    fig.suptitle('Missing data plot for each terrain type.')
-
-    df = read_nc('/home/hma000/accomatic-web/tests/test_data/nc/ykl_obs.nc', avg=True)
-    
-    # Pull out only dat
+def bs_threshold_terr_exp(stat, terr, sim='ens'): 
+    df = get_data(EXP,'terr')[[sim, 'obs']]    
     terr_list = []
     for i in df.index.get_level_values(1):
-        try: terr_list.append(terr_dict[i])
+        try: terr_list.append(EXP.terr_dict()[i])
         except KeyError:
             terr_list.append(-1)
-    
     df['terrain'] = terr_list
-
-    a = df[df.terrain == str(i)].drop(["terrain"], axis=1)
-    a = a.rename_axis(index=('time', None))
-    a = a.obs.unstack(level=1)
-
-def bs_threshold_terr_exp(stat, terr, site='all sites', sim='ens'): 
-    df = get_data(site)[[sim, 'obs']]    
-    rep_list = [i for i in range(0, 1000, 50)]
+    df = df[df.terrain == str(terr)].drop(["terrain"], axis=1).groupby('time').mean()
+    rep_list = [i for i in range(0, 300, 25)]
     if OPT == 'c':
         data = [simple_boot(df, sim, stat, chunk_size=i) for i in rep_list]
     if OPT == 'r':
         data = [simple_boot(df, sim, stat, reps=i) for i in rep_list]
-    boot_vioplot(data, site, stat, sim, rep_list)
-  
-# OPT = 'chunk' # 'reps' or 'chunk'
+    print(stat, terr, sim, 'complete')
+    boot_vioplot(data, terr, stat, sim, rep_list)
+
+    # OPT = 'chunk' # 'reps' or 'chunk'
+
 OPT = 'c' 
-TITLES = {'r': 'one single day removed n times', 
-          'c': 'n consective days removed once.'}
+TITLES = {'r': 'Percent of single days removed', 
+          'c': 'Percent of data chunk removed'}
+EXP = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml')
+# for i in set(list(EXP.terr_dict().values())):
+#     bs_threshold_terr_exp(stat='RMSE', terr=i,  sim='ens')
 
-
-#bs_threshold_exp(stat='R', site='all sites', sim='jra55')
-#bs_threshold_terr_exp(stat='R', terr='1', site='all sites', sim='jra55')
-exp = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml')
-
-for i in exp.terr_dict():
-    print(i)
-sys.exit()
-exp = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml')
-for i in exp.terr_dict:
-    bs_threshold_terr_exp(stat='R', terr=int(i), site='all sites', sim='jra55')
