@@ -39,11 +39,3 @@ if __name__ == "__main__":
 
     e = Experiment(arg_input)
     build(e) 
-    #e.results.groupby(['sim', 'szn']).mean().drop(columns=['data_avail'])
-    from Plotting import xy_site_plot
-    for site in ['YK16-SO01']:
-        xy_site_plot(e, site)
-
-    # a = e.results.groupby(['sim', 'szn']).mean().drop(columns=['data_avail'])
-    # a = a.groupby(['szn']).rank(method="max").astype(int)
-    # print(e.results.groupby('site').RMSE.mean())
