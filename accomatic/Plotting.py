@@ -294,7 +294,7 @@ def residual_timeseries_plot(obs, mod):
 
 def std_dev(exp):
     obs = read_nc(exp.obs_pth)
-    mod = read_geotop(exp.model_pth)
+    mod = read_geotop(file_path = exp.model_pth, sitename = exp.sites_list)
 
     mod = mod.reset_index(drop=False)
     mod = mod.groupby("time").mean()
@@ -323,7 +323,7 @@ def gaussian_smooth(x, y, grid, sd):
 
 
 def streamline_plot(exp):
-    obs, mod = read_nc(exp.obs_pth), read_geotop(exp.model_pth)
+    obs, mod = read_nc(exp.obs_pth), read_geotop(exp.model_pth, exp.sites_list)
     obs, mod = obs.reset_index(drop=False), mod.reset_index(drop=False)
     obs, mod = obs.groupby("time").mean(), mod.groupby("time").mean()
     obs.index, mod.index = pd.to_datetime(obs.index), pd.to_datetime(mod.index)
@@ -496,7 +496,7 @@ def terr_timeseries_plot(exp, terr):
 
 
 def xy_site_plot(exp,site):
-    pth = '/home/hma000/accomatic-web/tests/plots/xy_plots/tmp/'
+    pth = '/home/hma000/accomatic-web/tests/plots/xy_plots/'
     odf = exp.obs(site)
     mdf = exp.mod(site)
     df = odf.join(mdf).dropna()
@@ -540,3 +540,28 @@ def xy_site_plot(exp,site):
     fig.clf()
     plt.close(fig)
 
+def results(exp):
+    df = exp.results
+    
+    # Seasonal 
+    df = df[df.szn!='ALL'].drop(['terr','data_avail'], axis=1).groupby(['sim', 'szn']).mean()
+    df['season'] = pd.to_datetime(df.index.get_level_values('szn'), format='%b').month
+    sims = df.index.get_level_values('sim').unique()
+    colours = ["#1CE1CE", "#008080", "#F3700E", "#59473C"]
+    fig, ax1 = plt.subplots()
+    plt.rcParams["figure.autolayout"] = True
+    for sim, col in zip(sims, colours):
+        sim_df = df.loc[sim, :]
+        sim_df = sim_df.reset_index(drop=True).sort_values(by=['season']).set_index('season')
+  
+        ax1.plot(sim_df['BIAS'], color=col, linestyle='dashed')
+        ax1.plot(sim_df['MAE'], color=col, linestyle=':')
+
+        ax2 = ax1.twinx()
+        ax2.plot(sim_df['R'], color=col)
+
+    plt.savefig('seasonal_temp.png')
+
+    # Terrain = df[df.szn=='ALL'].drop(['szn','data_avail'], axis=1).groupby(['sim','terr']).mean()
+    
+    # Terrain x Season

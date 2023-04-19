@@ -67,4 +67,3 @@ def terr_heatmap():
     PLOT_PTH = '/home/hma000/accomatic-web/tests/plots/29MAR_heatmap/'
     plt.savefig(f'{PLOT_PTH}terr_heatmap_plot.png', dpi=300) 
     
-terr_heatmap()

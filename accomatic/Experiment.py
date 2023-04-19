@@ -18,7 +18,9 @@ class Experiment(Settings):
     def __init__(self, sett_file_path="") -> None:
         super().__init__(sett_file_path)
         self.obs_dict = read_nc(self.obs_pth)
-        self.mod_dict = read_geotop(self.model_pth)
+        self.mod_dict = read_geotop(file_path = self.model_pth, 
+                                    sitename = self.sites_list, 
+                                    ens=True)
         self.results = pd.DataFrame()
 
     @property
@@ -79,7 +81,7 @@ class Experiment(Settings):
 
     def mod(self, sitename="") -> pd.DataFrame:
         if sitename == "":
-            return read_geotop(self._model_pth)
+            return read_geotop(file_path = self._model_pth, sitename = self.sites_list)
         else:
             return self._mod_dict[sitename].df
 

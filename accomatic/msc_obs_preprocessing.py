@@ -107,7 +107,7 @@ def get_data():
     yk = yk[yk.index.get_level_values("sitename").str.contains("YK")]
 
     obs = pd.concat([yk, kdi, ldg])  # .sort_index(inplace=True)
-    mod = read_geotop("/home/hma000/accomatic-web/tests/test_data/nc/snow_75Sites.nc")
+    mod = read_geotop(file_path = "/home/hma000/accomatic-web/tests/test_data/nc/snow_75Sites.nc")
     df = mod.join(obs)
     df["ens"] = df[["era5", "merr", "jra5"]].mean(axis=1)
     df = df.sort_index().dropna()

@@ -24,25 +24,26 @@ def create_acco_nc(exp) -> None:
     acco.close()
 
 
-def read_geotop(file_path, sitename="") -> pd.DataFrame:
+def read_geotop(file_path="", sitename="", ens=False) -> pd.DataFrame:
     # Get dataset
     m = xr.open_dataset(file_path, group="geotop")
 
     m["sitename"] = m.sitename.str.replace(r"_site", "")
 
-    if sitename != "":
+    if sitename != "" and type(sitename) != list:  # sitename provided
         m = m.where(m.sitename == sitename, drop=True)
-
+    elif type(sitename) == list:  # sitename list provided
+        m = m.where(m.sitename.isin(sitename), drop=True)
+        
     mdf = m.to_dataframe()
-
+    
     # Drop dumb columns and rename things
     mdf = mdf.drop(["model", "pointid"], axis=1).rename(
         {"Date": "time", "Tg": "soil_temperature"}, axis=1
     )
-    mdf = mdf.reset_index(level=("time", "soil_depth"), drop=True)
-    mdf = mdf.reset_index(drop=False)
-
     
+    mdf = mdf.reset_index(level=("time", "soil_depth"), drop=True).reset_index(drop=False)
+
     # Fix simulation colummn
     mdf.simulation = [
         line.split('_')[2] for line in mdf.simulation
@@ -50,12 +51,15 @@ def read_geotop(file_path, sitename="") -> pd.DataFrame:
 
     # Setting up time index
     mdf.time = pd.to_datetime(mdf["time"]).dt.date
-
+    mdf = mdf.drop_duplicates(subset=['simulation', 'time', 'sitename'])
     mdf = mdf.set_index([mdf.time, mdf.sitename, mdf.simulation], append=True)
+    
     mdf = mdf.drop(["time", "sitename", "simulation"], axis=1)
-    mdf = mdf.reset_index(level=(0), drop=True)
-
+    mdf = mdf.reset_index(level=(0), drop=True)    
+    mdf = mdf.dropna()
     mdf = mdf.unstack(level=2).soil_temperature
+    mdf['ens'] = mdf[['era5', 'jra55', 'merra2']].mean(axis=1)
+
     return mdf
 
 

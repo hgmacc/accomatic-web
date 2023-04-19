@@ -74,7 +74,7 @@ def plot_ts_missing_days(df, site) -> None:
     plt.savefig(f"/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/ts_{site}.png")
 
 
-def ten_day_boot(df, sim, acco, boot_size=1000, consecutive_days_slice=10):
+def ten_day_boot(df, sim, acco, boot_size=1000, consecutive_days_slice=5):
     nrows = range(df.shape[0])
     res = []
     for i in range(boot_size):
@@ -89,23 +89,9 @@ def ten_day_boot(df, sim, acco, boot_size=1000, consecutive_days_slice=10):
     return res
 
 
-def crazy10_day_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, reps=1):
-    res = []
-    df = df[['obs', sim]]    
-    for i in range(100):
-        smol_df = remove_days(df, chunk_size=chunk_size, reps=reps)
-        nrows = range(df.shape[0])
-        for j in range(1000):
-            a = get_10_days(smol_df, nrows)
-            res.append(acco_measures[acco](a.obs, a[sim]))
-
-    res = np.array(sorted(res)[50:950])
-    res = res[(res<10) & (res>-10)]
-    return res
-
 
 def get_10_days(df, nrows):
-    consecutive_days_slice=10
+    consecutive_days_slice=5
     ix = random.randint(nrows.start, nrows.stop-(consecutive_days_slice+1))
     a = df.iloc[ix:ix+consecutive_days_slice, :]
     counter = 0
@@ -117,6 +103,21 @@ def get_10_days(df, nrows):
         print('yikes'); sys.exit()
     return a
         
+
+def crazy10_day_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, reps=1):
+    res = []
+    df = df[['obs', sim]]    
+    for i in range(100):
+        smol_df = remove_days(df, chunk_size=chunk_size, reps=reps)
+        nrows = range(df.shape[0])
+        for j in range(boot_size):
+            a = get_10_days(smol_df, nrows)
+            res.append(acco_measures[acco](a.obs, a[sim]))
+
+    res = np.array(sorted(res)[50:950])
+    res = res[(res<10) & (res>-10)]
+    return res
+
 def simple_10_day_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, reps=1):
     res = []
     df = df[['obs', sim]]

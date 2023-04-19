@@ -73,17 +73,30 @@ time_code_months = {
     "SON": [9, 10, 11],
     "FREEZE": [10, 11, 12, 1, 2, 3],
     "THAW": [4, 5, 6, 7, 8, 9],
+    "JAN": [1],
+    "FEB": [2],
+    "MAR": [3],
+    "APR": [4],
+    "MAY": [5],
+    "JUN": [6],
+    "JUL": [7],
+    "AUG": [8],
+    "SEP": [9],
+    "OCT": [10],
+    "NOV": [11],
+    "DEC": [12]
+    
 }
-
 
 def bootstrap(o, m):
 
     pass
 
 
-def run(o, m, exp, site, szn, data_avail_val):
+def run(o, m, exp, site, szn):
+    d = {"data_avail": len(o)}
+
     for sim in m.columns:
-        d = {"data_avail": data_avail_val}
         for stat in exp.acco_list:
             d[stat] = acco_measures[stat](o, m[sim])
         row = exp.res_index(site, sim, szn)
@@ -101,5 +114,5 @@ def build(exp):
                 exp,
                 site,
                 szn,
-                100,
             )
+    
