@@ -74,7 +74,7 @@ def plot_ts_missing_days(df, site) -> None:
     plt.savefig(f"/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/ts_{site}.png")
 
 
-def ten_day_boot(df, sim, acco, boot_size=1000, consecutive_days_slice=5):
+def x_day_boot(df, sim, acco, boot_size=1000, consecutive_days_slice=5):
     nrows = range(df.shape[0])
     res = []
     for i in range(boot_size):
@@ -82,10 +82,7 @@ def ten_day_boot(df, sim, acco, boot_size=1000, consecutive_days_slice=5):
         ix = random.randint(nrows.start, nrows.stop-consecutive_days_slice)
         a = df.iloc[ix:ix+consecutive_days_slice, :]
         res.append(acco_measures[acco](a.obs, a[sim]))
-
     res = np.array(sorted(res)[50:950])
-    res = res[(res<10) & (res>-10)]
-    print('One done')
     return res
 
 
@@ -168,8 +165,9 @@ def boot_boxplot(data, site, stat, labels):
     plt.clf()
 
 def boot_vioplot(data, site, stat, sim, label, title=''):
-    fig, ax = plt.subplots(figsize=(len(data)+4, 12))
-    bp = ax.violinplot(data, showmeans=True)
+
+    fig, ax = plt.subplots(figsize=(len(data)+4, 5))
+    bp = ax.violinplot(data.T, showmeans=True)
 
     for patch, color in zip(bp['bodies'], get_color_gradient("#b3e0dc", "#036c5f", len(label))):
         patch.set_facecolor(color) 
@@ -184,14 +182,15 @@ def boot_vioplot(data, site, stat, sim, label, title=''):
     # ax.set_xticks([i for i in range(0, len(label), 2)], labels=[str(i) for i in label[::2]])
 
     ax.set_title(f"{sim} at {site}")
-    ax.set_xlabel(TITLES[OPT])
+    # ax.set_xlabel(TITLES[OPT])
     ax.set_ylabel(stat)
-    ax.set_ylim(bottom=0, top=2.5)
+    ax.set_ylim(bottom=0, top=7)
     
     ax.set_xticks(range(1, len(label)+1), labels=label, rotation=70)
 
     if title == '':
         title = f"vio_{OPT}_{stat}_{site}_rep"
+
     plt.savefig(f'{os.path.dirname(os.path.realpath(__file__))}/{title}.png')
     plt.clf()
 

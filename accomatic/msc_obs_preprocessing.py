@@ -155,6 +155,39 @@ def missing_days_cluster():
     plt.savefig('/home/hma000/accomatic-web/accomatic/prototype_bootstrap/plots/missing_data/missing_barplot_reindexed.png')
 
 
+
+def missing_days_data():
+    df = read_nc('/home/hma000/accomatic-web/tests/test_data/nc/ykl_gst_obs.nc', avg=False)
+    df = df[df.index.get_level_values("sitename").str.contains("AIR")==False]
+    df = df[df.index.get_level_values("sitename").str.contains("_")==True]
+    # Drop rows that don't contain an '_'
+
+    #df = df.reset_index(level=['sitename'])
+    df = df.rename_axis(index=('time', None))
+    df = df.soil_temperature.unstack(level=1)
+    times = pd.date_range(start=pd.to_datetime("2015-07-04"), end=pd.to_datetime("2021-08-18"), freq="1D").date
+    df = df.reindex(times)
+
+    yk_col = [col for col in df.columns if 'YK' in col]
+    kdi_col = [col for col in df.columns if 'KDI' in col]
+    ldg_col = [col for col in df.columns if 'NGO' in col]
+    
+    dic = {}
+    for cluster in [yk_col, kdi_col, ldg_col]:
+        b = df[cluster]
+        for col in b.columns:
+            tmp = b[col].loc[b[col].first_valid_index():b[col].last_valid_index()]
+            dic[col] = tmp.isnull().sum() / len(tmp) * 100
+
+    tmp = pd.DataFrame.from_dict(dic, orient='index', columns=['percent_miss'])
+    print(len(tmp[tmp.percent_miss > 0]))
+    print(tmp[tmp.percent_miss > 0].mean())
+
+
+
+
+
+
 def missing_days_terr(exp):
     
 
@@ -189,7 +222,7 @@ def missing_days_terr(exp):
 
 
 e = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml')
-missing_days_terr(e)
+missing_days_data()
 
 plot = False
 if plot:
