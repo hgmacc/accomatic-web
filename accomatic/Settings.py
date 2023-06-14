@@ -9,6 +9,7 @@ import toml
 class Settings:
     _model_pth: str
     _obs_pth: str
+    _depth: float
     _out_acco_pth: str
     _acco_list: List[str]
     _szn_list: List[str]
@@ -31,7 +32,8 @@ class Settings:
             else:
                 print(path_error % setting_toml["data"]["observations_pth"])
                 sys.exit()
-
+                
+            self._depth = setting_toml["data"]["depth"]
             self._sites_list = setting_toml["data"]["sites_list"]
             self._acco_list = setting_toml["experiment"]["acco_list"]
             self._szn_list = setting_toml["experiment"]["szn_list"]
@@ -52,6 +54,10 @@ class Settings:
     @property
     def obs_pth(self) -> str:
         return self._obs_pth
+    
+    @property
+    def depth(self) -> str:
+        return self._depth
 
     @property
     def acco_list(self) -> List[str]:
