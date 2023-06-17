@@ -88,22 +88,54 @@ def boot_vioplot(e, title=''):
     plt.clf()
 
 
-def MAE_cross_plots():
-    df_list = []
-    for i in ['10','50','100']:
-        df = pd.read_csv(f'/home/hma000/accomatic-web/tests/test_data/csvs/ranking/boot_10/ranking_{i}.csv')
-        df['depth'] = int(i)
-        df['sett'] = df.szn + df.terr.astype(str)
-        df = df.set_index(['sett', 'depth'])
-        df_list.append(df[['sim','data_avail','rank','rank_stat']])
-    df = pd.concat(df_list)
-    print(df.head())
+def MAE_cross_plots(df):
+    df10 = df[df.depth == 10]
+    df50 = df[df.depth == 50]
+    df100 = df[df.depth == 100]
+    
+    print(df10.head(1), df50.head(1), df100.head(1))
+    sys.exit()
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=False, figsize=(10,13), squeeze=True)
+    
+    palette = ["#008080", "#F50B00", "#F3700E", "#59473c"]
+
+    # XY SCATTER PLOT
+    plt.subplot(211)
+    ax1.set_aspect("equal")
+    plt.scatter(df10[df10.sim=='ens'], df10[df10.sim=='ens'], s=5, c=palette[0], label=f'JRA55 r={np.corrcoef(df.obs, df.jra55)[0][1]:.2f}')
+    plt.scatter(df.obs, df.era5, s=5, c=palette[1], label=f'ERA5 r={np.corrcoef(df.obs, df.era5)[0][1]:.2f}')
+    plt.scatter(df.obs, df.merra2, s=5, c=palette[2], label=f'MERRA2 r={np.corrcoef(df.obs, df.merra2)[0][1]:.2f}')
+    plt.scatter(df.obs, df.ens, s=5, c=palette[3], label=f'ENSEMBLE r={np.corrcoef(df.obs, df.ens)[0][1]:.2f}')
+    plt.plot(lims, lims, 'k-', alpha=0.75, zorder=0)
+    plt.xlabel("Observed")
+    plt.title(f"{site}")
+    plt.ylabel("GEOtop")
+    plt.legend(fontsize='x-small')
+    plt.ylim((a,b))
+    plt.xlim((a,b))
+
+    # TIME SERIES 
+    plt.subplot(212)
+    plt.plot(df['obs'], c='k', label='obs',linewidth=2)
+    for col, c in zip(df.drop(["obs"], axis=1).columns, palette):
+        plt.plot(df[col], c=c, label=col)
+        
+    #ax2.set_aspect(23)
+    plt.xlabel("Time")
+    plt.ylabel("Temperature ˚C")
+    plt.legend(fontsize='x-small')
+    plt.xticks(rotation=70)
+    fig.savefig(f'{pth}xy_{site}_plot.png')
+    fig.clf()
+    plt.close(fig)
+
+
     
 # TIME TO PLOT CROSS PLOTS OF MAE FOR 0.5 AND 1M 
 # INDEX BY: FOR EACH TERRAIN & SEASON, HOW DID MODEL X PERFORM? 
 
 
-MAE_cross_plots()
 
 def heatmap_plot():
     df = pd.read_csv(
