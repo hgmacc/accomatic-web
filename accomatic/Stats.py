@@ -39,14 +39,6 @@ def build(exp):
         df = exp.obs(site).join(exp.mod(site)).dropna()
         o, m = df.obs.dropna(), df.drop(["obs"], axis=1)
         for szn in exp.szn_list:
-            
-            try: 
-                a = o.index.month
-            except AttributeError:
-                print(site, szn)
-                print(o.head())
-                pass
-            
             run(
                 o[o.index.month.isin(time_code_months[szn])],
                 m[m.index.month.isin(time_code_months[szn])],
@@ -73,8 +65,8 @@ def rank(exp, csv_file_name='ranking.csv'):
                 
                 for row, i in zip(tmp.index.tolist(), range(len(rank))):
                     df.loc[row, ['rank','rank_stat']] = [rank[i], rank_stat[i]]
-                                
-    df[['sim','szn','terr','data_avail','rank','rank_stat']].to_csv(csv_file_name)
+                
+    df[['sim','szn','terr','data_avail','rank','rank_stat']].to_csv(csv)
 
 
     
