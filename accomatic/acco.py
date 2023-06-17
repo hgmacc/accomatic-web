@@ -34,19 +34,20 @@ def get_toml_pth(argv):
 # python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml
 
 if __name__ == "__main__":
-    # arg_input = get_toml_pth(sys.argv)
-    # e = Experiment(arg_input)
-    # a = e.obs()
-    # a = a.groupby('sitename').mean()
-    # print(a.loc[['NGO-DD-2023']])
+    arg_input = get_toml_pth(sys.argv)
+
+    exp = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/ykl_0_1.toml')    
+    build(exp)
+    rank(exp, csv_file_name='/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_10.csv')
     
-    # sys.exit()
+    exp = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/ykl_0_5.toml')    
+    build(exp)
+    rank(exp, csv_file_name='/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_50.csv')
+        
+    exp = Experiment('/home/hma000/accomatic-web/tests/test_data/toml/ykl_1_0.toml')
+    build(exp)
+    rank(exp, csv_file_name='/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_100.csv')
     
-    # build(e)  
-    # a = e.results.groupby(['sim']).mean()
-    # from Plotting import seasonal_violin
-    # seasonal_violin(e)
-    # a = a.groupby(['szn']).rank(method="max").astype(int)
-    
-    # print(e.results.groupby('site').RMSE.mean())
+    sys.exit()
+
     

@@ -12,7 +12,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
-plt.rcParams["font.size"] = "10"
+plt.rcParams["font.size"] = "16"
 
 PLOT_PTH = '/home/hma000/accomatic-web/tests/plots/JAN31/'
 
@@ -20,6 +20,7 @@ def hex_to_RGB(hex_str):
     """ #FFFFFF -> [255,255,255]"""
     #Pass 16 to the integer function for change of base
     return [int(hex_str[i:i+2], 16) for i in range(1,6,2)]
+
 
 def get_color_gradient(c1, c2, n):
     """
@@ -31,6 +32,78 @@ def get_color_gradient(c1, c2, n):
     mix_pcts = [x/(n-1) for x in range(n)]
     rgb_colors = [((1-mix)*c1_rgb + (mix*c2_rgb)) for mix in mix_pcts]
     return ["#" + "".join([format(int(round(val*255)), "02x") for val in item]) for item in rgb_colors]
+
+
+def get_colour(f):
+    if 'mer' in f:
+        return "#F3700E"
+    if 'era' in f:
+        return  "#1ce1ce"
+    if 'jra' in f:
+        return "#008080"
+    if 'ens' in f:
+        return "#F50B00"
+    else:
+        return (f'{f} is not a pth with a colour.')
+
+def violin_helper_reorder_data(data, stat):
+    data["rank"] = ["{0:.3}".format(np.nanmean(i.v)) for i in data[stat]]
+    return(data.sort_values(by=['rank']))
+
+
+def boot_vioplot(e, title=''):
+    # site, stat, sim, label, 
+    
+    stat = 'MAE'
+    data = e.res(sett=['sim'])
+    data = violin_helper_reorder_data(data, stat)
+
+    label = data.sim.to_list()
+    data_arr = np.array([i.v for i in data[stat].to_list()])  
+    
+    fig, ax = plt.subplots(figsize=(len(data_arr)+4, 8))
+
+    bp = ax.violinplot(data_arr.T, showmeans=True)
+
+    for patch, mod in zip(bp['bodies'], label):
+        patch.set_facecolor(get_colour(mod)) 
+        patch.set_alpha(0.60)
+    
+    for partname in ('cbars','cmins','cmaxes','cmeans'):
+        vp = bp[partname]
+        vp.set_edgecolor('#000000')
+        vp.set_linewidth(1)
+     
+    ax.set_ylabel(stat)
+    ax.set_ylim(bottom=0, top=4)
+
+    if title == '':
+        import time
+        title = f"vio_{time.time()}"
+        print(title)
+    
+    legend_handles = [f"({a})" for i, a in zip(data.sim.to_list(), data['rank'].tolist())]
+    plt.legend(legend_handles, loc='lower left')
+    plt.savefig(f'{os.path.dirname(os.path.realpath(__file__))}/{title}.png')
+    plt.clf()
+
+
+def MAE_cross_plots():
+    df_list = []
+    for i in ['10','50','100']:
+        df = pd.read_csv(f'/home/hma000/accomatic-web/tests/test_data/csvs/ranking/boot_10/ranking_{i}.csv')
+        df['depth'] = int(i)
+        df['sett'] = df.szn + df.terr.astype(str)
+        df = df.set_index(['sett', 'depth'])
+        df_list.append(df[['sim','data_avail','rank','rank_stat']])
+    df = pd.concat(df_list)
+    print(df.head())
+    
+# TIME TO PLOT CROSS PLOTS OF MAE FOR 0.5 AND 1M 
+# INDEX BY: FOR EACH TERRAIN & SEASON, HOW DID MODEL X PERFORM? 
+
+
+MAE_cross_plots()
 
 def heatmap_plot():
     df = pd.read_csv(
@@ -242,6 +315,31 @@ def allsites_timeseries_plot(odf):
     ax.xaxis.set_major_formatter(date_form)
 
     plt.savefig(f'{PLOT_PTH}allsites_timeseries_plot.png', dpi=300, transparent=True)
+
+
+def terrain_plot_eucop(exp):
+    fig, ax = plt.subplots(figsize=(13, 7))
+
+    df = exp.obs()
+    df['terr'] = df.index.get_level_values(1)
+    df = df[df['terr'].isin(exp.sites_list)]
+    df['terr'] = [exp.terr_dict()[x] for x in df.terr]
+    palette = ["#F50B00","#008080", "#fcd12a", "#F3700E", "#1ce1ce", "#fcd12a"]
+    terrain_list = df.terr.unique()
+    terrain_list = [2,3, 4]
+    for terrain, colour in zip(terrain_list, palette[:len(terrain_list)]):
+        df_terr = df[df.terr == terrain].drop(['terr'], axis=1)
+        df_terr = df_terr.unstack(level=-1)
+        df_terr['maximum'] = df_terr.max(axis=1, skipna=True)
+        df_terr['minimum'] = df_terr.min(axis=1, skipna=True)
+        
+        df_terr = df_terr.reset_index(drop=False)[['time','maximum','minimum']]
+        df_terr = df_terr.groupby(pd.Grouper(key="time", freq="1W")).mean()
+        df_terr = df_terr.loc['2017-06':]
+
+        plt.fill_between(df_terr.index, df_terr.minimum, df_terr.maximum, color = colour, alpha = 0.8, label=terrain)
+    plt.legend()
+    plt.savefig('terrain_plot_eucop.png')
 
 
 def terraintype_timeseries_plot():
@@ -539,6 +637,7 @@ def xy_site_plot(exp,site):
     fig.savefig(f'{pth}xy_{site}_plot.png')
     fig.clf()
     plt.close(fig)
+
 
 def results(exp):
     df = exp.results

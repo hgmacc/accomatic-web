@@ -8,6 +8,7 @@ import pandas as pd
 from accomatic.Ensemble import *
 from accomatic.NcReader import *
 from accomatic.Settings import *
+from static.statistics_helper import average_data
 
 
 class Experiment(Settings):
@@ -17,7 +18,7 @@ class Experiment(Settings):
 
     def __init__(self, sett_file_path="") -> None:
         super().__init__(sett_file_path)
-        self.obs_dict = read_nc(self.obs_pth, depth=self.depth)
+        self.obs_dict = read_nc(self.obs_pth, sitename = self.sites_list, depth=self.depth)
         self.mod_dict = read_geotop(file_path = self.model_pth, 
                                     sitename = self.sites_list, 
                                     ens=True,
@@ -67,10 +68,10 @@ class Experiment(Settings):
             "sim": [x[1] for x in a],
             "szn": [x[2] for x in a],
             "terr": [self.terr_dict()[x] for x in sites],
-            "data_avail": np.ones(len(a)) * -999,
+            "data_avail": np.full((len(a),), np.nan),
         }
         for acco in self._acco_list:
-            d[acco] = np.ones(len(a)) * -999
+            d[acco] = np.full((len(a),), np.nan)
         self._results = pd.DataFrame(data=d)
 
     def res_index(self, site, sim, szn):
@@ -80,18 +81,29 @@ class Experiment(Settings):
             & (self._results["szn"] == szn)
         ]
         return index.index
+    
+    def res(self, sett=['sim','szn','terr']) -> pd.DataFrame:
+        # Arguably, the coolest function I've written.
+        
+        d1 = dict.fromkeys(['data_avail'], np.sum)
+        d2 = dict.fromkeys(self._acco_list, average_data)
+        d = {**d1, **d2}
+
+        return self._results.groupby(sett, as_index=False).agg(d)
+
 
     def mod(self, sitename="") -> pd.DataFrame:
         if sitename == "":
             return read_geotop(file_path = self._model_pth, sitename = self.sites_list)
         else:
             return self._mod_dict[sitename].df
-
+        
     def obs(self, sitename="") -> pd.DataFrame:
         if sitename == "":
-            return read_nc(self._obs_pth, sitename = self.sites_list)
+            return read_nc(self._obs_pth, sitename = self.sites_list, depth=self.depth)
         else:
             return self._obs_dict[sitename]
+
 
     def terr(self) -> List:
         return list(zip(self._terr_list, self._sites_list))

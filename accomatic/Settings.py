@@ -10,6 +10,7 @@ class Settings:
     _model_pth: str
     _obs_pth: str
     _depth: float
+    _boot_size: int
     _out_acco_pth: str
     _acco_list: List[str]
     _szn_list: List[str]
@@ -34,6 +35,7 @@ class Settings:
                 sys.exit()
                 
             self._depth = setting_toml["data"]["depth"]
+            self._boot_size = setting_toml["data"]["boot_size"]
             self._sites_list = setting_toml["data"]["sites_list"]
             self._acco_list = setting_toml["experiment"]["acco_list"]
             self._szn_list = setting_toml["experiment"]["szn_list"]
@@ -58,6 +60,10 @@ class Settings:
     @property
     def depth(self) -> str:
         return self._depth
+    
+    @property
+    def boot_size(self) -> int:
+        return self._boot_size
 
     @property
     def acco_list(self) -> List[str]:

@@ -24,7 +24,7 @@ def create_acco_nc(exp) -> None:
     acco.close()
 
 
-def read_geotop(file_path="", sitename="", ens=False) -> pd.DataFrame:
+def read_geotop(file_path="", sitename="", ens=False, depth=False) -> pd.DataFrame:
     # Get dataset
     m = xr.open_dataset(file_path, group="geotop")
 
@@ -41,8 +41,15 @@ def read_geotop(file_path="", sitename="", ens=False) -> pd.DataFrame:
     mdf = mdf.drop(["model", "pointid"], axis=1).rename(
         {"Date": "time", "Tg": "soil_temperature"}, axis=1
     )
+        
+    mdf = mdf.reset_index(level=("time"), drop=True).reset_index(drop=False)
+
     
-    mdf = mdf.reset_index(level=("time", "soil_depth"), drop=True).reset_index(drop=False)
+    if depth: 
+        print(f"Model clipped to {depth}m depth.")
+        mdf = mdf[mdf.soil_depth.round(1) == depth]
+    
+    mdf = mdf.drop(["soil_depth"], axis=1)
 
     # Fix simulation colummn
     mdf.simulation = [
@@ -68,7 +75,6 @@ def average_obs_site(odf) -> pd.DataFrame:
     Averaging GST output for each site.
     """
     # KDI-E-Org_02 -> KDI-E-Org
-    #odf["sitename"] = odf.index.get_level_values("sitename").str[:-3]
     odf["sitename"] = odf.index.get_level_values("sitename").str[:]
     odf.sitename = [line.split('_')[0] for line in odf.sitename]  
 
@@ -89,24 +95,48 @@ def average_obs_site(odf) -> pd.DataFrame:
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["temp_site_date", "sitename"], axis=1)
     odf = odf.rename(columns={"soil_temperature": "obs"})
+    
     return odf
 
 
-def read_nc(file_path) -> pd.DataFrame:
+def read_nc(file_path, sitename=False, avg=True, depth=False) -> pd.DataFrame:
     # Get dataset
     o = xr.open_dataset(file_path)
     odf = o.to_dataframe()
+     
     # Clean up columns
-    odf = odf.drop(["latitude", "longitude", "elevation", "depth"], axis=1).rename(
+    odf = odf.drop(["latitude", "longitude", "elevation"], axis=1).rename(
         {"platform_id": "sitename"}, axis=1
     )
+    
     # Fix index
     odf = odf.reset_index(level=(1), drop=True)
     odf.sitename = [line.decode("utf-8") for line in odf.sitename]
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["sitename"], axis=1)
     
-    # Average over sites
-    odf = average_obs_site(odf)
+    if avg: odf = average_obs_site(odf)
+    if depth: odf = odf[odf.depth.round(1) == depth]
+    
+    odf = odf.drop(["depth"], axis=1)
+    
+    missing_data_exp = False
+    if missing_data_exp:
+        list_of_dates = odf.index.get_level_values(0).unique().tolist()
+        percent = 0.25
+        print(percent)
+        from numpy.random import default_rng
+        rng = default_rng()
+        indices = rng.choice(len(list_of_dates), 
+                        size=int(np.round(percent * len(list_of_dates))), 
+                        replace=False)
+        
+        list_of_dates = [list_of_dates[i] for i in indices]
+        odf.drop(list_of_dates, axis=0, inplace=True)
+
     odf = odf.dropna()
+    print(f"Observations: {len(odf.index.get_level_values(1).unique())} sites at {depth}m depth.")
+
     return odf
+
+
