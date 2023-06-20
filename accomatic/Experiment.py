@@ -5,7 +5,7 @@ from re import M
 from typing import Dict, List
 
 import pandas as pd
-from accomatic.Ensemble import *
+from Ensemble import *
 from accomatic.NcReader import *
 from accomatic.Settings import *
 from static.statistics_helper import average_data

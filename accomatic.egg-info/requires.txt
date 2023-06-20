@@ -1,0 +1,13 @@
+xarray
+tomlkit
+numpy
+pandas
+netCDF4
+scipy
+scikit-learn
+pandas
+typing
+datetime
+matplotlib
+regex
+tomlkit

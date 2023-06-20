@@ -5,8 +5,8 @@ import re
 import sys
 
 from Experiment import *
-from NcReader import *
-from Stats import *
+# from NcReader import *
+# from Stats import *
 
 def get_toml_pth(argv):
     arg_input = ""
@@ -35,9 +35,16 @@ def get_toml_pth(argv):
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
-    df = pd.read_csv('/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_flight.csv')
+    
+    exp = Experiment(arg_input)
+    
+    sys.exit()
+    import pandas as pd
+    df = pd.read_csv('/Users/hannahmacdonell/Documents/projects/accomatic-web/tests/test_data/csvs/ranking/ranking_flight.csv')
     # colour = model
     # two plots, GST vs 50 & GST vs 100
     # one point == same szn and terr
+    
+
     from Plotting import MAE_cross_plots
     MAE_cross_plots(df)

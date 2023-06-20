@@ -1,0 +1,2 @@
+[console_scripts]
+acco = accomatic:acco
