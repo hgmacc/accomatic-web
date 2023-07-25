@@ -12,7 +12,7 @@ boot_size = 1000
 sites_list = ['NGO-DD-2023', 'NGO-DD-2026', 'NGO-RC-168']
 
 [experiment]
-acco_list = ['MAE']  # List of acco measures
+acco_list = ['R']  # List of acco measures
 szn_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 
             'NOV', 'DEC']
 

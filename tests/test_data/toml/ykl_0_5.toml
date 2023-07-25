@@ -21,7 +21,7 @@ sites_list = ['NGO-RC-169', 'NGO-RC-170', 'NGO-RC-171', 'NGO-RC-162', 'NGO-RC-16
        'KDI-W-ShrubM1', 'KDI-W-Tbot', 'KDI-W-Wet2']
 
 [experiment]
-acco_list = ['MAE']  # List of acco measures
+acco_list = ['R']  # List of acco measures
 szn_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 
             'NOV', 'DEC']
 

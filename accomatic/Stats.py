@@ -66,7 +66,7 @@ def rank(exp, csv_file_name='ranking.csv'):
                 for row, i in zip(tmp.index.tolist(), range(len(rank))):
                     df.loc[row, ['rank','rank_stat']] = [rank[i], rank_stat[i]]
                 
-    df[['sim','szn','terr','data_avail','rank','rank_stat']].to_csv(csv)
+    df[['sim','szn','terr','data_avail','rank','rank_stat']].to_csv(csv_file_name)
 
 
     

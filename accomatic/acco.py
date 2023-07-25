@@ -35,9 +35,20 @@ def get_toml_pth(argv):
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
-    df = pd.read_csv('/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_flight.csv')
-    # colour = model
-    # two plots, GST vs 50 & GST vs 100
-    # one point == same szn and terr
+    
+    #df = pd.read_csv('/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_flight.csv')
+    #df['stat'] = 'MAE'
+    will_50 = '/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_50_WILL.csv'
+    will_100 = '/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_100_WILL.csv'
+
+    df = pd.read_csv(will_50)
+    print(df.head())
+    print(df.groupby(['sim'])['rank'].mean())
+    
+    
+
+    
+    
+    sys.exit()
     from Plotting import MAE_cross_plots
     MAE_cross_plots(df)

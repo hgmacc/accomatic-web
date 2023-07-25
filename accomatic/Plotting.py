@@ -46,6 +46,7 @@ def get_colour(f):
     else:
         return (f'{f} is not a pth with a colour.')
 
+
 def violin_helper_reorder_data(data, stat):
     data["rank"] = ["{0:.3}".format(np.nanmean(i.v)) for i in data[stat]]
     return(data.sort_values(by=['rank']))
@@ -67,7 +68,7 @@ def boot_vioplot(e, title=''):
 
     for patch, mod in zip(bp['bodies'], label):
         patch.set_facecolor(get_colour(mod)) 
-        patch.set_alpha(0.60)
+        patch.set_alpha(1.0)
     
     for partname in ('cbars','cmins','cmaxes','cmeans'):
         vp = bp[partname]
@@ -89,52 +90,50 @@ def boot_vioplot(e, title=''):
 
 
 def MAE_cross_plots(df):
-    df10 = df[df.depth == 10]
-    df50 = df[df.depth == 50]
-    df100 = df[df.depth == 100]
+    var = 'rank'
+    models = df.sim.unique().tolist()
+    df['sett'] = df.szn + df.terr.astype(str)
+    xlims, ylims = (df[var].min(), df[var].max()), (df[var].min(), df[var].max())
+    df = df.set_index(['sim','sett', 'depth'])[var].unstack('depth') 
+   
+    df50, df100 = df[[10,50]].dropna(), df[[10,100]].dropna()
+    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(10,10), squeeze=True)
     
-    print(df10.head(1), df50.head(1), df100.head(1))
-    sys.exit()
-    
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=False, figsize=(10,13), squeeze=True)
-    
-    palette = ["#008080", "#F50B00", "#F3700E", "#59473c"]
+    palette = ["#59473c", "#008080",  "#F3700E", "#F50B00"]
 
-    # XY SCATTER PLOT
+    # XY SCATTER PLOT: 10 and 50
     plt.subplot(211)
     ax1.set_aspect("equal")
-    plt.scatter(df10[df10.sim=='ens'], df10[df10.sim=='ens'], s=5, c=palette[0], label=f'JRA55 r={np.corrcoef(df.obs, df.jra55)[0][1]:.2f}')
-    plt.scatter(df.obs, df.era5, s=5, c=palette[1], label=f'ERA5 r={np.corrcoef(df.obs, df.era5)[0][1]:.2f}')
-    plt.scatter(df.obs, df.merra2, s=5, c=palette[2], label=f'MERRA2 r={np.corrcoef(df.obs, df.merra2)[0][1]:.2f}')
-    plt.scatter(df.obs, df.ens, s=5, c=palette[3], label=f'ENSEMBLE r={np.corrcoef(df.obs, df.ens)[0][1]:.2f}')
-    plt.plot(lims, lims, 'k-', alpha=0.75, zorder=0)
-    plt.xlabel("Observed")
-    plt.title(f"{site}")
-    plt.ylabel("GEOtop")
-    plt.legend(fontsize='x-small')
-    plt.ylim((a,b))
-    plt.xlim((a,b))
+    
+    for mod, col in zip(models, palette):
+        s = f'{mod.upper()} $r$={np.corrcoef(df50.loc[mod][10],df50.loc[mod][50])[0][1]:.2f}'
+        plt.scatter(df50.loc[mod][10], df50.loc[mod][50], s=5, c=col, label = s)
 
-    # TIME SERIES 
-    plt.subplot(212)
-    plt.plot(df['obs'], c='k', label='obs',linewidth=2)
-    for col, c in zip(df.drop(["obs"], axis=1).columns, palette):
-        plt.plot(df[col], c=c, label=col)
-        
-    #ax2.set_aspect(23)
-    plt.xlabel("Time")
-    plt.ylabel("Temperature ˚C")
+    plt.ylabel("MAE 0.5 m")
     plt.legend(fontsize='x-small')
-    plt.xticks(rotation=70)
-    fig.savefig(f'{pth}xy_{site}_plot.png')
+    
+    plt.plot(xlims, ylims, color="k", zorder=0)
+
+    # XY SCATTER PLOT: 10 & 100
+    plt.subplot(212)
+    ax2.set_aspect("equal")
+    
+    for mod, col in zip(models, palette):
+        s = f'{mod.upper()} $r$={np.corrcoef(df100.loc[mod][10],df100.loc[mod][100])[0][1]:.2f}'
+        plt.scatter(df100.loc[mod][10], df100.loc[mod][100], s=5, c=col, label = s)
+
+    #plt.plot(lims, lims, 'k-', alpha=0.75, zorder=0)
+    plt.xlabel("MAE 0.1 m")
+    plt.ylabel("MAE 1.0 m")
+    
+    plt.plot(xlims, ylims, color="k", zorder=0)
+    plt.legend(fontsize='x-small')
+    fig.savefig(f'plane_plot_rank.png')
     fig.clf()
     plt.close(fig)
 
-
-    
 # TIME TO PLOT CROSS PLOTS OF MAE FOR 0.5 AND 1M 
 # INDEX BY: FOR EACH TERRAIN & SEASON, HOW DID MODEL X PERFORM? 
-
 
 
 def heatmap_plot():
