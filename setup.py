@@ -24,7 +24,7 @@ setuptools.setup(
         ],
     entry_points={
         'console_scripts': [
-            'accomatic = accomatic-web.accomatic:main',
+            'acco = accomatic:acco',
         ]},
 
     install_requires=['xarray',
@@ -38,7 +38,7 @@ setuptools.setup(
                       'typing',
                       'datetime',
                       'matplotlib',
-                      're',
+                      'regex',
                       'tomlkit']
                       
 )

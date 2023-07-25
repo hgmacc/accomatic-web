@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from accomatic.NcReader import *
+# from accomatic.NcReader import *
 from scipy import stats
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
+import sys
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
@@ -90,11 +90,18 @@ def boot_vioplot(e, title=''):
 
 
 def MAE_cross_plots(df):
+<<<<<<< HEAD
     var = 'rank'
     models = df.sim.unique().tolist()
     df['sett'] = df.szn + df.terr.astype(str)
     xlims, ylims = (df[var].min(), df[var].max()), (df[var].min(), df[var].max())
     df = df.set_index(['sim','sett', 'depth'])[var].unstack('depth') 
+=======
+    models = df.sim.unique().tolist()
+    df['sett'] = df.szn + df.terr.astype(str)
+    xlims, ylims = (df.rank_stat.min(), df.rank_stat.max()), (df.rank_stat.min(), df.rank_stat.max())
+    df = df.set_index(['sim','sett', 'depth']).rank_stat.unstack('depth') 
+>>>>>>> 48f39f2536849684d764b12fb16da602b3502827
    
     df50, df100 = df[[10,50]].dropna(), df[[10,100]].dropna()
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(10,10), squeeze=True)
@@ -128,7 +135,11 @@ def MAE_cross_plots(df):
     
     plt.plot(xlims, ylims, color="k", zorder=0)
     plt.legend(fontsize='x-small')
+<<<<<<< HEAD
     fig.savefig(f'plane_plot_rank.png')
+=======
+    fig.savefig(f'plane_plot.png')
+>>>>>>> 48f39f2536849684d764b12fb16da602b3502827
     fig.clf()
     plt.close(fig)
 
