@@ -77,6 +77,13 @@ def average_obs_site(odf) -> pd.DataFrame:
     # KDI-E-Org_02 -> KDI-E-Org
     odf["sitename"] = odf.index.get_level_values("sitename").str[:]
     odf.sitename = [line.split('_')[0] for line in odf.sitename]  
+    
+    # ROCK1A -> ROCK1
+    odf = odf[odf.index.get_level_values("sitename").str.startswith(('R','YK16-R'))].index
+    # \\TODO
+    # YK16-RH01_01 -> YK16-RH01
+    # print(odf[odf.index.get_level_values("sitename").str.startswith('YK16-R')].index.get_level_values("sitename").unique())
+    sys.exit()
 
     # Drop sitename index so we can use new 'sitename' col to avg over non-unique sitenames
     odf = odf.reset_index(level=(1), drop=True)
@@ -99,7 +106,7 @@ def average_obs_site(odf) -> pd.DataFrame:
     return odf
 
 
-def read_nc(file_path, sitename=False, avg=True, depth=False) -> pd.DataFrame:
+def read_nc(file_path, avg=True, depth=False) -> pd.DataFrame:
     # Get dataset
     o = xr.open_dataset(file_path)
     odf = o.to_dataframe()
@@ -115,11 +122,14 @@ def read_nc(file_path, sitename=False, avg=True, depth=False) -> pd.DataFrame:
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["sitename"], axis=1)
     
+    # avg toggle used to average gst observations where > 1 logger
     if avg: odf = average_obs_site(odf)
+    # if not assuming GST, round depth to 0.1 / 0.5 / 1.0
     if depth: odf = odf[odf.depth.round(1) == depth]
     
     odf = odf.drop(["depth"], axis=1)
     
+    # If missing_data_exp for bootstrap: remove data
     missing_data_exp = False
     if missing_data_exp:
         list_of_dates = odf.index.get_level_values(0).unique().tolist()

@@ -41,6 +41,9 @@ def average_data(df_col):
     arr = np.array([i.v for i in df_col.to_list()])    
     return Data(np.nanmean(arr, axis=0))
 
+def rank_shifting_for_heatmap(df_col):
+    return len(df_col.unique())
+    
 
 def std_dev(mod_ensemble):
     # From Luis (2020)
@@ -130,3 +133,4 @@ time_code_months = {
     "NOV": [11],
     "DEC": [12]
 }
+
