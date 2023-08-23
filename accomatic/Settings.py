@@ -9,6 +9,7 @@ import toml
 class Settings:
     _model_pth: str
     _obs_pth: str
+    _rank_csv_path: str
     _depth: float
     _boot_size: int
     _out_acco_pth: str
@@ -35,6 +36,7 @@ class Settings:
                 print(path_error % setting_toml["data"]["observations_pth"])
                 sys.exit()
                 
+            self._rank_csv_path = setting_toml["data"]["rank_csv_path"]                          
             self._depth = setting_toml["data"]["depth"]
             self._boot_size = setting_toml["data"]["boot_size"]
             self._sites_list = setting_toml["data"]["sites_list"]
@@ -64,6 +66,10 @@ class Settings:
     @property
     def obs_pth(self) -> str:
         return self._obs_pth
+    
+    @property
+    def rank_csv_path(self) -> str:
+        return self._rank_csv_path
     
     @property
     def depth(self) -> str:

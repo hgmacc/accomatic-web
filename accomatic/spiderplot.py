@@ -118,7 +118,8 @@ def get_data(df, terrain_list, statistic_list, simulation_list):
     
     # Getting rid of low data and other depth results
     df = df[df.data_avail > 250]
-    df = df[df.depth == 10].drop(columns=['depth']) 
+    if 'depth' in df.columns:
+        df = df[df.depth == 10].drop(columns=['depth']) 
 
     # Selecting key columns, interpolate rank_stat over months with missing data (undo this later)
     df = df[['sim','szn','terr','rank_stat','stat']]
@@ -213,14 +214,13 @@ def get_data(df, terrain_list, statistic_list, simulation_list):
     spider_list.append((f'{terrain}+mean', data))
     return spider_list
     
-if __name__ == '__main__':
-        
-    df = pd.read_csv('/home/hma000/accomatic-web/tests/test_data/csvs/ranking/ranking_combined.csv')
+def spiderplot(exp):        
+    df = pd.read_csv(exp.rank_csv_path)
     
-    terrain_list = [1, 2, 8, 15] #df_og.terr.unique()
-    statistic_list = ['R', 'WILL', 'MAE'] # df_og.stat.unique()
-    simulation_list = ['ens', 'era5', 'jra55', 'merra2'] # df_og.sim.unique()
-    
+    terrain_list = df.terr.unique().tolist()
+    statistic_list = df.stat.unique().tolist()
+    simulation_list = df.sim.unique().tolist()
+
     data = get_data(df, terrain_list, statistic_list, simulation_list)
 
     N = 12
@@ -263,17 +263,17 @@ if __name__ == '__main__':
         fig.text(0.05, place, col, color='black', weight='bold', size='medium')
     
     # Row headers
-    terrain_list.append('Mean')
+    terrain_list.append('mean')
+    terrain_desc = exp.terr_desc
+    terrain_desc['mean'] = 'Mean'
     for col, place in zip(terrain_list, [0.99-(cols-i)/(cols+1) for i in range(cols)]):
-        fig.text(place, 0.925, f'Terrain {col}', color='black', weight='bold', size='medium')
+        fig.text(place, 0.925, f'{terrain_desc[col]}', color='black', weight='bold', size='medium')
     
-    
-    # (x,x) (y,y)
-    line_vert = plt.Line2D((.76,.76),(.05,.9), color="k", linewidth=1)
-    line_hor = plt.Line2D((.1,.925),(.25,.25), color="k", linewidth=1)
-    fig.add_artist(line_vert)
-    fig.add_artist(line_hor)
-    
+    # # (x,x) (y,y)
+    # line_vert = plt.Line2D((.76,.76),(.05,.9), color="k", linewidth=1)
+    # line_hor = plt.Line2D((.1,.925),(.25,.25), color="k", linewidth=1)
+    # fig.add_artist(line_vert)
+    # fig.add_artist(line_hor)
     
     plt.savefig('/home/hma000/accomatic-web/plots/spider/spider_big_proto.png')#, transparent=True)
     
