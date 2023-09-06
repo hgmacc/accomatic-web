@@ -35,7 +35,6 @@ class Data:
         return repr(list(self.v))
 
 
-
 def average_data(df_col):
     # df_col: column of np.arrays
     arr = np.array([i.v for i in df_col.to_list()])    
@@ -110,6 +109,7 @@ acco_rank = {
     "E1": "max",
     "MAE": "min",
     "WILL": "max",
+    "BIAS": "min",
 }
 
 time_code_months = {

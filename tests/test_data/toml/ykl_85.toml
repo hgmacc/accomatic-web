@@ -3,8 +3,8 @@ title = "Accomatic Control File"
 # ALL SITES
 
 [data]
-model_pth = '/home/hma000/accomatic-web/tests/test_data/nc/ykl_june_depths.nc'
-observations_pth = '/home/hma000/accomatic-web/tests/test_data/nc/ykl_therm_obs.nc'
+model_pth = '/home/hma000/accomatic-web/tests/test_data/nc/mod_depths.nc'
+observations_pth = '/home/hma000/accomatic-web/tests/test_data/nc/obs_85_gst.nc'
 
 depth = 0.1
 boot_size = 10

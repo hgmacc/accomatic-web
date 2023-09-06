@@ -7,6 +7,8 @@ import sys
 from Experiment import *
 from NcReader import *
 from Stats import *
+from Plotting import *
+from spiderplot import spiderplot
 
 def get_toml_pth(argv):
     arg_input = ""
@@ -35,7 +37,17 @@ def get_toml_pth(argv):
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
+    
 
     exp = Experiment(arg_input)
-    print(exp.obs())
-    # build(exp)
+    print(exp.terr_desc.values()); sys.exit()
+    terrain_timeseries(exp)
+
+    sys.exit()
+    build(exp)
+    rank(exp)
+    spiderplot(exp)
+
+    
+    
+    

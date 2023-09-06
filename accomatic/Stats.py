@@ -47,27 +47,39 @@ def build(exp):
                 szn,
             )
 
-def rank(exp, csv_file_name='ranking.csv'):
+def rank(exp):
     # get ranks from every subset: 
+    # TODO trying to get all three stats in result dataframe
+
     df = exp.res()
+    df = df.set_index(['sim','szn','terr','data_avail'])
+    df.columns.name = 'stat'
+    df = df.stack()
+    df.name = 'result'
+    df = df.reset_index(drop=False)
+    
     df['rank'] = np.nan
     df['rank_stat'] = np.nan    
-    
+
     for stat in exp.acco_list:
         for terr in list(set(exp.terr_list)):
             for szn in exp.szn_list:
-                tmp = df[df.szn==szn]
-                tmp = tmp[tmp.terr==terr]
+                # Four rows of: Simulation results of season-terr-stat
+                tmp = df.loc[(df["szn"] == szn)
+                                & (df["terr"] == terr)
+                                & (df["stat"] == stat)
+                            ]
 
-                rank_stat = pd.Series([float("{0:.3}".format(np.nanmean(i.v))) for i in tmp[stat]])
-                rank = rank_stat.rank(method='max').tolist()
-                rank_stat = rank_stat.tolist()
+                rank_stat = pd.Series([float("{0:.3}".format(np.nanmean(i.v))) for i in tmp.result])
+                if stat == 'BIAS': rank = rank_stat.abs().rank(method=acco_rank[stat]).tolist()
+                else: rank = rank_stat.rank(method=acco_rank[stat]).tolist()
                 
+                rank_stat = rank_stat.tolist()
+
                 for row, i in zip(tmp.index.tolist(), range(len(rank))):
                     df.loc[row, ['rank','rank_stat']] = [rank[i], rank_stat[i]]
                 
-    df[['sim','szn','terr','data_avail','rank','rank_stat']].to_csv(csv_file_name)
-
+    df[['sim','stat','szn','terr','data_avail','rank','rank_stat']].to_csv(exp.rank_csv_path)
 
     
     

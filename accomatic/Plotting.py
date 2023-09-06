@@ -3,6 +3,8 @@ import random
 import matplotlib.font_manager
 import matplotlib.image as image
 import matplotlib.pyplot as plt
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -16,13 +18,12 @@ plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
 
-PLOT_PTH = '/home/hma000/accomatic-web/tests/plots/JAN31/'
+PLOT_PTH = '/home/hma000/accomatic-web/plots'
 
 def hex_to_RGB(hex_str):
     """ #FFFFFF -> [255,255,255]"""
     #Pass 16 to the integer function for change of base
     return [int(hex_str[i:i+2], 16) for i in range(1,6,2)]
-
 
 def get_color_gradient(c1, c2, n):
     """
@@ -35,14 +36,15 @@ def get_color_gradient(c1, c2, n):
     rgb_colors = [((1-mix)*c1_rgb + (mix*c2_rgb)) for mix in mix_pcts]
     return ["#" + "".join([format(int(round(val*255)), "02x") for val in item]) for item in rgb_colors]
 
+palette_list = ["#527206", "#584538", "#008184", "#F50400", "15e2d0"]
 
 def get_colour(f):
     if 'mer' in f:
         return "#F3700E"
     if 'era' in f:
-        return  "#1ce1ce"
+        return  "#F3700E"
     if 'jra' in f:
-        return "#008080"
+        return "#F3700E"
     if 'ens' in f:
         return "#F50B00"
     else:
@@ -173,4 +175,24 @@ def extrapolation_heatmap(df2):
         
     
     plt.savefig('heatmap.png')
+
+
+def terrain_timeseries(exp):
+    # THIS PLOT IS TO SHOW TERRAIN TYPES 
+    # o = exp.obs()
+    # o['terr'] = [exp.terr_dict()[x] for x in o.index.get_level_values(1)]
+    # o = o.reset_index()
+    o = pd.read_csv('tmp.csv', parse_dates=['time'])
     
+    o = o[o.time.dt.year == 2020]
+    fig = plt.figure(figsize=(15, 10))
+    
+    sns.lineplot(x="time", y="obs", hue='terr', data=o, 
+                 palette=palette_list)
+    
+    plt.ylabel('Observed Temperature ˚C')
+    plt.xlabel('Time')
+    plt.legend(title ='Terrain Description', 
+               labels = exp.terr_desc.values())
+
+    plt.savefig(f'{PLOT_PTH}tmp.png')

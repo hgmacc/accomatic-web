@@ -10,7 +10,6 @@ from accomatic.NcReader import *
 from accomatic.Settings import *
 from static.statistics_helper import average_data
 
-
 class Experiment(Settings):
     _mod_dict: Dict
     _obs_dict: Dict
@@ -18,11 +17,26 @@ class Experiment(Settings):
 
     def __init__(self, sett_file_path="") -> None:
         super().__init__(sett_file_path)
-        self.obs_dict = read_nc(self.obs_pth, depth=self.depth)
-        self.mod_dict = read_geotop(file_path = self.model_pth, 
-                                    sitename = self.sites_list, 
-                                    ens=True,
-                                    depth=self.depth)
+        
+
+        self._obs = read_nc(self._obs_pth, sitename = self.sites_list, depth=self.depth)
+        self._obs_dict = {
+            site: self._obs.loc[(self._obs.index.get_level_values("sitename") == site)].droplevel(
+                "sitename"
+            )
+            for site in self.sites_list
+        }
+
+        self._mod = read_geotop(file_path = self._model_pth, sitename = self.sites_list)
+        self._mod_dict = {
+            site: Ensemble(
+                site,
+                self._mod.loc[(self._mod.index.get_level_values("sitename") == site)].droplevel(
+                    "sitename"
+                ),
+            )
+            for site in self.sites_list
+        }
         
         self.results = pd.DataFrame()
 
@@ -37,27 +51,6 @@ class Experiment(Settings):
     @property
     def results(self) -> pd.DataFrame:
         return self._results
-
-    @mod_dict.setter
-    def mod_dict(self, df) -> None:
-        self._mod_dict = {
-            site: Ensemble(
-                site,
-                df.loc[(df.index.get_level_values("sitename") == site)].droplevel(
-                    "sitename"
-                ),
-            )
-            for site in self.sites_list
-        }
-
-    @obs_dict.setter
-    def obs_dict(self, df) -> None:
-        self._obs_dict = {
-            site: df.loc[(df.index.get_level_values("sitename") == site)].droplevel(
-                "sitename"
-            )
-            for site in self.sites_list
-        }
 
     @results.setter
     def results(self, df):
@@ -94,13 +87,13 @@ class Experiment(Settings):
 
     def mod(self, sitename="") -> pd.DataFrame:
         if sitename == "":
-            return read_geotop(file_path = self._model_pth, sitename = self.sites_list)
+            return self._mod
         else:
             return self._mod_dict[sitename].df
         
     def obs(self, sitename="") -> pd.DataFrame:
         if sitename == "":
-            return read_nc(self._obs_pth, depth=self.depth)
+            return self._obs
         else:
             return self._obs_dict[sitename]
 

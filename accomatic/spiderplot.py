@@ -110,14 +110,19 @@ def radar_factory(num_vars, frame='circle'):
     register_projection(RadarAxes)
     return theta
 
-
-def spider_plot_normalize(df_col):
-    return((df_col - df_col.min()) / (df_col.max() - df_col.min()))
+def spider_plot_normalize(statistic, df_col):
+    #return((df_col - df_col.min()) / (df_col.max() - df_col.min()))
+    if statistic == 'MAE':
+        return(1 - (df_col - df_col.min()) / (df_col.max() - df_col.min()))
+    if statistic == 'BIAS':
+        return((df_col - df_col.min()) / (df_col.max() - df_col.min()))
+    if statistic == 'WILL':
+        return((df_col - df_col.min()) / (df_col.max() - df_col.min()))
 
 def get_data(df, terrain_list, statistic_list, simulation_list):
     
     # Getting rid of low data and other depth results
-    df = df[df.data_avail > 250]
+    #df = df[df.data_avail > 250]
     if 'depth' in df.columns:
         df = df[df.depth == 10].drop(columns=['depth']) 
 
@@ -131,9 +136,11 @@ def get_data(df, terrain_list, statistic_list, simulation_list):
         # Select rows 
         rows = df[df.stat == statistic].index
         # Normalize statistical values
-        nrml = spider_plot_normalize(df[df.stat == statistic].rank_stat).to_list()
+        nrml = spider_plot_normalize(statistic, df[df.stat == statistic].rank_stat).to_list()
         # Assign new values
         df.loc[rows, 'rank_stat'] = nrml
+        
+    
 
     # ACCORDANCE ROWS: 1(acco) x n(terrains)
     for statistic in statistic_list:
@@ -177,7 +184,8 @@ def get_data(df, terrain_list, statistic_list, simulation_list):
     for terrain in terrain_list: 
         # df_terr = (n) stats, (1) TERRAIN, (n) models, (12) months
         df_terr = df[df.terr == terrain].drop(columns=['terr'])
-            
+        df_terr = df_terr[df_terr.stat != 'BIAS']
+
         data = [] # A list of lists; second part of spider_list tuple entry
         for simulation in simulation_list:
             # df_sim = (n) stats, (n) terrain, (1) MODEL, (12) months
@@ -197,6 +205,8 @@ def get_data(df, terrain_list, statistic_list, simulation_list):
     for simulation in simulation_list:
         # df_sim = (n) stats, (n) terrain, (1) MODEL, (12) months
         df_sim = df[df.sim == simulation].drop(columns=['sim', 'terr'])
+        df_sim = df_sim[df_sim.stat != 'BIAS']
+
         df_sim = df_sim.groupby('szn').mean().reset_index(drop=False)
 
         df_sim['szn_no'] = [time_code_months[i][0] for i in df_sim.szn]
@@ -219,10 +229,11 @@ def spiderplot(exp):
     
     terrain_list = df.terr.unique().tolist()
     statistic_list = df.stat.unique().tolist()
+    statistic_list = ['BIAS', 'MAE','WILL']
     simulation_list = df.sim.unique().tolist()
 
     data = get_data(df, terrain_list, statistic_list, simulation_list)
-
+    
     N = 12
     theta = radar_factory(N, frame='polygon')
 
@@ -236,20 +247,37 @@ def spiderplot(exp):
 
     colors = ['#59473c', '#008080','#f50b00','#F3700E']
 
-    rgrid_toggle = True
+    bias = len(terrain_list)+1
     # Plot the 15 cases from the example data on separate axes
     for ax, (title, case_data) in zip(axs.flat, data):
         ax.set_facecolor("white")
+        ax.set_rgrids([])        
+        if bias > 0:
+            zero = [0.5 for i in range(12)]
+            ax.plot(theta, zero, color='k', linewidth=1)
+            for d, color in zip(case_data, colors):
+                # Plot fill
+                d_0 = [i - 0.5 for i in d]
+                d_pos = [val if bias > 0 else 0.5 for val, bias in zip(d, d_0)]
+                d_neg = [val if bias <= 0 else 0.5 for val, bias in zip(d, d_0)]
+                # for i in (d, d_0, d_pos, d_neg):  
+                #     print(theta, [float("{0:.3g}".format(b)) for b in i])
+                # sys.exit()
+                ax.fill_between(theta, zero, d_pos, facecolor='#ffbfbf')
+                ax.fill_between(theta, d_neg, zero, facecolor='#bfbfff')#,interpolate=True, step='mid')
 
-        ax.set_rgrids([])
-        # So we don't label every single plot
-        if rgrid_toggle: 
-            ax.set_rgrids([0.2, 0.4, 0.6, 0.8])
-            rgrid_toggle = False
-        
-        for d, color in zip(case_data, colors):
-            ax.plot(theta, d, color=color)
-            ax.fill(theta, d, facecolor=color, alpha=0.25, label='_nolegend_')
+            for d, color in zip(case_data, colors):
+                # Plot lines
+                ax.plot(theta, d, color=color, linewidth=2)
+            
+            
+            bias = bias - 1
+            
+        else:
+            for d, color in zip(case_data, colors):
+                ax.plot(theta, d, color=color)
+                ax.fill(theta, d, facecolor=color, alpha=0.25, label='_nolegend_')
+        ax.set_ylim(0, 1)   
         ax.set_varlabels(spoke_labels)
 
     fig.text(0.5, 0.965, 'Seasonal performance of simulations with normalized statical values.',
@@ -274,6 +302,7 @@ def spiderplot(exp):
     # line_hor = plt.Line2D((.1,.925),(.25,.25), color="k", linewidth=1)
     # fig.add_artist(line_vert)
     # fig.add_artist(line_hor)
+    plt.legend()
     
     plt.savefig('/home/hma000/accomatic-web/plots/spider/spider_big_proto.png')#, transparent=True)
     

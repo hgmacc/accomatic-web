@@ -101,7 +101,7 @@ def average_obs_site(odf) -> pd.DataFrame:
     return odf
 
 
-def read_nc(file_path, avg=True, depth=False) -> pd.DataFrame:
+def read_nc(file_path, sitename = "", avg=True, depth=False) -> pd.DataFrame:
     # Get dataset
     o = xr.open_dataset(file_path)
     odf = o.to_dataframe()
@@ -118,7 +118,7 @@ def read_nc(file_path, avg=True, depth=False) -> pd.DataFrame:
     odf = odf.drop(["sitename"], axis=1)
         
     # if not assuming GST, round depth to 0.1 / 0.5 / 1.0
-    if depth: odf = odf[odf.depth.round(1) == depth]    
+    if depth: odf = odf[odf.depth.round(1) == float(depth)]    
     odf = odf.drop(["depth"], axis=1)
     
     # avg toggle used to average gst observations where > 1 logger
@@ -138,6 +138,9 @@ def read_nc(file_path, avg=True, depth=False) -> pd.DataFrame:
         
         list_of_dates = [list_of_dates[i] for i in indices]
         odf.drop(list_of_dates, axis=0, inplace=True)
+    
+    # Selecting only sites specified in toml file    
+    odf = odf[odf.index.get_level_values(1).isin(sitename)]
 
     odf = odf.dropna()
     print(f"Observations: {len(odf.index.get_level_values(1).unique())} sites at {depth}m depth.")
