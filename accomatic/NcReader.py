@@ -118,6 +118,8 @@ def read_nc(file_path, sitename = "", avg=True, depth=False) -> pd.DataFrame:
     odf = odf.drop(["sitename"], axis=1)
         
     # if not assuming GST, round depth to 0.1 / 0.5 / 1.0
+#    if depth: odf = odf[odf.depth.round(1) == depth]    
+
     if depth: odf = odf[odf.depth.round(1) == float(depth)]    
     odf = odf.drop(["depth"], axis=1)
     

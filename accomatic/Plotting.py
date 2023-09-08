@@ -8,7 +8,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import plotly.express as px
 from static.statistics_helper import rank_shifting_for_heatmap, time_code_months
 # from accomatic.NcReader import *
 from scipy import stats
