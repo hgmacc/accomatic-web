@@ -10,6 +10,7 @@ from accomatic.NcReader import *
 from accomatic.Settings import *
 from static.statistics_helper import average_data
 
+
 class Experiment(Settings):
     _mod_dict: Dict
     _obs_dict: Dict
@@ -17,27 +18,26 @@ class Experiment(Settings):
 
     def __init__(self, sett_file_path="") -> None:
         super().__init__(sett_file_path)
-        
 
-        self._obs = read_nc(self._obs_pth, sitename = self.sites_list, depth=self.depth)
+        self._obs = read_nc(self._obs_pth, sitename=self.sites_list, depth=self.depth)
         self._obs_dict = {
-            site: self._obs.loc[(self._obs.index.get_level_values("sitename") == site)].droplevel(
-                "sitename"
-            )
+            site: self._obs.loc[
+                (self._obs.index.get_level_values("sitename") == site)
+            ].droplevel("sitename")
             for site in self.sites_list
         }
 
-        self._mod = read_geotop(file_path = self._model_pth, sitename = self.sites_list)
+        self._mod = read_geotop(file_path=self._model_pth, sitename=self.sites_list)
         self._mod_dict = {
             site: Ensemble(
                 site,
-                self._mod.loc[(self._mod.index.get_level_values("sitename") == site)].droplevel(
-                    "sitename"
-                ),
+                self._mod.loc[
+                    (self._mod.index.get_level_values("sitename") == site)
+                ].droplevel("sitename"),
             )
             for site in self.sites_list
         }
-        
+
         self.results = pd.DataFrame()
 
     @property
@@ -74,29 +74,27 @@ class Experiment(Settings):
             & (self._results["szn"] == szn)
         ]
         return index.index
-    
-    def res(self, sett=['sim','szn','terr']) -> pd.DataFrame:
+
+    def res(self, sett=["sim", "szn", "terr"]) -> pd.DataFrame:
         # Arguably, the coolest function I've written.
-        
-        d1 = dict.fromkeys(['data_avail'], np.sum)
+
+        d1 = dict.fromkeys(["data_avail"], np.sum)
         d2 = dict.fromkeys(self._acco_list, average_data)
         d = {**d1, **d2}
 
         return self._results.groupby(sett, as_index=False).agg(d)
-
 
     def mod(self, sitename="") -> pd.DataFrame:
         if sitename == "":
             return self._mod
         else:
             return self._mod_dict[sitename].df
-        
+
     def obs(self, sitename="") -> pd.DataFrame:
         if sitename == "":
             return self._obs
         else:
             return self._obs_dict[sitename]
-
 
     def terr(self) -> List:
         return list(zip(self._terr_list, self._sites_list))
