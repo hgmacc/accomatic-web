@@ -35,26 +35,30 @@ class Settings:
             else:
                 print(path_error % setting_toml["data"]["observations_pth"])
                 sys.exit()
-                
-            self._rank_csv_path = setting_toml["data"]["rank_csv_path"]                          
+
+            self._rank_csv_path = setting_toml["data"]["rank_csv_path"]
             self._depth = setting_toml["data"]["depth"]
             self._boot_size = setting_toml["data"]["boot_size"]
             self._sites_list = setting_toml["data"]["sites_list"]
             self._acco_list = setting_toml["experiment"]["acco_list"]
             self._szn_list = setting_toml["experiment"]["szn_list"]
             self._terr_list = setting_toml["experiment"]["terr_list"]
-            
+
             terrain_descriptions = setting_toml["experiment"]["terr_desc"]
-            self._terr_desc = dict(zip([i for i in range(1, len(terrain_descriptions)+1)],
-                                        terrain_descriptions))
+            self._terr_desc = dict(
+                zip(
+                    [i for i in range(1, len(terrain_descriptions) + 1)],
+                    terrain_descriptions,
+                )
+            )
 
             if len(self._terr_list) != len(self.sites_list):
                 print("ERROR: Terrains given in TOML file not equal to # of sites.")
                 sys.exit()
-            
+
             if len(self._terr_desc.values()) != len(set(self.terr_list)):
                 print("WARNING: Check your terrain descriptions.")
-                
+
         except KeyError as e:
             print(f"ERROR: Settings {e} key error in TOML file.")
             sys.exit()
@@ -66,15 +70,15 @@ class Settings:
     @property
     def obs_pth(self) -> str:
         return self._obs_pth
-    
+
     @property
     def rank_csv_path(self) -> str:
         return self._rank_csv_path
-    
+
     @property
     def depth(self) -> str:
         return self._depth
-    
+
     @property
     def boot_size(self) -> int:
         return self._boot_size
@@ -94,7 +98,7 @@ class Settings:
     @property
     def terr_list(self) -> List[str]:
         return self._terr_list
-    
+
     @property
     def terr_desc(self) -> Dict[int, str]:
         return self._terr_desc

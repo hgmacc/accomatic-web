@@ -10,6 +10,7 @@ from Stats import *
 from Plotting import *
 from spiderplot import spiderplot
 
+
 def get_toml_pth(argv):
     arg_input = ""
     arg_help = "{0} -f <toml_file_path>".format(argv[0])
@@ -33,21 +34,18 @@ def get_toml_pth(argv):
 
     return arg_input
 
+
 # python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
-    
 
     exp = Experiment(arg_input)
-    print(exp.terr_desc.values()); sys.exit()
+    print(exp.terr_desc.values())
+    sys.exit()
     terrain_timeseries(exp)
 
     sys.exit()
     build(exp)
     csv_rank(exp)
     spiderplot(exp)
-
-    
-    
-    

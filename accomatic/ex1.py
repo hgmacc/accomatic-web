@@ -12,6 +12,25 @@ plt.rcParams["figure.figsize"] = [7.00, 3.50]
 plt.rcParams["figure.autolayout"] = True
 
 
+def bs_10_day_sample(exp, sample_size):
+    o = exp.obs("ROCKT1")
+    m = exp.mod("ROCKT1")["ens"]
+    stat = "MAE"
+
+    nrows = range(o.shape[0])
+    res = []
+    window = 10
+
+    while len(res) < sample_size:
+        ix = random.randint(nrows.start, nrows.stop - (window + 1))
+        try:
+            a = acco_measures[stat](o.iloc[ix : ix + window], m.iloc[ix : ix + window])
+        except ValueError:
+            continue
+        res.append(a)
+    return res
+
+
 def get_acco_vals(exp, stat):
     """
     If stat not specified, function uses RECURSION to run through all
@@ -210,10 +229,9 @@ def bias_heatmap(x_star):
     x_ranks = ["Bias"]
     y_mod = x_star.columns
 
-    pos = x_star[x_star > 0].count() / len(x_star)
+    x_star = x_star[x_star > 0].count() / len(x_star)
 
-    data = pd.concat([neg, pos], axis=1).to_numpy()
-    print(data)
+    data = x_star.to_numpy()
 
     fig_bias, ax = plt.subplots(figsize=(8, 12))
     plt.rcParams["font.size"] = "12"
@@ -227,6 +245,7 @@ def bias_heatmap(x_star):
     )
     texts = annotate_heatmap(im, data=data, valfmt="{x:.2f}")
     plt.title("Bias distribution of bias bootstrap results")
+    plt.savefig("/home/hma000/accomatic-web/plots/ex1/bs_bias_heatmap.png")
 
 
 def save_image(filename):
@@ -242,8 +261,8 @@ def save_image(filename):
 
 if __name__ == "__main__":
     s = time.time()
-    n = 10000
-    stat = "WILL"
+    n = 100
+    stat = "BIAS"
 
     # sample = get_acco_vals(exp)
 
@@ -254,6 +273,10 @@ if __name__ == "__main__":
         .drop(columns=["stat"])
         .reset_index(drop=True),
     )
+
+    bias_heatmap(x_star=bs_data["means"])
+    sys.exit()
+
     rank_dist = get_rank_distribution(x_star=bs_data["means"], stat=stat)
 
     bs_boxplot(
@@ -270,22 +293,3 @@ if __name__ == "__main__":
     save_image(f"plots/ex1/{stat}_multi_plot.pdf")
 
     print(f"This took {time.time() - s}s to run.")
-
-
-def bs_10_day_sample(exp, sample_size):
-    o = exp.obs("ROCKT1")
-    m = exp.mod("ROCKT1")["ens"]
-    stat = "MAE"
-
-    nrows = range(o.shape[0])
-    res = []
-    window = 10
-
-    while len(res) < sample_size:
-        ix = random.randint(nrows.start, nrows.stop - (window + 1))
-        try:
-            a = acco_measures[stat](o.iloc[ix : ix + window], m.iloc[ix : ix + window])
-        except ValueError:
-            continue
-        res.append(a)
-    return res
