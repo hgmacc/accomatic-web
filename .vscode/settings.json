@@ -1,3 +1,9 @@
 {
-    "notebook.showFoldingControls": "always"
+    "notebook.showFoldingControls": "always",
+    "pdf-preview.default.scale": "0.7",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "black-formatter.path": [
+        "/home/hma000/.conda/envs/acco/bin/black"
+    ]
 }

@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     sys.exit()
     build(exp)
-    rank(exp)
+    csv_rank(exp)
     spiderplot(exp)
 
     

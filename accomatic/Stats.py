@@ -47,7 +47,7 @@ def build(exp):
                 szn,
             )
 
-def rank(exp):
+def csv_rank(exp):
     # get ranks from every subset: 
     # TODO trying to get all three stats in result dataframe
 

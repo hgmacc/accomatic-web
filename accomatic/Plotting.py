@@ -13,6 +13,8 @@ from static.statistics_helper import rank_shifting_for_heatmap, time_code_months
 from scipy import stats
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import sys
+import os
+from Experiment import *
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
@@ -41,11 +43,11 @@ def get_colour(f):
     if 'mer' in f:
         return "#F3700E"
     if 'era' in f:
-        return  "#F3700E"
+        return  "#008080"
     if 'jra' in f:
-        return "#F3700E"
-    if 'ens' in f:
         return "#F50B00"
+    if 'ens' in f:
+        return "#59473c"
     else:
         return (f'{f} is not a pth with a colour.')
 
@@ -59,12 +61,14 @@ def boot_vioplot(e, title=''):
     # site, stat, sim, label, 
     
     stat = 'MAE'
-    data = e.res(sett=['sim'])
-    data = violin_helper_reorder_data(data, stat)
+    if type(e) == Experiment():
+        data = e.res(sett=['sim'])
+        data = violin_helper_reorder_data(data, stat)
 
-    label = data.sim.to_list()
-    data_arr = np.array([i.v for i in data[stat].to_list()])  
-    
+        label = data.sim.to_list()
+        data_arr = np.array([i.v for i in data[stat].to_list()])  
+    else: 
+        data_arr = e
     fig, ax = plt.subplots(figsize=(len(data_arr)+4, 8))
 
     bp = ax.violinplot(data_arr.T, showmeans=True)
