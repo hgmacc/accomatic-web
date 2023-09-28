@@ -123,7 +123,7 @@ def spider_plot_normalize(statistic, df_col):
 
 def get_data(df, terrain_list, statistic_list, simulation_list):
 
-    # Getting rid of low data and other depth results
+    # Getting rid of low data and other depth old_results
     # df = df[df.data_avail > 250]
     if "depth" in df.columns:
         df = df[df.depth == 10].drop(columns=["depth"])

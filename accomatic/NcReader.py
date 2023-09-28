@@ -15,7 +15,7 @@ import xarray as xr
 
 def create_acco_nc(exp) -> None:
     acco = xr.Dataset(
-        str(exp.model_pth + "_acco_results.nc"), mode="w", format="NETCDF4"
+        str(exp.model_pth + "_acco_old_results.nc"), mode="w", format="NETCDF4"
     )
     # build stats
     # populate file
@@ -90,12 +90,12 @@ def average_obs_site(odf) -> pd.DataFrame:
     )
 
     odf = odf.drop_duplicates(subset=["temp_site_date"], keep="first")
+    odf.index = odf.index.date
 
     # Cleaning up so df format is still (time, sitename) : soil_temperature
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["temp_site_date", "sitename"], axis=1)
     odf = odf.rename(columns={"soil_temperature": "obs"})
-
     return odf
 
 
@@ -115,9 +115,6 @@ def read_nc(file_path, sitename="", avg=True, depth=False) -> pd.DataFrame:
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["sitename"], axis=1)
 
-    # if not assuming GST, round depth to 0.1 / 0.5 / 1.0
-    #    if depth: odf = odf[odf.depth.round(1) == depth]
-
     if depth:
         odf = odf[odf.depth.round(1) == float(depth)]
     odf = odf.drop(["depth"], axis=1)
@@ -125,24 +122,6 @@ def read_nc(file_path, sitename="", avg=True, depth=False) -> pd.DataFrame:
     # avg toggle used to average gst observations where > 1 logger
     if avg:
         odf = average_obs_site(odf)
-
-    # If missing_data_exp for bootstrap: remove data
-    missing_data_exp = False
-    if missing_data_exp:
-        list_of_dates = odf.index.get_level_values(0).unique().tolist()
-        percent = 0.25
-        print(percent)
-        from numpy.random import default_rng
-
-        rng = default_rng()
-        indices = rng.choice(
-            len(list_of_dates),
-            size=int(np.round(percent * len(list_of_dates))),
-            replace=False,
-        )
-
-        list_of_dates = [list_of_dates[i] for i in indices]
-        odf.drop(list_of_dates, axis=0, inplace=True)
 
     # Selecting only sites specified in toml file
     odf = odf[odf.index.get_level_values(1).isin(sitename)]

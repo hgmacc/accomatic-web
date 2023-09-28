@@ -6,85 +6,115 @@ from matplotlib.dates import DateFormatter
 from accomatic.NcReader import *
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from static.statistics_helper import *
+import time
 
 
-def boot(stat, o, m, boot_size):
-    nrows = range(o.shape[0])
-    window = 5
-    res = []
+def get_block(df_list):
+    """
+    Takes list of terrain-szn-plot dataframes.
+    Returns timeseries of length n where:
+        n = len_of_obs / b
+        b = window (10 days)
+    """
+    b = 10
+    n = int(round(sum([len(df_i) for df_i in df_list]) / b))
 
-    for j in range(boot_size):
-        ix = random.randint(nrows.start, nrows.stop - (window + 1))
+    block_ts = []
+    for i in range(n):
+        df = df_list[random.randint(0, len(df_list) - 1)].reset_index(drop=False)
+        nrows = range(df.shape[0])
+        ix = random.randint(nrows.start, nrows.stop - (b + 1))
+        block_ts.append(df.iloc[ix : ix + b].set_index("Date"))
+    block_ts = pd.concat(block_ts)
+    return block_ts
 
-        a = acco_measures[stat](o.iloc[ix : ix + window], m.iloc[ix : ix + window])
-        res.append(a)
-    return res
 
+def evaluate(exp, block):
+    stat_dict = {
+        stat: {"res": pd.DataFrame, "rank": pd.DataFrame} for stat in exp.acco_list
+    }
+    for stat in exp.acco_list:
+        res = {mod: [] for mod in exp.mod_names()}
+        # {'era5': 0.7, 'jra55': 0.98,  'merra': 0.25,  'ens': 0.10}
+        # {'era5': 3,   'jra55': 4,     'merra': 2,     'ens': 0.4}
+        for model in exp.mod_names():
+            res[model].append(acco_measures[stat](block.obs, block[model]))
+        res = pd.DataFrame.from_dict(res)
 
-def run(o, m, exp, site, szn):
-    d = {"data_avail": len(o)}
-    for sim in m.columns:
-        for stat in exp.acco_list:
-            if len(o) < 30:
-                d[stat] = Data(np.full(exp.boot_size, np.nan))
-            else:
-                if exp.boot_size:
-                    d[stat] = Data(boot(stat, o, m[sim], exp.boot_size))
-                else:
-                    d[stat] = acco_measures[stat](o, m[sim])
-        row = exp.res_index(site, sim, szn)
-        exp.results.loc[row, list(d.keys())] = list(d.values())
+        if stat == "BIAS":
+            rank = res.abs().rank(method=acco_rank[stat])
+        else:
+            rank = res.rank(method=acco_rank[stat], axis=1)
+
+        stat_dict[stat]["res"] = res
+        stat_dict[stat]["rank"] = rank
+
+    return stat_dict
 
 
 def build(exp):
-    for site in exp.sites_list:
-        df = exp.obs(site).join(exp.mod(site)).dropna()
-        o, m = df.obs.dropna(), df.drop(["obs"], axis=1)
-        for szn in exp.szn_list:
-            run(
-                o[o.index.month.isin(time_code_months[szn])],
-                m[m.index.month.isin(time_code_months[szn])],
-                exp,
-                site,
-                szn,
-            )
+    n = 10000
+    print("Building")
+    for terr in exp.data.keys():
+        for szn in exp.data[terr].keys():
+            for i in range(n):
+                s = time.time()
+                result = evaluate(exp, get_block(exp.data[terr][szn]))
+
+                for stat in result.keys():
+                    for model in exp.mod_names():
+                        exp.results[terr][szn]["res"].loc[stat, model].ap(
+                            result[stat]["res"][model].iloc[0]
+                        )
+                        exp.results[terr][szn]["rank"].loc[stat, model].ap(
+                            result[stat]["rank"][model].iloc[0]
+                        )
+    print(f"This took {time.time() - s}s to run.")
+    print(f"Build complete for n={n}.")
+    import pickle
+
+    # Store data (serialize)
+    with open("exp_10k.pickle", "wb") as handle:
+        pickle.dump(exp, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def csv_rank(exp):
-    # get ranks from every subset:
-    # TODO trying to get all three stats in result dataframe
+def concatonate(exp):
+    """
+    Get x2 df:
+    ranks = (terr, szn, stat)
+    res = (terr, szn, stat)
+    """
 
-    df = exp.res()
-    df = df.set_index(["sim", "szn", "terr", "data_avail"])
-    df.columns.name = "stat"
-    df = df.stack()
-    df.name = "result"
-    df = df.reset_index(drop=False)
+    res, rank = [], []
+    for terr in exp.results.keys():
 
-    df["rank"] = np.nan
-    df["rank_stat"] = np.nan
+        res_terr, rank_terr = [], []
+        for szn in exp.results[terr].keys():
 
-    for stat in exp.acco_list:
-        for terr in list(set(exp.terr_list)):
-            for szn in exp.szn_list:
-                # Four rows of: Simulation results of season-terr-stat
-                tmp = df.loc[
-                    (df["szn"] == szn) & (df["terr"] == terr) & (df["stat"] == stat)
-                ]
+            res_szn = exp.results[terr][szn]["res"]
+            res_szn.index.name = "stat"
+            res_szn["szn"] = szn
+            res_terr.append(res_szn.reset_index(drop=False))
 
-                rank_stat = pd.Series(
-                    [float("{0:.3}".format(np.nanmean(i.v))) for i in tmp.result]
-                )
-                if stat == "BIAS":
-                    rank = rank_stat.abs().rank(method=acco_rank[stat]).tolist()
-                else:
-                    rank = rank_stat.rank(method=acco_rank[stat]).tolist()
+            rank_szn = exp.results[terr][szn]["rank"]
+            rank_szn.index.name = "stat"
+            rank_szn["szn"] = szn
+            rank_terr.append(rank_szn.reset_index(drop=False))
 
-                rank_stat = rank_stat.tolist()
+        res_terr = pd.concat(res_terr)
+        res_terr["terr"] = terr
+        res.append(res_terr)
 
-                for row, i in zip(tmp.index.tolist(), range(len(rank))):
-                    df.loc[row, ["rank", "rank_stat"]] = [rank[i], rank_stat[i]]
+        rank_terr = pd.concat(rank_terr)
+        rank_terr["terr"] = terr
+        rank.append(rank_terr)
 
-    df[["sim", "stat", "szn", "terr", "data_avail", "rank", "rank_stat"]].to_csv(
-        exp.rank_csv_path
-    )
+    res = pd.concat(res)
+    res["mode"] = "res"
+
+    rank = pd.concat(rank)
+    rank["mode"] = "rank"
+
+    df = pd.concat([rank, res])
+    df.set_index(["mode", "terr", "szn", "stat"], inplace=True)
+    exp.results = df

@@ -41,11 +41,9 @@ if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
 
     exp = Experiment(arg_input)
-    print(exp.terr_desc.values())
-    sys.exit()
     terrain_timeseries(exp)
-
     sys.exit()
+
     build(exp)
     csv_rank(exp)
     spiderplot(exp)

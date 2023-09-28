@@ -8,43 +8,64 @@ from accomatic.NcReader import *
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
+class Cell:
+    _arr: np.array
+
+    def __init__(self):
+        self._arr = []
+
+    @property
+    def arr(self) -> np.array:
+        return np.array(self._arr)
+
+    @arr.setter
+    def arr(self, arr) -> None:
+        self._arr = arr
+
+    def ap(self, value: float) -> None:
+        self._arr.append(value)
+
+    def __repr__(self):
+        return repr(self.arr)
+
+
 class Data:
     _v: np.array
-    
+
     def __init__(self, v):
         if type(v) == str:
-            v = [int(i) for i in v.strip("[]").split(",")] 
+            v = [int(i) for i in v.strip("[]").split(",")]
             v = np.array(v)
             rand_indices = np.random.randint(low=0, high=999, size=300)
             v[rand_indices] = np.nan
-        self._v = v 
-        
+        self._v = v
+
     @property
     def v(self) -> np.array:
         return self._v
-    
+
     @property
     def mean(self) -> float:
         return np.mean(self._v)
-    
+
     @property
     def p(self) -> np.array:
         spl = make_interp_spline(range(10), self.v, k=3)
-        return(spl(np.linspace(-1, 1, 300)))
-    
+        return spl(np.linspace(-1, 1, 300))
+
     def __repr__(self):
         return repr(list(self.v))
 
 
 def average_data(df_col):
     # df_col: column of np.arrays
-    arr = np.array([i.v for i in df_col.to_list()])    
+    arr = np.array([i.v for i in df_col.to_list()])
     return Data(np.nanmean(arr, axis=0))
 
 
 def rank_shifting_for_heatmap(df_col):
     return len(df_col.unique())
-    
+
 
 def std_dev(mod_ensemble):
     # From Luis (2020)
@@ -79,8 +100,8 @@ def willmott_refined_d(obs, mod):
 
 def r_score(obs, mod):
     return np.corrcoef(obs, mod)[0][1]
-    
-    
+
+
 def nse_one(prediction, observation):
     o_mean = observation.mean()
     a = sum(abs(observation - prediction))
@@ -133,11 +154,13 @@ time_code_months = {
     "SEP": [9],
     "OCT": [10],
     "NOV": [11],
-    "DEC": [12]
+    "DEC": [12],
 }
 
-def heatmap(data, row_labels, col_labels, ax=None,
-            cbar_kw=None, cbarlabel="", **kwargs):
+
+def heatmap(
+    data, row_labels, col_labels, ax=None, cbar_kw=None, cbarlabel="", **kwargs
+):
     """
     Create a heatmap from a numpy array and two lists of labels.
 
@@ -178,27 +201,30 @@ def heatmap(data, row_labels, col_labels, ax=None,
     ax.set_yticks(np.arange(data.shape[0]), labels=row_labels)
 
     # Let the horizontal axes labeling appear on top.
-    ax.tick_params(top=True, bottom=False,
-                   labeltop=True, labelbottom=False)
+    ax.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
 
     # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right",
-             rotation_mode="anchor")
+    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right", rotation_mode="anchor")
 
     # Turn spines off and create white grid.
     ax.spines[:].set_visible(False)
 
-    ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
-    ax.set_yticks(np.arange(data.shape[0]+1)-.5, minor=True)
-    ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
+    ax.set_xticks(np.arange(data.shape[1] + 1) - 0.5, minor=True)
+    ax.set_yticks(np.arange(data.shape[0] + 1) - 0.5, minor=True)
+    ax.grid(which="minor", color="w", linestyle="-", linewidth=3)
     ax.tick_params(which="minor", bottom=False, left=False)
 
     return im, cbar
 
 
-def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
-                     textcolors=("black", "white"),
-                     threshold=None, **textkw):
+def annotate_heatmap(
+    im,
+    data=None,
+    valfmt="{x:.2f}",
+    textcolors=("black", "white"),
+    threshold=None,
+    **textkw
+):
     """
     A function to annotate a heatmap.
 
@@ -231,12 +257,11 @@ def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
     if threshold is not None:
         threshold = im.norm(threshold)
     else:
-        threshold = im.norm(data.max())/2.
+        threshold = im.norm(data.max()) / 2.0
 
     # Set default alignment to center, but allow it to be
     # overwritten by textkw.
-    kw = dict(horizontalalignment="center",
-              verticalalignment="center")
+    kw = dict(horizontalalignment="center", verticalalignment="center")
     kw.update(textkw)
 
     # Get the formatter in case a string is supplied

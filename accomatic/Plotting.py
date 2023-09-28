@@ -20,7 +20,7 @@ from Experiment import *
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
-
+pd.option_context("mode.use_inf_as_na", True)
 PLOT_PTH = "/home/hma000/accomatic-web/plots"
 
 
@@ -45,7 +45,7 @@ def get_color_gradient(c1, c2, n):
     ]
 
 
-palette_list = ["#527206", "#584538", "#008184", "#F50400", "15e2d0"]
+palette_list = ["#527206", "#584538", "#008184", "#F50400", "#15e2d0"]
 
 
 def get_colour(f):
@@ -194,18 +194,27 @@ def extrapolation_heatmap(df2):
 
 def terrain_timeseries(exp):
     # THIS PLOT IS TO SHOW TERRAIN TYPES
-    # o = exp.obs()
-    # o['terr'] = [exp.terr_dict()[x] for x in o.index.get_level_values(1)]
-    # o = o.reset_index()
-    o = pd.read_csv("tmp.csv", parse_dates=["time"])
+    o = exp.obs().reset_index()
+    o.level_0 = pd.to_datetime(o.level_0)
+    o["day-month"] = o.level_0.dt.strftime("%m-%d")
 
-    o = o[o.time.dt.year == 2020]
-    fig = plt.figure(figsize=(15, 10))
+    o = o.groupby(["day-month", "sitename"]).mean().drop(columns="level_0")
+    o["terr"] = [exp.terr_dict()[x] for x in o.index.get_level_values(1)]
 
-    sns.lineplot(x="time", y="obs", hue="terr", data=o, palette=palette_list)
-
+    fig = plt.figure(figsize=(8, 5))
+    sns.lineplot(data=o, x="day-month", y="obs", hue="terr", palette=palette_list)
+    months = ["JAN", "MAR", "MAY", "JUL", "SEP", "NOV"]
+    plt.xticks(ticks=range(1, 365, 62), labels=months)
     plt.ylabel("Observed Temperature ˚C")
     plt.xlabel("Time")
-    plt.legend(title="Terrain Description", labels=exp.terr_desc.values())
+
+    from matplotlib.patches import Patch
+
+    # Have to do this bc sns.lineplot legend is weird as hell
+    legend_elements = [
+        Patch(facecolor=c, edgecolor=c, label=des)
+        for c, des in zip(palette_list, exp.terr_desc.values())
+    ]
+    plt.legend(handles=legend_elements)
 
     plt.savefig(f"{PLOT_PTH}tmp.png")
