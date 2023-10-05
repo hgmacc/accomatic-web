@@ -41,8 +41,27 @@ if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
 
     exp = Experiment(arg_input)
+
     terrain_timeseries(exp)
     sys.exit()
+
+    all_o = o
+    all_o.index = all_o.level_0
+    plt.subplot(211)
+    sns.lineplot(
+        data=all_o.dropna(),
+        x="level_0",
+        y="obs",
+        palette=get_color_gradient(
+            c1="#804203", c2="#ffb161", n=len(all_o.sitename.unique())
+        ),
+        hue="sitename",
+        legend=False,
+        linewidth=0.5,
+    )
+
+    plt.xlabel("")
+    plt.ylabel("GST ˚C")
 
     build(exp)
     csv_rank(exp)

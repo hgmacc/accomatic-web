@@ -18,3 +18,6 @@ tests/test_data/csvs/snow/*.txt
 accomatic/__pycache__/*.pyc
 recycling/terrain_clustering/k_2_means_cluster_3D.png
 *.png
+*.pickle
+*.pdf
+

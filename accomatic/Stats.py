@@ -7,6 +7,7 @@ from accomatic.NcReader import *
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from static.statistics_helper import *
 import time
+import pickle
 
 
 def get_block(df_list):
@@ -53,14 +54,18 @@ def evaluate(exp, block):
 
 
 def build(exp):
-    n = 10000
     print("Building")
     for terr in exp.data.keys():
         for szn in exp.data[terr].keys():
-            for i in range(n):
+            for i in range(exp.boot_size):
                 s = time.time()
-                result = evaluate(exp, get_block(exp.data[terr][szn]))
+                df_list = exp.data[terr][szn]
+                if exp.missing_data:
+                    df_list = random.sample(
+                        df_list, int(exp.missing_data / 100 * len(df_list))
+                    )
 
+                result = evaluate(exp, get_block(df_list))
                 for stat in result.keys():
                     for model in exp.mod_names():
                         exp.results[terr][szn]["res"].loc[stat, model].ap(
@@ -70,12 +75,7 @@ def build(exp):
                             result[stat]["rank"][model].iloc[0]
                         )
     print(f"This took {time.time() - s}s to run.")
-    print(f"Build complete for n={n}.")
-    import pickle
-
-    # Store data (serialize)
-    with open("exp_10k.pickle", "wb") as handle:
-        pickle.dump(exp, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print(f"Build complete for n={exp.boot_size}.")
 
 
 def concatonate(exp):

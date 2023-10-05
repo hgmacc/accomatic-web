@@ -1,0 +1,29 @@
+title = "Accomatic Control File"
+
+# ALL SITES
+
+[data]
+model_pth = '/home/hma000/accomatic-web/tests/test_data/nc/result_soil_temperature.nc'
+observations_pth = '/home/hma000/accomatic-web/tests/test_data/nc/obs_85_gst.nc'
+
+rank_csv_path = '/home/hma000/accomatic-web/tests/test_data/csvs/rankings_24aug.csv'
+depth = 0.1
+boot_size = 1000
+missing_data = 0
+
+sites_list = ['KDI-E-Org2', 'KDI-E-Tslp', 'KDI-E-Ttop', 'KDI-E-Wet', 'KDI-W-Org1', 'KDI-W-Org2', 'KDI-W-ShrubM1', 'KDI-W-ShrubM2', 'KDI-W-ShrubT', 'KDI-W-Snowdrift', 'NGO-DD-1004', 'NGO-DD-1005', 'NGO-DD-1009', 'NGO-DD-1010', 'NGO-DD-2004', 'NGO-DD-2007', 'NGO-DD-2008', 'NGO-DD-2011', 'NGO-DD-2012', 'NGO-DD-2014', 'NGO-DD-2016', 'NGO-DD-2018', 'NGO-DD-2019', 'NGO-DD-2029', 'NGO-RC-162', 'NGO-RC-163', 'NGO-RC-164', 'NGO-RC-165', 'NGO-RC-166', 'NGO-RC-167', 'NGO-RC-169', 'NGO-RC-170', 'NGO-RC-171', 'NGO-RC-172', 'YK16-SO01', 'YK16-SO09', 'YK16-RH01', 'YK16-RH02', 'YK16-RH03', 'YK16-RV03', 'YK16-RV04', 'YK16-RV01', 'YK16-RV02', 'KDI-E-Tbot', 'KDI-E-ShrubM', 'KDI-E-ShrubT', 'KDI-W-Ttop', 'ROCKT1', 'ROCKT2', 'ROCKT3']
+
+
+[experiment]
+acco_list = ['MAE','BIAS','WILL', 'R'] # List of acco measures
+szn_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 
+            'NOV', 'DEC']
+
+terr_list = [4, 5, 5, 4, 4, 4, 2, 4, 4, 5, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 5, 5, 1, 1, 2, 2, 1, 1, 2, 2, 2, 1, 1, 5, 1, 1, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 3, 3, 3]
+
+terr_desc = ["Eskers", 
+            "Wet Sedge", 
+            "Rock", 
+            "Polygons & Shrubs", 
+            "Shrubby Hummuck"]
+

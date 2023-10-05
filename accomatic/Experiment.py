@@ -21,7 +21,12 @@ class Experiment(Settings):
     def __init__(self, sett_file_path="") -> None:
         super().__init__(sett_file_path)
 
-        self._obs = read_nc(self._obs_pth, sitename=self.sites_list, depth=self.depth)
+        self._obs = read_nc(
+            self._obs_pth,
+            sitename=self.sites_list,
+            depth=self.depth,
+        )
+
         self._obs_dict = {
             site: self._obs.loc[
                 (self._obs.index.get_level_values("sitename") == site)
@@ -86,6 +91,12 @@ class Experiment(Settings):
     @property
     def data(self) -> Dict:
         return self._data
+
+    def obs(self, sitename="") -> pd.DataFrame:
+        if sitename == "":
+            return self._obs
+        else:
+            return self._obs_dict[sitename]
 
     @data.setter
     def data(self, data):
@@ -153,12 +164,6 @@ class Experiment(Settings):
             return self._mod
         else:
             return self._mod_dict[sitename].df
-
-    def obs(self, sitename="") -> pd.DataFrame:
-        if sitename == "":
-            return self._obs
-        else:
-            return self._obs_dict[sitename]
 
     def terr(self) -> List:
         return list(zip(self._terr_list, self._sites_list))

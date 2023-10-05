@@ -18,6 +18,7 @@ class Settings:
     _sites_list: List[str]
     _terr_list: List[str]
     _terr_desc: Dict[int, str]
+    _missing_data: float
 
     def __init__(self, sett_file_path=""):
         setting_toml = toml.load(sett_file_path)
@@ -40,6 +41,8 @@ class Settings:
             self._depth = setting_toml["data"]["depth"]
             self._boot_size = setting_toml["data"]["boot_size"]
             self._sites_list = setting_toml["data"]["sites_list"]
+            self._missing_data = setting_toml["data"]["missing_data"]
+
             self._acco_list = setting_toml["experiment"]["acco_list"]
             self._szn_list = setting_toml["experiment"]["szn_list"]
             self._terr_list = setting_toml["experiment"]["terr_list"]
@@ -102,6 +105,18 @@ class Settings:
     @property
     def terr_desc(self) -> Dict[int, str]:
         return self._terr_desc
+
+    @property
+    def missing_data(self) -> float:
+        return self._missing_data
+
+    @missing_data.setter
+    def missing_data(self, amt: int) -> None:
+        self._missing_data = amt
+
+    @boot_size.setter
+    def boot_size(self, amt: int) -> None:
+        self._boot_size = amt
 
     def terr_dict(self) -> Dict:
         return dict(zip(self._sites_list, self._terr_list))

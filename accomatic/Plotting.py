@@ -2,6 +2,8 @@ import random
 
 import matplotlib.font_manager
 import matplotlib.image as image
+from matplotlib.patches import Patch
+
 import matplotlib.pyplot as plt
 from datetime import datetime
 
@@ -20,7 +22,6 @@ from Experiment import *
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
-pd.option_context("mode.use_inf_as_na", True)
 PLOT_PTH = "/home/hma000/accomatic-web/plots"
 
 
@@ -45,7 +46,7 @@ def get_color_gradient(c1, c2, n):
     ]
 
 
-palette_list = ["#527206", "#584538", "#008184", "#F50400", "#15e2d0"]
+palette_list = ["#59473c", "#F50B00", "#008080", "#F3700E", "#15e2d0"]
 
 
 def get_colour(f):
@@ -58,7 +59,7 @@ def get_colour(f):
     if "ens" in f:
         return "#59473c"
     else:
-        return f"{f} is not a pth with a colour."
+        return False
 
 
 def violin_helper_reorder_data(data, stat):
@@ -194,21 +195,148 @@ def extrapolation_heatmap(df2):
 
 def terrain_timeseries(exp):
     # THIS PLOT IS TO SHOW TERRAIN TYPES
-    o = exp.obs().reset_index()
+    o = exp.obs().reset_index(drop=False)
     o.level_0 = pd.to_datetime(o.level_0)
-    o["day-month"] = o.level_0.dt.strftime("%m-%d")
 
+    fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(8, 8))
+
+    ######## ALL OBS PLOT #######################
+    o_clusters = exp.obs().obs.unstack(level=1)
+    o_clusters.index = pd.to_datetime(o_clusters.index)
+
+    o_clusters["day-month"] = o_clusters.index.strftime("%m-%d")
+    o_clusters = o_clusters.groupby(["day-month"]).mean()
+
+    yk_col = [col for col in o_clusters.columns if "YK" in col]
+    kdi_col = [col for col in o_clusters.columns if "KDI" in col]
+    ldg_col = [col for col in o_clusters.columns if "NGO" in col]
+    ldg_col.extend([col for col in o_clusters.columns if "ROCK" in col])
+
+    plt.subplot(211)
+
+    l = []
+    for clust_cols, clust_name in zip([kdi_col, ldg_col, yk_col], ["KDI", "LDG", "YK"]):
+        tmp = (
+            o_clusters[clust_cols]
+            .stack()
+            .reset_index(drop=False)
+            .rename(columns={0: "obs"})
+        )
+        tmp["cluster"] = clust_name
+        l.append(tmp)
+
+    df = pd.concat(l)
+
+    sns.lineplot(
+        data=df,
+        x="day-month",
+        y="obs",
+        hue="cluster",
+        palette=["#F50B00", "#F3700E", "#008080"],
+        legend=False,
+    )
+
+    plt.legend(
+        handles=[
+            Patch(facecolor=hex, edgecolor=hex, label=cluster)
+            for hex, cluster in zip(
+                ["#F50B00", "#F3700E", "#008080"],
+                ["KDI", "Lac de Gras (LDG)", "Yellowknife (YK)"],
+            )
+        ],
+        loc="upper right",
+        fontsize="small",
+    )
+    plt.xticks([], [])
+    plt.xlabel("")
+    plt.ylabel("Observed Temperature ˚C")
+
+    ######## TERRAIN PLOT #######################
+    o["day-month"] = o.level_0.dt.strftime("%m-%d")
     o = o.groupby(["day-month", "sitename"]).mean().drop(columns="level_0")
     o["terr"] = [exp.terr_dict()[x] for x in o.index.get_level_values(1)]
 
-    fig = plt.figure(figsize=(8, 5))
-    sns.lineplot(data=o, x="day-month", y="obs", hue="terr", palette=palette_list)
+    plt.subplot(212)
+    sns.lineplot(
+        data=o.dropna(),
+        x="day-month",
+        y="obs",
+        hue="terr",
+        palette=palette_list,
+    )
     months = ["JAN", "MAR", "MAY", "JUL", "SEP", "NOV"]
     plt.xticks(ticks=range(1, 365, 62), labels=months)
     plt.ylabel("Observed Temperature ˚C")
     plt.xlabel("Time")
 
-    from matplotlib.patches import Patch
+    # Have to do this bc sns.lineplot legend is weird as hell
+    legend_elements = [
+        Patch(facecolor=c, edgecolor=c, label=des)
+        for c, des in zip(palette_list, exp.terr_desc.values())
+    ]
+    plt.legend(handles=legend_elements, loc="upper right", fontsize="small")
+
+    plt.savefig("/home/hma000/accomatic-web/plots/workflow/all_obs.png")
+
+
+def one_terr(exp):
+
+    fig, axs = plt.subplots(nrows=4, ncols=2, figsize=(10, 8))
+
+    ######## ALL OBS PLOT #######################
+    plt.subplot(421)
+
+    o_clusters = exp.obs().obs.unstack(level=1)
+
+    yk_col = [col for col in o_clusters.columns if "YK" in col]
+    kdi_col = [col for col in o_clusters.columns if "KDI" in col]
+    ldg_col = [col for col in o_clusters.columns if "NGO" in col]
+    ldg_col.extend([col for col in o_clusters.columns if "ROCK" in col])
+
+    for cluster, hex in zip(
+        [kdi_col, ldg_col, yk_col], ["#F50B00", "#F3700E", "#008080"]
+    ):
+        cluster_df = (
+            o_clusters[cluster]
+            .stack()
+            .reset_index(drop=False)
+            .rename(columns={0: "obs"})
+        )
+
+        sns.lineplot(
+            data=cluster_df,
+            x="level_0",
+            y="obs",
+            palette=sns.light_palette(
+                hex,
+                input="rgb",
+                n_colors=len(cluster_df.sitename.unique()),
+            ),
+            hue="sitename",
+            legend=False,
+            linewidth=0.5,
+        )
+
+    plt.subplot(4, 2, 3)
+
+    ######## TERRAIN PLOT #######################
+    o = exp.obs().reset_index(drop=False)
+    o.level_0 = pd.to_datetime(o.level_0)
+    o["day-month"] = o.level_0.dt.strftime("%m-%d")
+    o = o.groupby(["day-month", "sitename"]).mean().drop(columns="level_0")
+    o["terr"] = [exp.terr_dict()[x] for x in o.index.get_level_values(1)]
+
+    sns.lineplot(
+        data=o.dropna(),
+        x="day-month",
+        y="obs",
+        hue="terr",
+        palette=palette_list,
+    )
+    months = ["JAN", "MAR", "MAY", "JUL", "SEP", "NOV"]
+    plt.xticks(ticks=range(1, 365, 62), labels=months)
+    plt.ylabel("Observed Temperature ˚C")
+    plt.xlabel("Time")
 
     # Have to do this bc sns.lineplot legend is weird as hell
     legend_elements = [
@@ -217,4 +345,19 @@ def terrain_timeseries(exp):
     ]
     plt.legend(handles=legend_elements)
 
-    plt.savefig(f"{PLOT_PTH}tmp.png")
+    for terrain in exp.terr_list:
+        plt.subplot(4, 2, terrain + 3)
+        # Plot one terrain; all 12 months
+        data = exp.data[terrain]
+        # szn = list_of_df
+        for season in data.keys():
+            df = pd.concat(data[season])
+            df = df.reset_index()
+            df.Date = pd.to_datetime(df.Date).apply(lambda x: x.strftime("%m %d"))
+            if terrain == 1:
+                i = True
+            else:
+                i = False
+            sns.lineplot(data=df, x="Date", y="obs", label=season, legend=i)
+            plt.title(exp.terr_desc[terrain])
+    plt.savefig("/home/hma000/accomatic-web/plots/workflow/tmp.png")
