@@ -142,7 +142,7 @@ def build_missing_data_pickles(n, missing_amts):
         build(exp)
         concatonate(exp)
         with open(
-            f"tests/test_data/pickles/n_{exp.boot_size}/exp_{exp.missing_data}.pickle",
+            f"tests/test_data/pickles/exp_{exp.missing_data}.pickle",
             "wb",
         ) as handle:
             pickle.dump(exp, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -159,44 +159,10 @@ def get_pickles(pickle_dir):
     return exp_list
 
 
-def dummy_data_missing():
-    random.seed(100)
-    dictionary = {
-        "800": [
-            np.mean(random.choices(np.random.rand(800), k=800)) for i in range(1000)
-        ],
-        "400": [
-            np.mean(random.choices(np.random.rand(400), k=400)) for i in range(1000)
-        ],
-        "200": [
-            np.mean(random.choices(np.random.rand(200), k=200)) for i in range(1000)
-        ],
-        "100": [
-            np.mean(random.choices(np.random.rand(100), k=100)) for i in range(1000)
-        ],
-        "50": [np.mean(random.choices(np.random.rand(50), k=50)) for i in range(1000)],
-    }
-    bs_boxplot(pd.DataFrame.from_dict(dictionary), title="dummy_data")
-
-
 if __name__ == "__main__":
     s = time.time()
 
-    # build_missing_data_pickles(n=10, missing_amts=[0, 5, 10, 15])
+    build_missing_data_pickles(n=1000, missing_amts=[0, 10, 25])
     # missing_boxplot(get_pickles("tests/test_data/pickles/n_10"))
-    with open(
-        "/home/hma000/accomatic-web/tests/test_data/pickles/exp_0.pickle", "rb"
-    ) as handle:
-        exp = pickle.load(handle)
-    print(exp, "/n", exp.boot_size)
-
-    # stat = "MAE"
-    # res = exp.results.loc["res"]
-    # idx = pd.IndexSlice
-    # for i in exp.acco_list:
-    #     boxplot_allterrains(exp, i)
-    # rank_proportion_all_data = True
-    # if rank_proportion_all_data:
-    #     print(res.head())
 
     print(f"This took {format(time.time() - s, '.2f')}s to run.")

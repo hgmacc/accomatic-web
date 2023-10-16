@@ -193,13 +193,7 @@ def extrapolation_heatmap(df2):
     plt.savefig("heatmap.png")
 
 
-def terrain_timeseries(exp):
-    # THIS PLOT IS TO SHOW TERRAIN TYPES
-    o = exp.obs().reset_index(drop=False)
-    o.level_0 = pd.to_datetime(o.level_0)
-
-    fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(8, 8))
-
+def cluster_timeseries(exp):
     ######## ALL OBS PLOT #######################
     o_clusters = exp.obs().obs.unstack(level=1)
     o_clusters.index = pd.to_datetime(o_clusters.index)
@@ -212,7 +206,7 @@ def terrain_timeseries(exp):
     ldg_col = [col for col in o_clusters.columns if "NGO" in col]
     ldg_col.extend([col for col in o_clusters.columns if "ROCK" in col])
 
-    plt.subplot(211)
+    fig = plt.figure(figsize=(6, 6))
 
     l = []
     for clust_cols, clust_name in zip([kdi_col, ldg_col, yk_col], ["KDI", "LDG", "YK"]):
@@ -251,12 +245,20 @@ def terrain_timeseries(exp):
     plt.xlabel("")
     plt.ylabel("Observed Temperature ˚C")
 
+    plt.savefig("/home/hma000/accomatic-web/plots/workflow/all_obs.png")
+
+
+def terrain_timeseries(exp):
     ######## TERRAIN PLOT #######################
+
+    o = exp.obs().reset_index(drop=False)
+    o.level_0 = pd.to_datetime(o.level_0)
+
+    fig = plt.figure(figsize=(8, 8))
     o["day-month"] = o.level_0.dt.strftime("%m-%d")
     o = o.groupby(["day-month", "sitename"]).mean().drop(columns="level_0")
     o["terr"] = [exp.terr_dict()[x] for x in o.index.get_level_values(1)]
 
-    plt.subplot(212)
     sns.lineplot(
         data=o.dropna(),
         x="day-month",
@@ -275,8 +277,6 @@ def terrain_timeseries(exp):
         for c, des in zip(palette_list, exp.terr_desc.values())
     ]
     plt.legend(handles=legend_elements, loc="upper right", fontsize="small")
-
-    plt.savefig("/home/hma000/accomatic-web/plots/workflow/all_obs.png")
 
 
 def one_terr(exp):

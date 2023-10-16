@@ -8,7 +8,7 @@ from Experiment import *
 from NcReader import *
 from Stats import *
 from Plotting import *
-from spiderplot import spiderplot
+from thesis.spiderplot import spiderplot
 
 
 def get_toml_pth(argv):
@@ -42,9 +42,8 @@ if __name__ == "__main__":
 
     exp = Experiment(arg_input)
 
-    terrain_timeseries(exp)
+    cluster_timeseries(exp)
     sys.exit()
-
     all_o = o
     all_o.index = all_o.level_0
     plt.subplot(211)

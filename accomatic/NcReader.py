@@ -112,6 +112,7 @@ def read_nc(file_path, sitename="", avg=True, depth=False) -> pd.DataFrame:
     # Fix index
     odf = odf.reset_index(level=(1), drop=True)
     odf.sitename = [line.decode("utf-8") for line in odf.sitename]
+
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["sitename"], axis=1)
 

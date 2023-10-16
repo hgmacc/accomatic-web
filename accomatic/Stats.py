@@ -62,10 +62,14 @@ def build(exp):
                 df_list = exp.data[terr][szn]
                 if exp.missing_data:
                     df_list = random.sample(
-                        df_list, int(exp.missing_data / 100 * len(df_list))
+                        df_list, int((1 - exp.missing_data / 100) * len(df_list))
                     )
 
-                result = evaluate(exp, get_block(df_list))
+                result = evaluate(
+                    exp,
+                    random.sample(df_list, 1)[0],
+                )
+
                 for stat in result.keys():
                     for model in exp.mod_names():
                         exp.results[terr][szn]["res"].loc[stat, model].ap(
