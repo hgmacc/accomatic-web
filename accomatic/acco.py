@@ -39,10 +39,30 @@ def get_toml_pth(argv):
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
+    import netCDF4 as nc
 
-    exp = Experiment(arg_input)
+    f2 = nc.Dataset("/home/hma000/storage/yk_kdi_ldg/scaled/scaled_era5_1h_1980.nc")
+    names_out = nc.stringtochar(np.array(f2["station_name"]))
 
-    cluster_timeseries(exp)
+    for i in ["merra2", "jra55"]:
+        f = nc.Dataset(
+            f"/fs/yedoma/data/globsim/YK-KDI-LDG_scaled_for_geotop/scaled_{i}_1h.nc",
+            "w",
+        )
+        print(f"{i} is open.")
+        f.createDimension("name_strlen", 32)
+        f.createVariable("station_name", "S1", ("station", "name_strlen"))
+        f.standard_name = "platform_name"
+        f.units = ""
+        f[:] = names_out
+
+        f.close()
+        print(f"{i} is complete. ")
+    f2.close()
+
+    # exp = Experiment(arg_input)
+
+    # cluster_timeseries(exp)
     sys.exit()
     all_o = o
     all_o.index = all_o.level_0

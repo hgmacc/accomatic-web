@@ -270,10 +270,11 @@ def plot_dem_distribution_seperate():
     fig, axs = plt.subplots(
         nrows=3, ncols=3, sharex=True, sharey=False, figsize=(12, 7)
     )
+
     things = ["twi", "con", "iso"]
     clusters = ["yk", "kdi", "ldg"]
 
-    colours = ["#B1AEA1", "#7ABFD5", "#D09862"]
+    par_colours = {"twi": "#B1AEA1", "con": "#7ABFD5", "iso": "#D09862"}
     clust_colours = {"YK": "#1CE1CE", "KD": "#F3700E", "NG": "#F50B00"}
 
     df = pd.read_csv(
@@ -325,7 +326,7 @@ def plot_dem_distribution_seperate():
                 # bins=8,
                 label="DEM",
                 density=1,
-                color=colours[par_i],
+                color=par_colours[things[par_i]],
                 alpha=0.5,
             )
 
@@ -341,4 +342,4 @@ def plot_dem_distribution_seperate():
     plt.savefig("plot_dem_distribution.png")
 
 
-plot_dem_distribution_merge()
+plot_dem_distribution_seperate()

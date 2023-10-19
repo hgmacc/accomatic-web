@@ -266,6 +266,7 @@ def terrain_timeseries(exp):
         hue="terr",
         palette=palette_list,
     )
+    
     months = ["JAN", "MAR", "MAY", "JUL", "SEP", "NOV"]
     plt.xticks(ticks=range(1, 365, 62), labels=months)
     plt.ylabel("Observed Temperature ˚C")
