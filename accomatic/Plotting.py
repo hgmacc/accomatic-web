@@ -46,7 +46,7 @@ def get_color_gradient(c1, c2, n):
     ]
 
 
-palette_list = ["#59473c", "#F50B00", "#008080", "#F3700E", "#15e2d0"]
+palette_list = ["#59473c", "#F50B00", "#008080", "#F3700E", "#15e2d0", "#ECC832"]
 
 
 def get_colour(f):
@@ -248,13 +248,13 @@ def cluster_timeseries(exp):
     plt.savefig("/home/hma000/accomatic-web/plots/workflow/all_obs.png")
 
 
-def terrain_timeseries(exp):
+def terrain_timeseries(exp, path="terrain_timeseries.png"):
     ######## TERRAIN PLOT #######################
 
     o = exp.obs().reset_index(drop=False)
     o.level_0 = pd.to_datetime(o.level_0)
 
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure(figsize=(12, 6))
     o["day-month"] = o.level_0.dt.strftime("%m-%d")
     o = o.groupby(["day-month", "sitename"]).mean().drop(columns="level_0")
     o["terr"] = [exp.terr_dict()[x] for x in o.index.get_level_values(1)]
@@ -266,18 +266,13 @@ def terrain_timeseries(exp):
         hue="terr",
         palette=palette_list,
     )
-    
+
     months = ["JAN", "MAR", "MAY", "JUL", "SEP", "NOV"]
     plt.xticks(ticks=range(1, 365, 62), labels=months)
     plt.ylabel("Observed Temperature ˚C")
     plt.xlabel("Time")
 
-    # Have to do this bc sns.lineplot legend is weird as hell
-    legend_elements = [
-        Patch(facecolor=c, edgecolor=c, label=des)
-        for c, des in zip(palette_list, exp.terr_desc.values())
-    ]
-    plt.legend(handles=legend_elements, loc="upper right", fontsize="small")
+    plt.savefig(path)
 
 
 def one_terr(exp):
@@ -339,12 +334,6 @@ def one_terr(exp):
     plt.ylabel("Observed Temperature ˚C")
     plt.xlabel("Time")
 
-    # Have to do this bc sns.lineplot legend is weird as hell
-    legend_elements = [
-        Patch(facecolor=c, edgecolor=c, label=des)
-        for c, des in zip(palette_list, exp.terr_desc.values())
-    ]
-    plt.legend(handles=legend_elements)
 
     for terrain in exp.terr_list:
         plt.subplot(4, 2, terrain + 3)
@@ -360,5 +349,4 @@ def one_terr(exp):
             else:
                 i = False
             sns.lineplot(data=df, x="Date", y="obs", label=season, legend=i)
-            plt.title(exp.terr_desc[terrain])
     plt.savefig("/home/hma000/accomatic-web/plots/workflow/tmp.png")

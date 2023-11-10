@@ -5,10 +5,10 @@ from re import M
 from typing import Dict, List, Union
 
 import pandas as pd
-from Ensemble import *
+from accomatic.Ensemble import *
 from accomatic.NcReader import *
 from accomatic.Settings import *
-from static.statistics_helper import average_data, time_code_months, Cell
+from accomatic.Stats import average_data, time_code_months, Cell
 
 
 class Experiment(Settings):
