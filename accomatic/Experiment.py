@@ -16,7 +16,8 @@ class Experiment(Settings):
     _obs_dict: Dict
     _data: Dict
     _results: Union[Dict, pd.DataFrame]
-    _old_results: pd.DataFrame
+    _rank_dist: pd.DataFrame
+    _bias_dist: pd.DataFrame
 
     def __init__(self, sett_file_path="") -> None:
         super().__init__(sett_file_path)
@@ -74,7 +75,8 @@ class Experiment(Settings):
             terr: {szn: [] for szn in self.szn_list} for terr in self.terr_list
         }
 
-        self.old_results = pd.DataFrame()
+        self._rank_dist = pd.DataFrame()
+        self._bias_dist = pd.DataFrame()
 
     @property
     def obs_dict(self) -> pd.DataFrame:
@@ -83,10 +85,6 @@ class Experiment(Settings):
     @property
     def mod_dict(self) -> Dict:
         return self._mod_dict
-
-    @property
-    def old_results(self) -> pd.DataFrame:
-        return self._old_results
 
     @property
     def data(self) -> Dict:
@@ -99,7 +97,7 @@ class Experiment(Settings):
             return self._obs_dict[sitename]
 
     @data.setter
-    def data(self, data):
+    def data(self, data) -> None:
         for terr_i in set(self.terr_list):
             terrain_sites = [
                 site for site, terr in self.terr_dict().items() if terr == terr_i
@@ -120,44 +118,28 @@ class Experiment(Settings):
         self._data = data
 
     @property
+    def bias_dist(self) -> pd.DataFrame:
+        return self._bias_dist
+
+    @bias_dist.setter
+    def bias_dist(self, df: pd.DataFrame) -> None:
+        self._bias_dist = df
+
+    @property
+    def rank_dist(self) -> pd.DataFrame:
+        return self._rank_dist
+
+    @rank_dist.setter
+    def rank_dist(self, df: pd.DataFrame) -> None:
+        self._rank_dist = df
+
+    @property
     def results(self) -> Union[Dict, pd.DataFrame]:
         return self._results
 
     @results.setter
-    def results(self, res: Union[Dict, pd.DataFrame]):
+    def results(self, res: Union[Dict, pd.DataFrame]) -> None:
         self._results = res
-
-    @old_results.setter
-    def old_results(self, df):
-        a = list(itertools.product(self.sites_list, self.mod_names(), self.szn_list))
-        sites = [x[0] for x in a]
-        d = {
-            "site": sites,
-            "sim": [x[1] for x in a],
-            "szn": [x[2] for x in a],
-            "terr": [self.terr_dict()[x] for x in sites],
-            "data_avail": np.full((len(a),), np.nan),
-        }
-        for acco in self._acco_list:
-            d[acco] = np.full((len(a),), np.nan)
-        self._old_results = pd.DataFrame(data=d)
-
-    def res_index(self, site, sim, szn):
-        index = self._old_results.loc[
-            (self._old_results["site"] == site)
-            & (self._old_results["sim"] == sim)
-            & (self._old_results["szn"] == szn)
-        ]
-        return index.index
-
-    def res(self, sett=["sim", "szn", "terr"]) -> pd.DataFrame:
-        # Arguably, the coolest function I've written.
-
-        d1 = dict.fromkeys(["data_avail"], np.sum)
-        d2 = dict.fromkeys(self._acco_list, average_data)
-        d = {**d1, **d2}
-
-        return self._old_results.groupby(sett, as_index=False).agg(d)
 
     def mod(self, sitename="") -> pd.DataFrame:
         if sitename == "":

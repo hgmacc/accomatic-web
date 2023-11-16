@@ -126,7 +126,6 @@ def read_nc(file_path, sitename="", avg=True, depth=False) -> pd.DataFrame:
 
     # Selecting only sites specified in toml file
     odf = odf[odf.index.get_level_values(1).isin(sitename)]
-
     odf = odf.dropna()
     print(
         f"Observations: {len(odf.index.get_level_values(1).unique())} sites at {depth}m depth."

@@ -1,8 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from static.statistics_helper import time_code_months
 import sys
+
+sys.path.append("../")
+import accomatic
+from accomatic.Stats import *
+from accomatic.Experiment import *
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
@@ -18,6 +22,9 @@ from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
 from matplotlib.spines import Spine
 from matplotlib.transforms import Affine2D
+import datetime as date
+
+import pickle
 
 
 def radar_factory(num_vars, frame="circle"):
@@ -111,243 +118,138 @@ def radar_factory(num_vars, frame="circle"):
     return theta
 
 
-def spider_plot_normalize(statistic, df_col):
-    # return((df_col - df_col.min()) / (df_col.max() - df_col.min()))
-    if statistic == "MAE":
-        return 1 - (df_col - df_col.min()) / (df_col.max() - df_col.min())
-    if statistic == "BIAS":
-        return (df_col - df_col.min()) / (df_col.max() - df_col.min())
-    if statistic == "WILL":
-        return (df_col - df_col.min()) / (df_col.max() - df_col.min())
+def get_data(df):
+    """
+    This function takes the df.results from exp.results
+    AFTER build() and concatonate() have been executed.
+    """
+    idx = pd.IndexSlice
+    df = df.loc[idx[["res"], :, :, :]].droplevel("mode")
 
+    for col in df.columns:
+        m = list(df[col].values)
+        m = [np.mean(cell.arr) for cell in m]
+        df[col] = m
 
-def get_data(df, terrain_list, statistic_list, simulation_list):
+    rgrid = {
+        "BIAS": {
+            "min": df.loc[idx[:, :, "BIAS"]].min().min(),
+            "max": df.loc[idx[:, :, "BIAS"]].max().max(),
+        },
+        "MAE": {
+            "max": df.loc[idx[:, :, "MAE"]].max().max(),
+        },
+    }
 
-    # Getting rid of low data and other depth old_results
-    # df = df[df.data_avail > 250]
-    if "depth" in df.columns:
-        df = df[df.depth == 10].drop(columns=["depth"])
+    terrain_list = sorted(df.index.get_level_values("terr").unique().to_list())
+    statistic_list = df.index.get_level_values("stat").unique()
+    spider_list = [df.index.get_level_values("szn").unique().to_list()]
+    simulation_list = df.columns
 
-    # Selecting key columns, interpolate rank_stat over months with missing data (undo this later)
-    df = df[["sim", "szn", "terr", "rank_stat", "stat"]]
-    df["rank_stat"] = df.rank_stat.interpolate()
-    spider_list = [
-        [
-            "JAN",
-            "FEB",
-            "MAR",
-            "APR",
-            "MAY",
-            "JUN",
-            "JUL",
-            "AUG",
-            "SEP",
-            "OCT",
-            "NOV",
-            "DEC",
-        ]
-    ]
-
-    # # Normalizing stat values
-    # for statistic in statistic_list:
-    #     # Select rows
-    #     rows = df[df.stat == statistic].index
-    #     # Normalize statistical values
-    #     nrml = spider_plot_normalize(
-    #         statistic, df[df.stat == statistic].rank_stat
-    #     ).to_list()
-    #     # Assign new values
-    #     df.loc[rows, "rank_stat"] = nrml
+    df.rename(index=dict(zip(spider_list[0], list(range(1, 13)))), inplace=True)
 
     # ACCORDANCE ROWS: 1(acco) x n(terrains)
-    for statistic in statistic_list:
-        # df_stat = (1) STAT, (n) terrain, (n) models, (12) months
-        df_stat = df[df.stat == statistic].drop(columns=["stat"])
-        for terrain in terrain_list:
-            # df_terr = (1) stat, (1) TERRAIN, (n) models, (12) months
-            df_terr = df_stat[df_stat.terr == terrain].drop(columns=["terr"])
-
+    for terrain in terrain_list:
+        for statistic in statistic_list:
             data = []  # A list of lists; second part of spider_list tuple entry
             for simulation in simulation_list:
-                # df_sim = (1) stat, (1) terrain, (1) MODEL, (12) months
-                df_sim = df_terr[df_terr.sim == simulation].drop(columns=["sim"])
-                # Organize (12) months in order
-                df_sim["szn_no"] = [time_code_months[i][0] for i in df_sim.szn]
-                df_sim = df_sim.sort_values("szn_no").drop(columns=["szn_no"])
-                result = df_sim.rank_stat.to_list()
-                if len(df_sim.rank_stat) < 12:
-                    result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                data.append(result)
-
+                data.append(
+                    df.loc[idx[[terrain], :, [statistic]]][simulation]
+                    .groupby("szn")
+                    .mean()
+                    .sort_index(level=["szn"])
+                    .to_list()
+                )
             spider_list.append((f"{statistic}+{terrain}", data))
 
+    for statistic in statistic_list:
         stat_mean_data = []
         for simulation in simulation_list:
             # df_sim = (1) stat, (n) terrain, (1) model, (12) months
-            df_sim = df_stat[df_stat.sim == simulation].drop(columns=["sim"])
-            df_sim = (
-                df_sim.groupby("szn")
+            stat_mean_data.append(
+                df.loc[idx[:, :, [statistic]]][simulation]
+                .groupby("szn")
                 .mean()
-                .drop(columns=["terr"])
-                .reset_index(drop=False)
+                .sort_index(level=["szn"])
+                .to_list()
             )
-
-            # Organize (12) months in order
-            df_sim["szn_no"] = [time_code_months[i][0] for i in df_sim.szn]
-            df_sim = df_sim.sort_values("szn_no").drop(columns=["szn_no"])
-            result = df_sim.rank_stat.to_list()
-            if len(df_sim.rank_stat) < 12:
-                result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            stat_mean_data.append(result)
-
         spider_list.append((f"{statistic}+mean", stat_mean_data))
 
-    # LAST ROW: TERRAIN MEANS: mean(n(acco)) x 1(terrains)
-    for terrain in terrain_list:
-        # df_terr = (n) stats, (1) TERRAIN, (n) models, (12) months
-        df_terr = df[df.terr == terrain].drop(columns=["terr"])
-        df_terr = df_terr[df_terr.stat != "BIAS"]
-
-        data = []  # A list of lists; second part of spider_list tuple entry
-        for simulation in simulation_list:
-            # df_sim = (n) stats, (n) terrain, (1) MODEL, (12) months
-            df_sim = df_terr[df_terr.sim == simulation].drop(columns=["sim"])
-            print(df_sim)
-            sys.exit()
-            df_sim = df_sim.groupby("szn").mean().reset_index(drop=False)
-            df_sim["szn_no"] = [time_code_months[i][0] for i in df_sim.szn]
-            df_sim = df_sim.sort_values("szn_no").drop(columns=["szn_no"])
-            result = df_sim.rank_stat.to_list()
-            if len(df_sim.rank_stat) < 12:
-                result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            data.append(result)
-        spider_list.append((f"{terrain}+mean", data))
-
-    # LAST CELL: mean(n(acco)) x mean(n(terrains))
-    data = []
-    tmp = {}
-    for simulation in simulation_list:
-        # df_sim = (n) stats, (n) terrain, (1) MODEL, (12) months
-        df_sim = df[df.sim == simulation].drop(columns=["sim", "terr"])
-        df_sim = df_sim[df_sim.stat != "BIAS"]
-
-        df_sim = df_sim.groupby("szn").mean().reset_index(drop=False)
-
-        df_sim["szn_no"] = [time_code_months[i][0] for i in df_sim.szn]
-        df_sim = df_sim.sort_values("szn_no").drop(columns=["szn_no"])
-        result = df_sim.rank_stat.to_list()
-        if len(df_sim.rank_stat) < 12:
-            result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        data.append(result)
-        try:
-            a = sum(result) / len(result)
-        except:
-            a = 0
-        tmp[simulation] = a
-
-    spider_list.append((f"{terrain}+mean", data))
-    return spider_list
+    return [spider_list, rgrid]
 
 
-def spiderplot(exp):
-    df = pd.read_csv(exp.rank_csv_path)
+def spiderplot(df):
 
-    terrain_list = df.terr.unique().tolist()
-    statistic_list = df.stat.unique().tolist()
-    statistic_list = ["BIAS", "MAE", "WILL"]
-    simulation_list = df.sim.unique().tolist()
-
-    data = get_data(df, terrain_list, statistic_list, simulation_list)
-
+    data = get_data(df)
+    rgrid = data[1]
+    data = data[0]
     N = 12
     theta = radar_factory(N, frame="polygon")
+    spoke_labels = ["JAN", "", "", "APR", "", "", "JUL", "", "", "OCT", "", ""]
+    data.pop(0)
 
-    spoke_labels = data.pop(0)
-    print(spoke_labels)
-    sys.exit()
-    cols, rows = (len(terrain_list) + 1), (len(statistic_list) + 1)
+    rows = len(df.index.get_level_values("terr").unique()) + 1
+    cols = len(df.index.get_level_values("stat").unique())
+
     fig, axs = plt.subplots(
         figsize=(cols * 4, rows * 4),
         ncols=cols,
         nrows=rows,
         subplot_kw=dict(projection="radar"),
     )
-    fig.subplots_adjust(wspace=0.40, hspace=0.30, top=0.9, bottom=0.05)
-
+    fig.subplots_adjust(wspace=0.50, hspace=0.30, top=0.9, bottom=0.05)
     colors = ["#59473c", "#008080", "#f50b00", "#F3700E"]
-
-    bias = len(terrain_list) + 1
-    # Plot the 15 cases from the example data on separate axes
     for ax, (title, case_data) in zip(axs.flat, data):
         ax.set_facecolor("white")
-        ax.set_rgrids([])
-        if bias > 0:
-            zero = [0.5 for i in range(12)]
+
+        if "MAE" in title:
+            a = [int(round(i)) for i in np.linspace(0, rgrid["MAE"]["max"], 4)[1:3]]
+            ax.set_ylim(0, rgrid["MAE"]["max"])
+            ax.set_rgrids(a, zorder=10)
+
+        if "WILL" in title:
+            ax.set_ylim(0, 1)
+            ax.set_rgrids([0.5], zorder=10)
+
+        if "BIAS" in title:
+            a = [
+                int(round(i))
+                for i in np.linspace(rgrid["BIAS"]["min"], rgrid["BIAS"]["max"], 4)[1:3]
+            ]
+            ax.set_ylim(rgrid["BIAS"]["min"], rgrid["BIAS"]["max"])
+            ax.set_rgrids(a, zorder=10)
+
+            zero = [0 for i in range(12)]
             ax.plot(theta, zero, color="k", linewidth=1)
             for d, color in zip(case_data, colors):
                 # Plot fill
-                d_0 = [i - 0.5 for i in d]
-                d_pos = [val if bias > 0 else 0.5 for val, bias in zip(d, d_0)]
-                d_neg = [val if bias <= 0 else 0.5 for val, bias in zip(d, d_0)]
-                # for i in (d, d_0, d_pos, d_neg):
-                #     print(theta, [float("{0:.3g}".format(b)) for b in i])
-                # sys.exit()
+                d_pos = [bias if bias > 0 else 0 for bias in d]
+                d_neg = [bias if bias <= 0 else 0 for bias in d]
+
                 ax.fill_between(theta, zero, d_pos, facecolor="#ffbfbf")
-                ax.fill_between(
-                    theta, d_neg, zero, facecolor="#bfbfff"
-                )  # ,interpolate=True, step='mid')
+                ax.fill_between(theta, d_neg, zero, facecolor="#bfbfff")
 
             for d, color in zip(case_data, colors):
                 # Plot lines
                 ax.plot(theta, d, color=color, linewidth=2)
 
-            bias = bias - 1
-
         else:
             for d, color in zip(case_data, colors):
                 ax.plot(theta, d, color=color)
                 ax.fill(theta, d, facecolor=color, alpha=0.25, label="_nolegend_")
-        ax.set_ylim(0, 1)
+
         ax.set_varlabels(spoke_labels)
+    plt.savefig("out/spider.png")
 
-    fig.text(
-        0.5,
-        0.965,
-        "Seasonal performance of simulations with normalized statical values.",
-        horizontalalignment="center",
-        color="black",
-        weight="bold",
-        size="xx-large",
-    )
 
-    # Column headers
+"""
+To run: 
 
-    statistic_list.append("Mean")
-    for col, place in zip(
-        statistic_list, [(rows - i) / (rows + 1) for i in range(rows)]
-    ):
-        fig.text(0.05, place, col, color="black", weight="bold", size="medium")
+exp = Experiment("/home/hma000/accomatic-web/data/toml/run.toml")
+build(exp)
+df = exp.results()
+spiderplot(df) 
 
-    # Row headers
-    terrain_list.append("mean")
-    terrain_desc["mean"] = "Mean"
-    for col, place in zip(
-        terrain_list, [0.99 - (cols - i) / (cols + 1) for i in range(cols)]
-    ):
-        fig.text(
-            place,
-            0.925,
-            f"{terrain_desc[col]}",
-            color="black",
-            weight="bold",
-            size="medium",
-        )
+plot in: out/spider.png
 
-    # # (x,x) (y,y)
-    # line_vert = plt.Line2D((.76,.76),(.05,.9), color="k", linewidth=1)
-    # line_hor = plt.Line2D((.1,.925),(.25,.25), color="k", linewidth=1)
-    # fig.add_artist(line_vert)
-    # fig.add_artist(line_hor)
-    plt.legend()
-
-    plt.savefig("spider_big_proto.png")  # , transparent=True)
+"""

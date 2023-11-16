@@ -1,0 +1,24 @@
+title = "Accomatic Control File"
+
+# ALL SITES
+
+[data]
+model_pth = '/home/hma000/accomatic-web/data/nc/mod_85.nc'
+observations_pth = '/home/hma000/accomatic-web/data/nc/obs_85.nc'
+
+rank_csv_path = '/home/hma000/accomatic-web/data/pickles'
+
+depth = 0.1
+# 1000 = 8 minutes
+boot_size = 1000
+missing_data = 0
+
+sites_list = ['KDI-E-Wet', 'KDI-E-Org2', 'KDI-E-ShrubT', 'KDI-E-Tbot', 'KDI-E-Trees', 'KDI-E-Tslp', 'KDI-E-Ttop', 'KDI-W-Org1', 'KDI-W-Org2', 'KDI-W-ShrubM1', 'KDI-W-Tbot', 'KDI-W-Wet2']
+
+
+[experiment]
+acco_list = ['MAE','BIAS','WILL'] # List of acco measures
+szn_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 
+            'NOV', 'DEC']
+
+terr_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]

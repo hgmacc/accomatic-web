@@ -50,6 +50,8 @@ palette_list = ["#59473c", "#F50B00", "#008080", "#F3700E", "#15e2d0", "#ECC832"
 
 
 def get_colour(f):
+    if "obs" in f:
+        return "#000000"
     if "mer" in f:
         return "#F3700E"
     if "era" in f:
@@ -333,7 +335,6 @@ def one_terr(exp):
     plt.xticks(ticks=range(1, 365, 62), labels=months)
     plt.ylabel("Observed Temperature ˚C")
     plt.xlabel("Time")
-
 
     for terrain in exp.terr_list:
         plt.subplot(4, 2, terrain + 3)
