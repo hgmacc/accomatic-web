@@ -1,6 +1,11 @@
 import pickle
-import matplotlib.pyplot as plt
 import sys
+
+sys.path.append("../")
+
+
+import matplotlib.pyplot as plt
+from accomatic.Experiment import *
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
@@ -29,14 +34,14 @@ def timeseries(exp, sites=""):
         plt.xticks(locs[::2], labels[::2])
         plt.title(site)
         plt.legend(fontsize="x-small", loc="upper right")
-        plt.savefig(f"/home/hma000/accomatic-web/plotting/out/{site}.png")
+        plt.savefig(f"/home/hma000/accomatic-web/plotting/out/ts/{site}.png")
         plt.clf()
         plt.close()
-        sys.exit()
 
 
-pth = "/home/hma000/accomatic-web/data/pickles/14NOV23_1000_gst.pickle"
-with open(pth, "rb") as f_gst:
-    exp = pickle.load(f_gst)
+# pth = "/home/hma000/accomatic-web/data/pickles/14NOV23_1000_gst.pickle"
+# with open(pth, "rb") as f_gst:
+#     exp = pickle.load(f_gst)
 
+exp = Experiment("/home/hma000/accomatic-web/data/toml/run.toml")
 timeseries(exp)

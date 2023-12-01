@@ -1,17 +1,18 @@
 import pickle
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
-plt.rcParams["font.size"] = "24"
+plt.rcParams["font.size"] = "14"
 
 import pandas as pd
 
 
-def bias_heatmap(exp):
+def bias_heatmap(exp, save=True):
     df = exp.bias_dist
-    fig_bias, ax = plt.subplots(figsize=(9, 12))
+    fig_bias, ax = plt.subplots(figsize=(4.5, 6))
 
     sns.heatmap(
         exp.bias_dist.values,
@@ -33,12 +34,13 @@ def bias_heatmap(exp):
     )
     ax.xaxis.tick_top()
     ax.tick_params(length=0)
+    if save:
+        plt.savefig("/home/hma000/accomatic-web/plotting/out/bias.png")
+    return fig_bias
 
-    plt.savefig("/home/hma000/accomatic-web/plotting/out/bias.png")
 
-
-def rank_dist_heatmap(exp):
-    fig_heat, ax = plt.subplots(figsize=(12, 12))
+def rank_dist_heatmap(exp, save=True):
+    fig_heat, ax = plt.subplots(figsize=(6, 6))
     sns.heatmap(
         exp.rank_dist.values,
         vmin=0,
@@ -62,7 +64,9 @@ def rank_dist_heatmap(exp):
     )
     ax.xaxis.tick_top()
     ax.tick_params(length=0)
-    plt.savefig("/home/hma000/accomatic-web/plotting/out/heatmap.png")
+    if save:
+        plt.savefig("/home/hma000/accomatic-web/plotting/out/heatmap.png")
+    return fig_heat
 
 
 """

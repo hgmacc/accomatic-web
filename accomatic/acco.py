@@ -7,7 +7,6 @@ import sys
 from Experiment import *
 from NcReader import *
 from Stats import *
-from Plotting import *
 
 
 def get_toml_pth(argv):
@@ -34,8 +33,14 @@ def get_toml_pth(argv):
     return arg_input
 
 
-# python accomatic/acco.py -f /home/hma000/accomatic-web/tests/test_data/toml/MAR_NWT.toml
+# python accomatic/acco.py -f /home/hma000/accomatic-web/data/toml/run.toml
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
     exp = Experiment(arg_input)
+
+    build(exp)
+    pth = "/home/hma000/accomatic-web/data/pickles/NOV30_bs1000_d01.pickle"
+    with open(pth, "wb") as handle:
+        pickle.dump(exp, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    handle.close()

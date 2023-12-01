@@ -1,30 +1,30 @@
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import sys
 
 sys.path.append("../")
 import accomatic
-from accomatic.Stats import *
 from accomatic.Experiment import *
+from accomatic.Stats import *
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "10"
 
 
-import numpy as np
+import datetime as date
+import pickle
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.patches import Circle, RegularPolygon
 from matplotlib.path import Path
-from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
+from matplotlib.projections.polar import PolarAxes
 from matplotlib.spines import Spine
 from matplotlib.transforms import Affine2D
-import datetime as date
-
-import pickle
 
 
 def radar_factory(num_vars, frame="circle"):

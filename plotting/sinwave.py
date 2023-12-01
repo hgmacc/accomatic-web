@@ -1,8 +1,8 @@
-import pandas as pd
-import matplotlib.pyplot as plt
 import matplotlib.patches as pat
+import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import make_interp_spline, BSpline
+import pandas as pd
+from scipy.interpolate import BSpline, make_interp_spline
 from Stats import willmott_refined_d
 
 plt.rcParams["font.size"] = "16"

@@ -1,15 +1,15 @@
-import warnings
 import sys
+import warnings
+from collections import Counter
+
 import matplotlib.pyplot as plt
-from matplotlib.patches import Patch
 import numpy as np
 import pandas as pd
 import pyproj
 import rasterio as rio
-
-from matplotlib import patches
-from collections import Counter
 import seaborn as sns
+from matplotlib import patches
+from matplotlib.patches import Patch
 
 warnings.simplefilter(action="ignore")
 
