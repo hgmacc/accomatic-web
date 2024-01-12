@@ -39,9 +39,9 @@ def timeseries(exp, sites=""):
         plt.close()
 
 
-# pth = "/home/hma000/accomatic-web/data/pickles/14NOV23_1000_gst.pickle"
-# with open(pth, "rb") as f_gst:
-#     exp = pickle.load(f_gst)
+if sys.argv[0] == "t":
+    pth = "/home/hma000/accomatic-web/plotting/plotting.pickle"
+    with open(pth, "rb") as f_gst:
+        exp = pickle.load(f_gst)
 
-exp = Experiment("/home/hma000/accomatic-web/data/toml/run.toml")
-timeseries(exp)
+    timeseries(exp, save=True)

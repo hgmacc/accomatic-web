@@ -130,7 +130,7 @@ def rmse(obs, mod):
     return mean_squared_error(obs, mod, squared=False)
 
 
-acco_measures = {
+stat_measures = {
     "RMSE": rmse,
     "R": r_score,
     "E1": nse_one,
@@ -139,7 +139,7 @@ acco_measures = {
     "BIAS": bias,
 }
 
-acco_rank = {
+stat_rank = {
     "RMSE": "min",
     "R": "max",
     "E1": "max",
@@ -194,14 +194,14 @@ def get_block(df_list):
 def evaluate(exp, block):
 
     stat_dict = {
-        stat: {"res": pd.DataFrame, "rank": pd.DataFrame} for stat in exp.acco_list
+        stat: {"res": pd.DataFrame, "rank": pd.DataFrame} for stat in exp.stat_list
     }
-    for stat in exp.acco_list:
+    for stat in exp.stat_list:
         res = {mod: [] for mod in exp.mod_names()}
         # {'era5': 0.7, 'jra55': 0.98,  'merra': 0.25,  'ens': 0.10}
         # {'era5': 3,   'jra55': 4,     'merra': 2,     'ens': 0.4}
         for model in exp.mod_names():
-            res[model].append(acco_measures[stat](block.obs, block[model]))
+            res[model].append(stat_measures[stat](block.obs, block[model]))
         res = pd.DataFrame.from_dict(res)
 
         if stat == "BIAS" or stat == "MAE":
@@ -213,15 +213,6 @@ def evaluate(exp, block):
         stat_dict[stat]["rank"] = rank
 
     return stat_dict
-
-
-# {'MAE': {'res':        era5      jra55     merra2        ens
-# 0  2.673795  26.327093  18.709467  14.214704, 'rank':    era5  jra55  merra2  ens
-# 0   1.0    4.0     3.0  2.0}, 'BIAS': {'res':        era5      jra55     merra2        ens
-# 0 -2.392443  26.327093  18.709467  14.214704, 'rank':    era5  jra55  merra2  ens
-# 0   1.0    1.0     1.0  1.0}, 'WILL': {'res':        era5  jra55  merra2  ens
-# 0  0.609567    0.5     0.5  0.5, 'rank':    era5  jra55  merra2  ens
-# 0   4.0    1.0     2.0  3.0}}
 
 
 def build(exp):
@@ -256,19 +247,23 @@ def build(exp):
     )
 
     concatenate(exp)
-    print("Concatenation complete. Generating rank distribution...")
-    rank_distribution(exp)
-    bias_distribution(exp)
+    pth = f"{exp.rank_csv_path}/{date.today()}_results.pickle"
+    with open(pth, "wb") as handle:
+        pickle.dump(exp, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print("Concatenation complete.")
+    print(f"Experiment stored in: {exp.rank_csv_path}/{date.today()}_results.pickle")
 
+
+def rank_distribution(exp, stat="", terr="", szn=""):
+    print("Generating rank distribution...")
     idx = pd.IndexSlice
-    exp.results.loc[idx[["res"], :, :, :]].to_pickle(
-        f"{exp.rank_csv_path}/{date.today()}_results.pickle"
-    )
-
-
-def rank_distribution(exp):
-    idx = pd.IndexSlice
-    df = exp.results.loc[idx[["rank"], :, :, ["MAE"]]].droplevel("mode")
+    if stat == "":
+        stat = list(exp.stat_list)
+    if terr == "":
+        terr = list(set(exp.terr_list))
+    if szn == "":
+        szn = list(set(exp.szn_list))
+    df = exp.results.loc[idx[["rank"], terr, szn, stat]].droplevel("mode")
     for mod in df.columns:
         # cell.ranks() = [1000, 0, 0, 0]gives a count for each ranking.
         # So, model that ranks 1 every time in n-1000: [1000, 0, 0, 0]
@@ -292,12 +287,14 @@ def rank_distribution(exp):
         lst, index=list(df.columns), columns=["First", "Second", "Third", "Fourth"]
     )
 
-    exp.rank_dist = rank_dist
+    return rank_dist
 
 
-def bias_distribution(exp):
+def bias_distribution(exp, terr=""):
     idx = pd.IndexSlice
-    df = exp.results.loc[idx[["res"], :, :, ["BIAS"]]].droplevel("mode")
+    if terr == "":
+        terr = list(set(exp.terr_list))
+    df = exp.results.loc[idx[["res"], terr, :, ["BIAS"]]].droplevel("mode")
     total_rankings = exp.boot_size * len(df)
     total_bias = []
     for mod in df.columns:
@@ -313,7 +310,7 @@ def bias_distribution(exp):
         columns=["BIAS"],
     )
     # DOUBLE CHECK WHETHER RANK_DIST NEEDS TO BE .T TRANSPOSED
-    exp.bias_dist = bias_dist
+    return bias_dist
 
 
 def concatenate(exp):

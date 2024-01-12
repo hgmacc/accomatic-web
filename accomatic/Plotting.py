@@ -10,7 +10,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from static.statistics_helper import rank_shifting_for_heatmap, time_code_months
 
 # from accomatic.NcReader import *
 from scipy import stats
@@ -31,7 +30,7 @@ def hex_to_RGB(hex_str):
     return [int(hex_str[i : i + 2], 16) for i in range(1, 6, 2)]
 
 
-def get_color_gradient(c1, c2, n):
+def get_color_gradient(c1, c2, n, hex=True):
     """
     Given two hex colors, returns a color gradient
     with n colors.
@@ -40,10 +39,13 @@ def get_color_gradient(c1, c2, n):
     c2_rgb = np.array(hex_to_RGB(c2)) / 255
     mix_pcts = [x / (n - 1) for x in range(n)]
     rgb_colors = [((1 - mix) * c1_rgb + (mix * c2_rgb)) for mix in mix_pcts]
-    return [
-        "#" + "".join([format(int(round(val * 255)), "02x") for val in item])
-        for item in rgb_colors
-    ]
+    if not hex:
+        return rgb_colors
+    else:
+        return [
+            "#" + "".join([format(int(round(val * 255)), "02x") for val in item])
+            for item in rgb_colors
+        ]
 
 
 palette_list = ["#59473c", "#F50B00", "#008080", "#F3700E", "#15e2d0", "#ECC832"]

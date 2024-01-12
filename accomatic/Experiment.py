@@ -52,7 +52,7 @@ class Experiment(Settings):
                     "res": pd.DataFrame.from_dict(
                         {
                             stat: [Cell() for i in self.mod_names()]
-                            for stat in self._acco_list
+                            for stat in self._stat_list
                         },
                         orient="index",
                         columns=self.mod_names(),
@@ -60,7 +60,7 @@ class Experiment(Settings):
                     "rank": pd.DataFrame.from_dict(
                         {
                             stat: [Cell() for i in self.mod_names()]
-                            for stat in self._acco_list
+                            for stat in self._stat_list
                         },
                         orient="index",
                         columns=self.mod_names(),

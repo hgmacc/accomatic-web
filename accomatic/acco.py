@@ -33,14 +33,26 @@ def get_toml_pth(argv):
     return arg_input
 
 
-# python accomatic/acco.py -f /home/hma000/accomatic-web/data/toml/run.toml
+# python accomatic/acco.py -f /home/hma000/accomatic-web/data/toml/test.toml
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
-    exp = Experiment(arg_input)
+    # exp = Experiment(arg_input)
+    pth = "/home/hma000/accomatic-web/data/pickles/2024-01-12_results.pickle"
+    print(pth)
+    with open(pth, "rb") as f_gst:
+        exp = pickle.load(f_gst)
 
-    build(exp)
-    pth = "/home/hma000/accomatic-web/data/pickles/NOV30_bs1000_d01.pickle"
-    with open(pth, "wb") as handle:
-        pickle.dump(exp, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    handle.close()
+    from plotting.heatmap import *
+
+    for terr in exp.terr_list:
+        terr_desc = [
+            "PEATLAND",
+            "COURSE_HILLTOP",
+            "FINE_HILLTOP",
+            "SNOWDRIFT",
+            "HOR_ROCK",
+        ]
+        exp.rank_dist = rank_distribution(exp, terr=terr)
+        bias_heatmap(exp, save=True, title=f"heat/{terr_desc[terr - 1]}_bias")
+        rank_dist_heatmap(exp.rank_dist, save=True, title=f"heat/{terr_desc[terr - 1]}")

@@ -13,7 +13,7 @@ class Settings:
     _depth: float
     _boot_size: int
     _out_acco_pth: str
-    _acco_list: List[str]
+    _stat_list: List[str]
     _szn_list: List[str]
     _sites_list: List[str]
     _terr_list: List[str]
@@ -42,7 +42,7 @@ class Settings:
             self._sites_list = setting_toml["data"]["sites_list"]
             self._missing_data = setting_toml["data"]["missing_data"]
 
-            self._acco_list = setting_toml["experiment"]["acco_list"]
+            self._stat_list = setting_toml["experiment"]["stat_list"]
             self._szn_list = setting_toml["experiment"]["szn_list"]
             self._terr_list = setting_toml["experiment"]["terr_list"]
 
@@ -75,8 +75,8 @@ class Settings:
         return self._boot_size
 
     @property
-    def acco_list(self) -> List[str]:
-        return self._acco_list
+    def stat_list(self) -> List[str]:
+        return self._stat_list
 
     @property
     def sites_list(self) -> List[str]:
@@ -110,5 +110,5 @@ class Settings:
             "\nExperiment setup: \n"
             + f" Model Path:\t\t{self.model_pth}\n"
             + f" Observations Path:\t{self.obs_pth}\n"
-            + f" Acco Measures:\t\t{self.acco_list}"
+            + f" Acco Measures:\t\t{self.stat_list}"
         )

@@ -81,7 +81,7 @@ def x_day_boot(df, sim, acco, boot_size=1000, consecutive_days_slice=5):
         # Select n consecutive days 
         ix = random.randint(nrows.start, nrows.stop-consecutive_days_slice)
         a = df.iloc[ix:ix+consecutive_days_slice, :]
-        res.append(acco_measures[acco](a.obs, a[sim]))
+        res.append(stat_measures[acco](a.obs, a[sim]))
     res = np.array(sorted(res)[50:950])
     return res
 
@@ -109,7 +109,7 @@ def crazy10_day_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, re
         nrows = range(df.shape[0])
         for j in range(boot_size):
             a = get_10_days(smol_df, nrows)
-            res.append(acco_measures[acco](a.obs, a[sim]))
+            res.append(stat_measures[acco](a.obs, a[sim]))
 
     res = np.array(sorted(res)[50:950])
     res = res[(res<10) & (res>-10)]
@@ -123,7 +123,7 @@ def simple_10_day_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, 
     
     for i in range(boot_size):
         a = get_10_days(df, nrows)
-        res.append(acco_measures[acco](a.obs, a[sim]))
+        res.append(stat_measures[acco](a.obs, a[sim]))
 
     res = np.array(sorted(res)[50:950])
     res = res[(res<10) & (res>-10)]
@@ -134,7 +134,7 @@ def simple_boot(df, sim='ens', acco='MAE', boot_size=1000, chunk_size=1, reps=1)
     df = df[['obs', sim]]
     for i in range(boot_size):
         a = remove_days(df, chunk_size=chunk_size, reps=reps, reindex=False)
-        res.append(acco_measures[acco](a.obs, a[sim]))
+        res.append(stat_measures[acco](a.obs, a[sim]))
     res = np.array(sorted(res)[50:950])
     res = res[(res<10) & (res>-10)]
     return res

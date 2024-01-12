@@ -7,6 +7,9 @@ from matplotlib.ticker import StrMethodFormatter
 
 import pandas as pd
 
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
+plt.rcParams["font.size"] = "16"
 sys.path.append("../")
 from accomatic.Experiment import *
 import accomatic
@@ -17,6 +20,10 @@ get_colour = {
     "jra55": "#F50B00",
     "era5": "#008080",
     "ens": "#59473c",
+    "Model 3": "#f4c18e",
+    "Model 2": "#f28e89",
+    "Model 1": "#8fbdbc",
+    "Ensemble": "#a39e97",
 }
 
 
@@ -75,7 +82,7 @@ def boxplot(exp, stat="", terr="", save=True, bw=False):
     Will always plot in order: Best -> Worst
     """
     if stat == "":
-        stat = list(exp.acco_list)
+        stat = list(exp.stat_list)
     if terr == "":
         terr = list(set(exp.terr_list))
 
@@ -91,19 +98,23 @@ def boxplot(exp, stat="", terr="", save=True, bw=False):
     # Building figure
     fig_box, ax = plt.subplots(figsize=(1 * len(data.keys()), 8))
     bp = ax.boxplot(data.values(), whis=1.5, sym="", patch_artist=True, showmeans=True)
-    ax.set_xticklabels(["Model 1", "Model 2", "Model 3", "Ensemble"])
-    ax.set_ylim(-25, 25)
+    ax.set_xticklabels(["Model 1", "Model 2", "Model 3", "Ensemble"], rotation=25)
+    ax.set_ylim(0, 25)
+    if stat == "BIAS":
+        ax.set_ylim(-25, 25)
 
     if stat == "WILL":
         plt.gca().yaxis.set_major_formatter(
             StrMethodFormatter("{x:,.2f}")
         )  # 2 decimal places
+        ax.set_ylim(0, 1)
 
     # Setting the color of each box
-    for patch, col in zip(bp["boxes"], list(data.keys())):
-        if not bw:  # If colour:
-            patch.set_facecolor(get_colour[col])
-        patch.set_facecolor("#FFFFFF")
+    for patch, mod in zip(bp["boxes"], ["Model 1", "Model 2", "Model 3", "Ensemble"]):
+        if bw:
+            patch.set_facecolor("#FFFFFF")
+        else:
+            patch.set_facecolor(get_colour[mod])
 
     # making the mean a nice little black diamond
     for mean in bp["means"]:
@@ -115,27 +126,17 @@ def boxplot(exp, stat="", terr="", save=True, bw=False):
     for median in bp["medians"]:
         median.set_color("#000000")
 
-    if not bw:  # If colour:
-        legend_elements = []
-        for c in data.keys():
-            legend_elements.append(
-                Patch(facecolor=get_colour[c], edgecolor="#000000", label=c.upper())
-            )
-
     if save:
-        plt.savefig(
-            f"/home/hma000/accomatic-web/plotting/out/box/box_{terr}_{stat}.png"
-        )
-    return fig_box
+        plt.savefig(f"/home/hma000/accomatic-web/plotting/out/box/box_{stat}.png")
+    else:
+        return fig_box
 
 
 import pickle
 
-pth = "/home/hma000/accomatic-web/data/pickles/NOV30_bs1000_d01.pickle"
-with open(pth, "rb") as f:
-    exp = pickle.load(f)
+if sys.argv[0] == "t":
+    pth = "/home/hma000/accomatic-web/plotting/plotting.pickle"
+    with open(pth, "rb") as f_gst:
+        exp = pickle.load(f_gst)
 
-from plotting.box import *
-
-for i in range(6):
-    fig = boxplot(exp, stat="BIAS", bw=False, terr=i + 1, save=True)
+    boxplot(exp, save=True)

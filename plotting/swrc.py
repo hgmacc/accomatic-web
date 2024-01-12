@@ -42,15 +42,14 @@ def PlotProps(pars_l):
     plt.legend(
         loc="upper left",
         facecolor="white",
-        frameAlphaVanGenuchten=1.0,
         edgecolor="white",
     )
 
     secax = ax.secondary_xaxis("top")
-    secax.set_xlabel(r"$\psi [m]$ / hPa")
+    secax.set_xlabel("hPa")
     locs, labels = plt.xticks()
-    secax.set_xticks(locs, [f"10^{round(np.abs(i))}" for i in locs])
-    plt.savefig("thesis/swrc.png")
+    secax.set_xticks(locs, ["$10^{round(np.abs(i))}$" for i in locs])
+    plt.savefig("/home/hma000/accomatic-web/plotting/out/swrc.png")
 
 
 def BeitNetofaClay():
@@ -139,109 +138,5 @@ def sand():
     return pars
 
 
-# PlotProps(funcs)
 funcs = [silt(), rock(), clay(), sand(), peat()]
-
-slt = np.array([round((1.289**i)) for i in range(1, 35)])
-depths = []
-for i in range(len(slt)):
-    depths.append(np.sum(slt[: i + 1]))
-
-alt = [
-    15,
-    18,
-    22,
-    26,
-    31,
-    37,
-    45,
-    54,
-    64,
-    77,
-    93,
-    111,
-    134,
-    160,
-    193,
-    231,
-    277,
-    333,
-    399,
-    479,
-    575,
-    690,
-    828,
-    994,
-    1192,
-    1431,
-    1717,
-    2061,
-    2700,
-    3000,
-    4000,
-    5000,
-]
-print(alt)
-
-import matplotlib.pyplot as plt
-
-plt.scatter(range(len(alt)), [i / 1000 for i in alt])
-plt.ylabel("Soil Layer Thickness")
-plt.savefig("/home/hma000/accomatic-web/SoilLayerThicknesses.png")
-l = [
-    1,
-    3,
-    5,
-    8,
-    12,
-    17,
-    23,
-    31,
-    41,
-    54,
-    70,
-    91,
-    118,
-    153,
-    198,
-    256,
-    331,
-    428,
-    552,
-    712,
-    919,
-    1185,
-    1528,
-    1971,
-    2542,
-    3277,
-    4225,
-    5447,
-    7022,
-]
-
-print(len(l))
-peat = peat()
-silt = silt()
-clay = clay()
-rock = rock()
-sand = sand()
-
-var = "AlphaVanGenuchten"
-# First M
-# Every soil type
-par_list = []
-for i in alt[alt < 1000]:
-    par_list.append(peat[var])
-for i in alt[alt < 8000]:
-    par_list.append(silt[var])
-for i in alt[alt > 8000]:
-    par_list.append(rock[var])
-print(par_list)
-print(len(par_list))
-print(len(alt))
-# M 2
-# Peat turns into Silt
-
-# M8
-# Rock begins
+PlotProps(funcs)

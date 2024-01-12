@@ -95,10 +95,10 @@ stats = {"RMSE" : rmse,
 res = stats['RMSE'](obs, mod)  # -> str(res) = '0.97'
 
 # for model in models       
-    # for acco in acco_list:
+    # for acco in stat_list:
         stats_dict[mod+'-'+szn] = [stat[](mod, obs), stat[](mod, obs), stat[](mod, obs)]
 result []
-for s in acco_list:
+for s in stat_list:
     result.append(float(stats[s](obs, mod))
 stats_dict[mod+szn] = result
 
@@ -106,7 +106,7 @@ stats_dict[mod+szn] = result
 """
 
 
-def generate_stats(df, szn, acco_list):
+def generate_stats(df, szn, stat_list):
     # Set up x and y data for analysis
     obs = df.soil_temperature
     models = df.drop(["soil_temperature"], axis=1)
@@ -114,11 +114,11 @@ def generate_stats(df, szn, acco_list):
     stats_dict = {}
 
     for mod in models:
-        stats_dict[mod + szn] = map(func, acco_list)
+        stats_dict[mod + szn] = map(func, stat_list)
 
         result = []
 
-        for s in acco_list:
+        for s in stat_list:
             result.append(float(stats[s](obs, mod)))
 
         stats_dict[mod + szn] = result
