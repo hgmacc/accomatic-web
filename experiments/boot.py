@@ -28,7 +28,7 @@ ax1.remove()
 plt.plot()
 
 plt.subplot(132)
-ax2 = boxplot(exp, stat="WILL", save=False)
+ax2 = boxplot(exp, stat="dr", save=False)
 plt.plot()
 
 plt.subplot(133)

@@ -103,7 +103,7 @@ def boxplot(exp, stat="", terr="", save=True, bw=False):
     if stat == "BIAS":
         ax.set_ylim(-25, 25)
 
-    if stat == "WILL":
+    if stat == "dr":
         plt.gca().yaxis.set_major_formatter(
             StrMethodFormatter("{x:,.2f}")
         )  # 2 decimal places

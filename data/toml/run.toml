@@ -19,7 +19,7 @@ sites_list = ['ROCKT1', 'ROCKT2', 'ROCKT3', 'YK16-RH01', 'YK16-RH02', 'YK16-RH03
 
 
 [experiment]
-stat_list = ['MAE','BIAS','WILL','R'] # List of acco measures
+stat_list = ['MAE','BIAS','d','R'] # List of acco measures
 szn_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 
             'NOV', 'DEC']
 

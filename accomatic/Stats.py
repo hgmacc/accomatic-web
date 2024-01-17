@@ -100,15 +100,29 @@ def variance(mod_ensemble):
     return (((all_x_bars - x_bars_mean) ** 2).sum()) / (M - 1)
 
 
-def willmott_refined_d(obs, mod):
+def d(p, o):
+    o_mean = np.mean(o)
+    sq_err = sum((p - o) ** 2)
+    sq_dev = sum(((p - o_mean) + (o - o_mean)) ** 2)
+    return 1 - (sq_err / sq_dev)
+
+
+def d_1(p, o):
+    o_mean = np.mean(o)
+    abs_err = sum(abs(p - o))
+    abs_dev = sum((abs(p - o_mean) + abs(o - o_mean)))
+    return 1 - (abs_err / abs_dev)
+
+
+def d_r(p, o):
     # From Luis (2020)
-    o_mean = obs.mean()
-    a = sum(abs(mod - obs))
-    b = 2 * sum(abs(mod - o_mean))
-    if a <= b:
-        return 1 - (a / b)
-    else:
-        return (b / a) - 1
+    o_mean = np.mean(o)
+    o_dev_2 = 2 * sum(abs(o - o_mean))
+    abs_err = sum(abs(p - o))
+    if abs_err <= o_dev_2:
+        return 1 - (abs_err / o_dev_2)
+    if abs_err > o_dev_2:
+        return (o_dev_2 / abs_err) - 1
 
 
 def r_score(obs, mod):
@@ -135,7 +149,9 @@ stat_measures = {
     "R": r_score,
     "E1": nse_one,
     "MAE": mean_absolute_error,
-    "WILL": willmott_refined_d,
+    "d": d,
+    "d1": d_1,
+    "dr": d_r,
     "BIAS": bias,
 }
 
@@ -144,7 +160,9 @@ stat_rank = {
     "R": "max",
     "E1": "max",
     "MAE": "min",
-    "WILL": "max",
+    "d": "max",
+    "d1": "max",
+    "dr": "max",
     "BIAS": "min",
 }
 
@@ -206,7 +224,7 @@ def evaluate(exp, block):
 
         if stat == "BIAS" or stat == "MAE":
             rank = res.abs().rank(method="min", axis=1)
-        if stat == "WILL" or stat == "R":
+        if stat == "d" or stat == "R":
             rank = res.rank(method="max", axis=1)
 
         stat_dict[stat]["res"] = res

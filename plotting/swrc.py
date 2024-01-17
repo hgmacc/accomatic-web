@@ -48,7 +48,7 @@ def PlotProps(pars_l):
     secax = ax.secondary_xaxis("top")
     secax.set_xlabel("hPa")
     locs, labels = plt.xticks()
-    secax.set_xticks(locs, ["$10^{round(np.abs(i))}$" for i in locs])
+    secax.set_xticks(locs, [f"$10^{round(np.abs(i))}$" for i in locs])
     plt.savefig("/home/hma000/accomatic-web/plotting/out/swrc.png")
 
 
@@ -65,7 +65,7 @@ def BeitNetofaClay():
 
 def peat():
     pars = {}
-    pars["name"] = "peat"
+    pars["name"] = "Peat"
     pars["ThetaRes"] = 0.2
     pars["ThetaSat"] = 0.85
     pars["AlphaVanGenuchten"] = 0.3  # 0.003
@@ -80,7 +80,7 @@ def peat():
 
 def silt():
     pars = {}
-    pars["name"] = "silt"
+    pars["name"] = "Fine grain"
     pars["ThetaRes"] = 0.057
     pars["ThetaSat"] = 0.487
     pars["AlphaVanGenuchten"] = 0.1  # 0.001
@@ -95,7 +95,7 @@ def silt():
 
 def rock():
     pars = {}
-    pars["name"] = "rock"
+    pars["name"] = "Rock"
     pars["ThetaRes"] = 0.002
     pars["ThetaSat"] = 0.05
     pars["AlphaVanGenuchten"] = 0.1  # 0.001
@@ -110,7 +110,7 @@ def rock():
 
 def clay():
     pars = {}
-    pars["name"] = "clay"
+    pars["name"] = "Clay"
     pars["ThetaRes"] = 0.072
     pars["ThetaSat"] = 0.475
     pars["AlphaVanGenuchten"] = 0.1  # 0.001
@@ -125,7 +125,7 @@ def clay():
 
 def sand():
     pars = {}
-    pars["name"] = "sand"
+    pars["name"] = "Course grain"
     pars["ThetaRes"] = 0.055
     pars["ThetaSat"] = 0.374
     pars["AlphaVanGenuchten"] = 0.3  # 0.003
@@ -138,5 +138,5 @@ def sand():
     return pars
 
 
-funcs = [silt(), rock(), clay(), sand(), peat()]
+funcs = [silt(), rock(), sand(), peat()]
 PlotProps(funcs)

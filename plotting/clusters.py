@@ -16,7 +16,7 @@ plt.rcParams["font.size"] = "16"
 
 def terrain_timeseries(exp, save=False):
     ######## TERRAIN PLOT #######################
-    fig, axs = plt.subplots(3, 2, sharey=True, sharex=True, figsize=(22, 12))
+    fig, axs = plt.subplots(5, 1, sharey=True, sharex=True, figsize=(36, 12))
 
     o = exp.obs().reset_index(drop=False)
 
@@ -34,7 +34,6 @@ def terrain_timeseries(exp, save=False):
     o["terr"] = [exp.terr_dict()[x] for x in o.sitename]
 
     terr_desc = [
-        "DRAINED_PEAT",
         "PEATLAND",
         "COURSE_HILLTOP",
         "FINE_HILLTOP",
@@ -45,7 +44,7 @@ def terrain_timeseries(exp, save=False):
     terr_dict = dict(zip(range(1, 7), terr_desc))
     o.terr = [terr_dict[i] for i in o.terr]
     for i in terr_dict.keys():
-        plt.subplot(3, 2, i)
+        plt.subplot(5, 1, i)
 
         sns.lineplot(
             data=o[o.terr == terr_dict[i]].dropna(),
@@ -61,7 +60,7 @@ def terrain_timeseries(exp, save=False):
             loc="upper left",
             fontsize="xx-small",
         )
-        if i > 4:
+        if i == 5:
             months = ["JAN", "MAR", "MAY", "JUL", "SEP", "NOV"]
             plt.xticks(ticks=range(1, 365, 62), labels=months)
         plt.xlabel("")
@@ -70,7 +69,7 @@ def terrain_timeseries(exp, save=False):
     fig.supxlabel("Time")
     plt.tight_layout()
     if save:
-        plt.savefig("/home/hma000/accomatic-web/plotting/out/terrains_t.png")
+        plt.savefig("/home/hma000/accomatic-web/plotting/out/terrains.png")
 
 
 def cluster_timeseries(exp, bw=False, save=False):

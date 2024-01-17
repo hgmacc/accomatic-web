@@ -207,7 +207,7 @@ def spiderplot(df):
             ax.set_ylim(0, rgrid["MAE"]["max"])
             ax.set_rgrids(a, zorder=10)
 
-        if "WILL" in title:
+        if "d" in title:
             ax.set_ylim(0, 1)
             ax.set_rgrids([0.5], zorder=10)
 
