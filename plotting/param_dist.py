@@ -49,16 +49,20 @@ def populate_df_col(place, df):
     Returns:
         pd.DataFrame: a dataframe with twi, con and iso columns added
     """
+    to_do = ["elevation", "twi", "con", "slope", "aspect"]
 
-    to_do = ["twi", "con", "iso"]
     for thing in to_do:
         path = f"/home/hma000/storage/terrain_exp/dem_processed/{place}/{place}_dem_10m_{thing}.tif"
         dat = rio.open(path)
 
-        df[thing] = df.apply(
-            lambda x: getval(dat, float(x["lon"]), float(x["lat"])), axis=1
-        )
+        a = df.apply(lambda x: getval(dat, float(x["lon"]), float(x["lat"])), axis=1)
+        try:
+            df[thing] = a
+        except ValueError:
+            print(a)
+
         dat.close()
+
     return df
 
 
@@ -71,250 +75,63 @@ def build_terrain_csv():
         usecols=["name", "lat", "lon", "elevation_in_metres", "sky_view"],
     )
 
-    places = ["yk", "kdi", "ldg"]
-    abbrevs = ["YK", "KD", "NG"]
+    places = ["ldg", "kdi", "yk"]
 
     coords["clust"] = coords["name"].str[:2]
     coords.clust.replace(["RO", "Bu"], "NG", inplace=True)
+    coords.clust.replace(["NG"], "LD", inplace=True)
 
     l_df = []
-    for place, abbrev in zip(places, abbrevs):
-        l_df.append(populate_df_col(place, coords[coords["clust"] == abbrev]))
+    for place in places:
+        l_df.append(
+            populate_df_col(place, coords[coords["clust"] == place[:2].upper()])
+        )
     df = pd.concat(l_df)
 
     df.to_csv(
         "/home/hma000/storage/terrain_exp/ykl_terrain.csv",
-        columns=["name", "clust", "elevation_in_metres", "twi", "con", "iso"],
+        columns=[
+            "name",
+            "clust",
+            "elevation_in_metres",
+            "elevation",
+            "twi",
+            "con",
+            "slope",
+            "aspect",
+        ],
     )
     return True
 
 
 def normalize_data(data):
-    for col in ["twi", "con", "iso"]:
+    for col in ["twi", "con"]:
         data[col] = (data[col] - data[col].min()) / (data[col].max() - data[col].min())
     return data
 
 
 def sort_data(data):
     param_dict = {
-        "twi": {0.33: "Dry", 0.66: "Mix", 1.0: "Wet"},
-        "con": {0.25: "Low", 0.50: "Normal", 0.75: "More", 1.0: "Drift"},
-        "iso": {0.33: "Low", 0.66: "Mix", 1.0: "High"},
+        "twi": {"bins": [0, 0.33, 0.66, 1.0], "labels": ["0", "1", "2"]},
+        "con": {
+            "bins": [0, 0.25, 0.50, 0.75, 1.0],
+            "labels": ["3", "2", "1", "0"],
+        },
+        "aspect": {"bins": [0, 45, 270, 360], "labels": ["0", "1", "0"]},
+        "slope": {"bins": [10, 20, 70], "labels": ["0", "1"]},
     }
-
-    for param in param_dict.keys():
-        new_data = []
-        for row in data[param]:
-            for value in param_dict[param].keys():
-                if row <= value:
-                    new_data.append(param_dict[param][value])
-                    break
-        data[f"{param}_str"] = new_data
-
-    return param_dict, data
-
-
-def plot_param_distribution():
-    df = pd.read_csv(
-        "/home/hma000/storage/terrain_exp/ykl_terrain.csv",
-        usecols=["name", "twi", "con", "iso", "clust"],
-    )
-
-    fig, axs = plt.subplots(nrows=2, ncols=3, sharex=False, figsize=(10, 4))
-    df = df.dropna()
-    df = normalize_data(df)
-
-    colours = ["#B1AEA1", "#7ABFD5", "#D09862"]
-    clust_colours = {"YK": "#1CE1CE", "KD": "#F3700E", "NG": "#F50B00"}
-    param_list = ["con", "twi", "iso"]
-    titles = ["Snow Collection", "Terrain Wetness", "Incoming Solar Radiation"]
-    for i in range(3):
-        c = colours[i]
-        param = param_list[i]
-        plt.subplot(2, 3, i + 1)
-        for clust in df.clust.unique():
-            plt.hist(
-                df[df.clust == clust][param],
-                histtype="step",
-                label=clust,
-                color=c,
-                ec=clust_colours[clust],
-            )
-        plt.title(titles[i])
-        if i == 2:
-            plt.legend()
-
-    param_dict, df = sort_data(df)
-    for i in range(3):
-        plt.subplot(2, 3, i + 4)
-
-        # i.e. groups = ["dry", "mix", "wet"]
-        groups = param_dict[param_list[i]].values()
-
-        param = f"{param_list[i]}_str"
-        # data = {'Normal': 51, 'More': 14, 'Low': 14, 'Drift': 3}
-        data = Counter(df[param])
-        data = [data[i] for i in groups]
-        plt.bar(groups, data, color=colours[i])
-
-    plt.savefig("/home/hma000/accomatic-web/thesis/plots/a.png")
-
-
-def plot_dem_distribution_merge():
-    fig, axs = plt.subplots(nrows=3, ncols=1, sharex=True, sharey=False, figsize=(6, 6))
-    param_list = ["twi", "con", "iso"]
-    clusters = ["yk", "kdi", "ldg"]
-
-    colours = ["#B1AEA1", "#7ABFD5", "#D09862"]
-    clust_colours = {"YK": "#1CE1CE", "KD": "#F3700E", "NG": "#F50B00"}
-
-    df = pd.read_csv(
-        "/home/hma000/storage/terrain_exp/ykl_terrain.csv",
-        usecols=["name", "twi", "con", "iso", "clust"],
-    )
-
-    index = 1
-    for par_i in range(3):
-
-        plt.subplot(3, 1, index)
-        index = index + 1
-
-        data_l = []
-        for pth in range(3):
-            path = f"/home/hma000/storage/terrain_exp/dem_processed/{clusters[pth]}/{clusters[pth]}_dem_10m_{param_list[par_i]}.tif"
-
-            dat = rio.open(path).read().flatten()
-            data_l.append(dat[dat > 0])
-        dat = np.concatenate(data_l, axis=0)
-
-        amin, amax = min(dat), max(dat)
-        for n, val in enumerate(dat):
-            dat[n] = (val - amin) / (amax - amin)
-
-        # Normalizing obs to entire dataset
-        arr = [(val - amin) / (amax - amin) for val in df[param_list[par_i]]]
-
-        if param_list[par_i] == "con":
-            print(arr)
-            print(np.nanmean(np.array(arr)))
-            sys.exit()
-
-        plt.hist(
-            arr,
-            label="Obs",
-            histtype="step",
-            density=1,
-            color="red",
-            linewidth=2,
+    for par in param_dict.keys():
+        df[par] = pd.cut(
+            df[par],
+            bins=param_dict[par]["bins"],
+            labels=param_dict[par]["labels"],
+            ordered=False,
         )
-
-        plt.hist(
-            dat,
-            label=param_list[par_i],
-            density=1,
-            color=colours[par_i],
-            alpha=0.5,
-        )
-
-        plt.legend(frameon=False)
-        plt.title(param_list[par_i])
-
-    plt.savefig("plot_dem_distribution_merge.png")
+    return data
 
 
-def plot_par_distribution():
-    # Plots 2 x 3
-    #
-    # TWI DEM + obs dist.      CON DEM + obs dist     ISO DEM + obs dist.
-    #
-    #  dry/mix/wet          low/nrml/more/drfit     low/mix/high
-
-    fig, axs = plt.subplots(
-        nrows=2, ncols=3, sharex=False, sharey=False, figsize=(12, 6)
-    )
-
-    param_list = ["con", "twi", "iso"]
-    clusters = ["yk", "kdi", "ldg"]
-    par_colours = {"con": "#B1AEA1", "twi": "#7ABFD5", "iso": "#D09862"}
-
-    # Reading in par values for each site, derived from DEM rasters.
-    df = pd.read_csv(
-        "/home/hma000/storage/terrain_exp/ykl_terrain.csv",
-        usecols=["name", "twi", "con", "iso", "clust"],
-    )
-
-    # Plot titles
-    titles = ["Snow Correction", "Terrain Wetness", "Incoming Solar Radiation"]
-
-    index = 1  # Given to keep track of plot index (1 - 6)
-    for par_i in range(3):
-        # Top row: Distribution of raster data and observed plot values
-        plt.subplot(2, 3, index)
-        index = index + 1
-
-        data_l = []
-        # For each cluster raster:
-        for cluster in clusters:
-            path = f"/home/hma000/storage/terrain_exp/dem_processed/{cluster}/{cluster}_dem_10m_{param_list[par_i]}.tif"
-            dat = rio.open(path).read().flatten()
-            if param_list[par_i] == "twi":
-                data_l.append(dat)
-            else:
-                data_l.append(dat[dat > 0])
-
-        # Dat = all raster data for some param
-        dat = np.concatenate(data_l, axis=0)
-
-        # Normalize DEM raster values (0 - 1)
-        amin, amax = min(dat), max(dat)
-        for n, val in enumerate(dat):
-            dat[n] = (val - amin) / (amax - amin)
-
-        # Normalizing obs to DEM raster values (0 - 1)
-        arr = [(val - amin) / (amax - amin) for val in df[param_list[par_i]]]
-
-        # print(param_list[par_i], ": ", np.nanmean(np.array(arr)))
-
-        # Parameter distribution of sites (observations)
-        plt.hist(
-            arr,
-            label="Obs",
-            histtype="step",
-            density=1,
-            color="red",
-            linewidth=2,
-        )
-
-        # Parameter distribution of DEM data
-        # We want this line ON TOP of the solid red stuff.
-        plt.hist(
-            dat,
-            label=param_list[par_i],
-            density=1,
-            color=par_colours[param_list[par_i]],
-            alpha=0.5,
-        )
-
-        plt.legend(frameon=False)
-        plt.title(titles[par_i])
-
-        # SECOND ROW
-        plt.subplot(2, 3, index + 2)
-        param_dict, df = sort_data(normalize_data(df.dropna()))
-
-        # i.e. groups = ["dry", "mix", "wet"]
-        groups = param_dict[param_list[par_i]].values()
-
-        param = f"{param_list[par_i]}_str"
-        # data = {'Normal': 51, 'More': 14, 'Low': 14, 'Drift': 3}
-        data = Counter(df[param])
-        data = [data[i] for i in groups]
-        plt.bar(groups, data, color=par_colours[param_list[par_i]])
-        if index == 4:
-            plt.ylabel("Site Count")
-
-    plt.savefig("/home/hma000/accomatic-web/plotting/out/param_dist.png")
-
-
-if sys.argv[1] == "-t":
-    plot_par_distribution()
+df = pd.read_csv(
+    "/home/hma000/storage/terrain_exp/ykl_coords.csv",
+    usecols=["name", "lat", "lon", "elevation_in_metres", "sky_view"],
+)
+populate_df_col("yk", df)

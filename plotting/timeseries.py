@@ -27,7 +27,7 @@ def timeseries(exp, sites=""):
     for site in sites:
         df = exp.obs(site).join(exp.mod(site))
         df.index.name = "time"
-        fig_heat, ax = plt.subplots(figsize=(12, 8))
+        fig_heat, ax = plt.subplots(figsize=(10, 10))
         for mod in df.columns:
             plt.plot(df[mod], label=mod, c=get_colour[mod])
         locs, labels = plt.xticks()

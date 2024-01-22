@@ -70,7 +70,7 @@ def boot_vioplot(e, save=True):
     return fig
 
 
-def boxplot(exp, stat="", terr="", save=True, bw=False):
+def boxplot(exp, szn="", stat="", terr="", save=True, bw=False):
     """
     Function takes and df with x columns
     If you want colour coordination with models,
@@ -81,6 +81,9 @@ def boxplot(exp, stat="", terr="", save=True, bw=False):
     Box and whisker plots results
     Will always plot in order: Best -> Worst
     """
+    pth = f"/home/hma000/accomatic-web/plotting/out/box/box{stat}{terr}{szn}.png"
+    if szn == "":
+        szn = list(set(exp.szn_list))
     if stat == "":
         stat = list(exp.stat_list)
     if terr == "":
@@ -88,7 +91,7 @@ def boxplot(exp, stat="", terr="", save=True, bw=False):
 
     # Selecting data from results
     idx = pd.IndexSlice
-    df = exp.results.loc[idx[["res"], terr, :, stat]].droplevel("mode")
+    df = exp.results.loc[idx[["res"], terr, szn, stat]].droplevel("mode")
 
     # Pulling out arrays into 1D arr for each mod
     data = {}
@@ -96,14 +99,14 @@ def boxplot(exp, stat="", terr="", save=True, bw=False):
         data[mod] = np.concatenate([cell.arr for cell in df[mod]], axis=0)
 
     # Building figure
-    fig_box, ax = plt.subplots(figsize=(1 * len(data.keys()), 8))
+    fig_box, ax = plt.subplots(figsize=(1.1 * len(data.keys()), 8))
     bp = ax.boxplot(data.values(), whis=1.5, sym="", patch_artist=True, showmeans=True)
     ax.set_xticklabels(["Model 1", "Model 2", "Model 3", "Ensemble"], rotation=25)
     ax.set_ylim(0, 25)
     if stat == "BIAS":
         ax.set_ylim(-25, 25)
 
-    if stat == "dr":
+    if stat == "WILL":
         plt.gca().yaxis.set_major_formatter(
             StrMethodFormatter("{x:,.2f}")
         )  # 2 decimal places
@@ -125,9 +128,10 @@ def boxplot(exp, stat="", terr="", save=True, bw=False):
     # Setting median line to black
     for median in bp["medians"]:
         median.set_color("#000000")
-
+    plt.tight_layout()
     if save:
-        plt.savefig(f"/home/hma000/accomatic-web/plotting/out/box/box_{stat}.png")
+        plt.savefig(pth)
+        print(f"New plot saved to: {pth}")
     else:
         return fig_box
 

@@ -16,7 +16,7 @@ plt.rcParams["font.size"] = "16"
 
 def terrain_timeseries(exp, save=False):
     ######## TERRAIN PLOT #######################
-    fig, axs = plt.subplots(5, 1, sharey=True, sharex=True, figsize=(36, 12))
+    fig, axs = plt.subplots(5, 1, sharey=True, sharex=True, figsize=(13, 15))
 
     o = exp.obs().reset_index(drop=False)
 
@@ -29,37 +29,37 @@ def terrain_timeseries(exp, save=False):
     o["year"] = o.level_0.dt.strftime("%y")
     o.set_index("day-month", inplace=True)
     o = o.drop(columns="level_0")
-
+    # pretty sure this next commented out line would
+    # merge all the sites into one sns lineplot spread
     # o = o.groupby(["day-month", "sitename"]).mean().drop(columns="level_0")
     o["terr"] = [exp.terr_dict()[x] for x in o.sitename]
 
     terr_desc = [
-        "PEATLAND",
-        "COURSE_HILLTOP",
-        "FINE_HILLTOP",
-        "SNOWDRIFT",
-        "HOR_ROCK",
+        "Peatland",
+        "Course Hilltop",
+        "Fine Hilltop",
+        "Snowdrift",
+        "Horizontal Rock",
     ]
 
     terr_dict = dict(zip(range(1, 7), terr_desc))
     o.terr = [terr_dict[i] for i in o.terr]
     for i in terr_dict.keys():
         plt.subplot(5, 1, i)
-
         sns.lineplot(
             data=o[o.terr == terr_dict[i]].dropna(),
             x="day-month",
             y="obs",
             hue="sitename",
-            legend=True,
+            legend=False,
         )
         plt.title(terr_dict[i])
         plt.axhline(y=0, color="k", linestyle="-", linewidth=0.5, zorder=-1)
-        l = plt.legend(
-            title="",
-            loc="upper left",
-            fontsize="xx-small",
-        )
+        # l = plt.legend(
+        #     title="",
+        #     loc="upper left",
+        #     fontsize="xx-small",
+        # )
         if i == 5:
             months = ["JAN", "MAR", "MAY", "JUL", "SEP", "NOV"]
             plt.xticks(ticks=range(1, 365, 62), labels=months)

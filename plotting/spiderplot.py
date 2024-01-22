@@ -178,7 +178,7 @@ def get_data(df):
     return [spider_list, rgrid]
 
 
-def spiderplot(df):
+def spiderplot(df, save=False):
 
     data = get_data(df)
     rgrid = data[1]
@@ -207,7 +207,7 @@ def spiderplot(df):
             ax.set_ylim(0, rgrid["MAE"]["max"])
             ax.set_rgrids(a, zorder=10)
 
-        if "d" in title:
+        if "WILL" in title:
             ax.set_ylim(0, 1)
             ax.set_rgrids([0.5], zorder=10)
 
@@ -220,7 +220,7 @@ def spiderplot(df):
             ax.set_rgrids(a, zorder=10)
 
             zero = [0 for i in range(12)]
-            ax.plot(theta, zero, color="k", linewidth=1)
+            ax.plot(theta, zero, color="k", linewidth=2)
             for d, color in zip(case_data, colors):
                 # Plot fill
                 d_pos = [bias if bias > 0 else 0 for bias in d]
@@ -231,15 +231,18 @@ def spiderplot(df):
 
             for d, color in zip(case_data, colors):
                 # Plot lines
-                ax.plot(theta, d, color=color, linewidth=2)
+                ax.plot(theta, d, color=color, linewidth=3)
 
         else:
             for d, color in zip(case_data, colors):
-                ax.plot(theta, d, color=color)
+                ax.plot(theta, d, color=color, linewidth=3)
                 ax.fill(theta, d, facecolor=color, alpha=0.25, label="_nolegend_")
-
+        ax.set_title(title)
         ax.set_varlabels(spoke_labels)
-    plt.savefig("out/spider.png")
+    if save:
+        plt.savefig("/home/hma000/accomatic-web/plotting/out/spider.png")
+    else:
+        return plt
 
 
 """

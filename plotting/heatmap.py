@@ -92,3 +92,24 @@ try:
 
 except IndexError:
     pass
+
+# Terrain-specific heat map
+
+# pth = "/home/hma000/accomatic-web/data/pickles/2024-01-12_results.pickle"
+# print(pth)
+# with open(pth, "rb") as f_gst:
+#     exp = pickle.load(f_gst)
+
+# from plotting.heatmap import *
+
+# for terr in exp.terr_list:
+#     terr_desc = [
+#         "PEATLAND",
+#         "COURSE_HILLTOP",
+#         "FINE_HILLTOP",
+#         "SNOWDRIFT",
+#         "HOR_ROCK",
+#     ]
+#     exp.rank_dist = rank_distribution(exp, terr=terr)
+#     bias_heatmap(exp, save=True, title=f"heat/{terr_desc[terr - 1]}_bias")
+#     rank_dist_heatmap(exp.rank_dist, save=True, title=f"heat/{terr_desc[terr - 1]}")

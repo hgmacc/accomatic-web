@@ -72,8 +72,8 @@ class Data:
 
 def average_data(df_col):
     # df_col: column of np.arrays
-    arr = np.array([i.v for i in df_col.to_list()])
-    return Data(np.nanmean(arr, axis=0))
+    arr = np.array([i.arr for i in df_col.to_list()])
+    return np.nanmean(arr.flatten("F")).round(3)
 
 
 def rank_shifting_for_heatmap(df_col):

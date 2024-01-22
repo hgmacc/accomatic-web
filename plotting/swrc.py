@@ -27,12 +27,16 @@ def PlotProps(pars_l):
     plt.axvline(x=0, color="b", linestyle="dashdot")
 
     plt.text(
-        x=-math.log10(0.5 * fc), y=0.7, c="k", s="Mix\n0.5FC (165 hPa)\n", bbox=props
+        x=-math.log10(fc),
+        y=0.7,
+        c="k",
+        s="Intermediate\nFC (330 hPa)",
+        bbox=props,
     )
-    plt.axvline(x=-math.log10(0.5 * fc), c="k", linestyle="dashdot")
+    plt.axvline(x=-math.log10(fc), c="k", linestyle="dashdot")
 
-    plt.text(x=(-math.log10(2 * fc)), y=0.6, c="r", s="Dry\n2FC (660 hPa)", bbox=props)
-    plt.axvline(x=-math.log10(2 * fc), color="r", linestyle="dashdot")
+    plt.text(x=(-math.log10(3 * fc)), y=0.6, c="r", s="Dry\n3FC (990 hPa)", bbox=props)
+    plt.axvline(x=-math.log10(3 * fc), color="r", linestyle="dashdot")
 
     psi = np.linspace(-10, 1, 100)
     for pars in pars_l:
