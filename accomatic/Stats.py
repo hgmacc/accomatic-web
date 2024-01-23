@@ -125,23 +125,23 @@ def d_r(p, o):
         return (o_dev_2 / abs_err) - 1
 
 
-def r_score(obs, mod):
-    return np.corrcoef(obs, mod)[0][1]
+def r_score(p, o):
+    return np.corrcoef(o, p)[0][1]
 
 
-def nse_one(prediction, observation):
-    o_mean = observation.mean()
-    a = sum(abs(observation - prediction))
-    b = sum(abs(observation - o_mean))
+def nse_one(p, o):
+    o_mean = o.mean()
+    a = sum(abs(o - p))
+    b = sum(abs(o - o_mean))
     return 1 - (a / b)
 
 
-def bias(obs, mod):
-    return np.mean(mod - obs)
+def bias(p, o):
+    return np.mean(p - o)
 
 
-def rmse(obs, mod):
-    return mean_squared_error(obs, mod, squared=False)
+def rmse(p, o):
+    return mean_squared_error(o, p, squared=False)
 
 
 stat_measures = {
@@ -219,7 +219,7 @@ def evaluate(exp, block):
         # {'era5': 0.7, 'jra55': 0.98,  'merra': 0.25,  'ens': 0.10}
         # {'era5': 3,   'jra55': 4,     'merra': 2,     'ens': 0.4}
         for model in exp.mod_names():
-            res[model].append(stat_measures[stat](block.obs, block[model]))
+            res[model].append(stat_measures[stat](block[model], block.obs))
         res = pd.DataFrame.from_dict(res)
 
         if stat == "BIAS" or stat == "MAE":
@@ -265,11 +265,11 @@ def build(exp):
     )
 
     concatenate(exp)
-    pth = f"{exp.rank_csv_path}/{date.today()}_results.pickle"
+    pth = f"{exp.rank_csv_path}/{date.today()}.pickle"
     with open(pth, "wb") as handle:
         pickle.dump(exp, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print("Concatenation complete.")
-    print(f"Experiment stored in: {exp.rank_csv_path}/{date.today()}_results.pickle")
+    print(f"Experiment stored in: {pth}")
 
 
 def rank_distribution(exp, stat="", terr="", szn=""):
