@@ -1,0 +1,26 @@
+title = "Accomatic Control File"
+
+[data]
+model_pth = '/home/hma000/accomatic-web/data/nc/mod_50cm.nc'
+observations_pth = '/home/hma000/accomatic-web/data/nc/obs_88.nc'
+rank_csv_path = '/home/hma000/accomatic-web/data/pickles'
+
+depth = 0.5
+boot_size = 1000
+missing_data = 0
+
+sites_list = ['NGO-DD-1009','NGO-DD-1005','KDI-W-Org2','KDI-E-Org2','KDI-E-Wet','YK16-SO07',
+                'NGO-DD-2020', 'NGO-DD-2023', 'NGO-DD-2008', 'NGO-DD-2029', 
+                'KDI-W-Ttop', 'KDI-E-Ttop', 'NGO-DD-1012', 'NGO-DD-2004', 'NGO-DD-2033',
+                'NGO-DD-2019', 'NGO-DD-1011', 'NGO-DD-2034', 'KDI-W-Snowdrift']
+
+[experiment]
+stat_list = ['MAE','BIAS','R']
+szn_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 
+            'NOV', 'DEC']
+
+terr_list = [1, 1, 1, 1, 1, 1,
+            2, 2, 2, 2, 
+            3, 3, 3, 3, 3, 
+            4, 4, 4, 4]
+

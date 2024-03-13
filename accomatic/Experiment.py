@@ -35,7 +35,9 @@ class Experiment(Settings):
             for site in self.sites_list
         }
 
-        self._mod = read_geotop(file_path=self._model_pth, sitename=self.sites_list)
+        self._mod = read_geotop(
+            file_path=self._model_pth, depth=self.depth, sitename=self.sites_list
+        )
         self._mod_dict = {
             site: Ensemble(
                 site,

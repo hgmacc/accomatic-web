@@ -14,17 +14,13 @@ plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
 
 
-def terrain_timeseries(exp, save=False):
+def terrain_timeseries(exp, mod=False, save=False):
     ######## TERRAIN PLOT #######################
     fig, axs = plt.subplots(5, 1, sharey=True, sharex=True, figsize=(13, 15))
 
     o = exp.obs().reset_index(drop=False)
 
-    obs_sites = list(o.sitename.unique())
-    exp_sites = exp.sites_list
-
     o.level_0 = pd.to_datetime(o.level_0)
-
     o["day-month"] = o.level_0.dt.strftime("%m-%d")
     o["year"] = o.level_0.dt.strftime("%y")
     o.set_index("day-month", inplace=True)
@@ -36,7 +32,7 @@ def terrain_timeseries(exp, save=False):
 
     terr_desc = [
         "Peatland",
-        "Course Hilltop",
+        "Coarse Hilltop",
         "Fine Hilltop",
         "Snowdrift",
         "Horizontal Rock",
@@ -51,9 +47,9 @@ def terrain_timeseries(exp, save=False):
             x="day-month",
             y="obs",
             hue="sitename",
+            errorbar=("sd", 1),
             legend=False,
         )
-        plt.title(terr_dict[i])
         plt.axhline(y=0, color="k", linestyle="-", linewidth=0.5, zorder=-1)
         # l = plt.legend(
         #     title="",
@@ -66,7 +62,6 @@ def terrain_timeseries(exp, save=False):
         plt.xlabel("")
         plt.ylabel("")
     fig.supylabel("Observed Temperature ˚C")
-    fig.supxlabel("Time")
     plt.tight_layout()
     if save:
         plt.savefig("/home/hma000/accomatic-web/plotting/out/terrains.png")
@@ -105,6 +100,7 @@ def cluster_timeseries(exp, bw=False, save=False):
         x="day-month",
         y="obs",
         hue="cluster",
+        errorbar=("sd", 1),
         palette=["#F50B00", "#F3700E", "#1ce1ce"],
         legend=False,
     )
@@ -136,7 +132,7 @@ def cluster_timeseries(exp, bw=False, save=False):
 
 if sys.argv[1] == "-terr":
     exp = Experiment("/home/hma000/accomatic-web/data/toml/test.toml")
-    terrain_timeseries(exp, save=True)
+    terrain_timeseries(exp, mod=True, save=True)
 
 
 if sys.argv[1] == "-clus":

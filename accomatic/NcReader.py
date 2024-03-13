@@ -44,10 +44,10 @@ def read_geotop(file_path="", sitename="", ens=False, depth=False) -> pd.DataFra
     mdf = mdf.reset_index(level=("time"), drop=True).reset_index(drop=False)
 
     if depth:
-        print(f"Model clipped to {depth}m depth.")
         mdf = mdf[mdf.soil_depth.round(1) == depth]
+        print(f"Model clipped to {depth}m depth.")
 
-    mdf = mdf.drop(["soil_depth"], axis=1)
+    # mdf = mdf.drop(["soil_depth"], axis=1)
 
     # Fix simulation colummn
     mdf.simulation = [
@@ -63,6 +63,43 @@ def read_geotop(file_path="", sitename="", ens=False, depth=False) -> pd.DataFra
     mdf = mdf.reset_index(level=(0), drop=True)
     mdf = mdf.dropna()
     mdf = mdf.unstack(level=2).soil_temperature
+    mdf["ens"] = mdf[["era5", "jra55", "merra2"]].mean(axis=1)
+
+    return mdf
+
+
+def read_snow(file_path="", sitename="", ens=False, depth=False) -> pd.DataFrame:
+    # Get dataset
+    m = xr.open_dataset(file_path, group="geotop")
+
+    m["sitename"] = m.sitename.str.replace(r"_site", "")
+
+    if sitename != "" and type(sitename) != list:  # sitename provided
+        m = m.where(m.sitename == sitename, drop=True)
+    elif type(sitename) == list:  # sitename list provided
+        m = m.where(m.sitename.isin(sitename), drop=True)
+
+    mdf = m.to_dataframe()
+
+    # Drop dumb columns and rename things
+    mdf = mdf.drop(["model", "pointid"], axis=1).rename({"Date": "time"}, axis=1)
+
+    mdf = mdf.reset_index(level=("time"), drop=True).reset_index(drop=False)
+
+    # Fix simulation colummn
+    mdf.simulation = [
+        line.split("_")[2] for line in mdf.simulation
+    ]  # (...)led_merr_3e66cca -> merra2
+
+    # Setting up time index
+    mdf.time = pd.to_datetime(mdf["time"]).dt.date
+    mdf = mdf.drop_duplicates(subset=["simulation", "time", "sitename"])
+    mdf = mdf.set_index([mdf.time, mdf.sitename, mdf.simulation], append=True)
+
+    mdf = mdf.drop(["time", "sitename", "simulation"], axis=1)
+    mdf = mdf.reset_index(level=(0), drop=True)
+    mdf = mdf.dropna()
+    mdf = mdf.unstack(level=2).snow_depth_mm
     mdf["ens"] = mdf[["era5", "jra55", "merra2"]].mean(axis=1)
 
     return mdf
@@ -115,7 +152,6 @@ def read_nc(file_path, sitename="", avg=True, depth=False) -> pd.DataFrame:
 
     odf = odf.set_index(odf.sitename, append=True)
     odf = odf.drop(["sitename"], axis=1)
-
     if depth:
         odf = odf[odf.depth.round(1) == float(depth)]
     odf = odf.drop(["depth"], axis=1)

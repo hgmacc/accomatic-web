@@ -66,6 +66,26 @@ def get_colour(f):
         return False
 
 
+class Model:
+    name: str
+    data: str
+    color: str
+
+    def __init__(self, name, data, color) -> None:
+        self._name = name
+        self._data = data
+        self._color = color
+
+    def name(self) -> str:
+        return self._name
+
+    def data(self) -> str:
+        return self._data
+
+    def color(self) -> str:
+        return self._color
+
+
 def violin_helper_reorder_data(data, stat):
     data["rank"] = ["{0:.3}".format(np.nanmean(i.v)) for i in data[stat]]
     return data.sort_values(by=["rank"])

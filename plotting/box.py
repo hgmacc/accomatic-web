@@ -1,5 +1,6 @@
 import os
 import sys
+import pickle
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
@@ -10,114 +11,51 @@ import pandas as pd
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
-sys.path.append("../")
-from accomatic.Experiment import *
-import accomatic
+sys.path.append("/home/hma000/accomatic-web/accomatic/")
+from Experiment import *
 
 get_colour = {
     "obs": "#000000",
-    "merra2": "#F3700E",
-    "jra55": "#F50B00",
     "era5": "#008080",
+    "jra55": "#F50B00",
+    "merra2": "#F3700E",
     "ens": "#59473c",
-    "Model 3": "#f4c18e",
-    "Model 2": "#f28e89",
-    "Model 1": "#8fbdbc",
-    "Ensemble": "#a39e97",
+    r"$M_1$": "#8fbdbc",  # ERA5
+    r"$M_2$": "#f28e89",  # JRA55
+    r"$M_3$": "#f4c18e",  # MERRA2
+    r"$M_E$": "#a39e97",  # Ensemble
 }
 
+get_model = {
+    "era5": r"$M_1$",
+    "jra55": r"$M_2$",
+    "merra2": r"$M_3$",
+    "ens": r"$M_E$",
+}
 
-def violin_helper_reorder_data(data, stat):
-    data["rank"] = ["{0:.3}".format(np.nanmean(i.v)) for i in data[stat]]
-    return data.sort_values(by=["rank"])
-
-
-def boot_vioplot(e, save=True):
-    # site, stat, sim, label
-
-    stat = "MAE"
-    if type(e) == Experiment():
-        data = e.res(sett=["sim"])
-        data = violin_helper_reorder_data(data, stat)
-
-        label = data.sim.to_list()
-        data_arr = np.array([i.v for i in data[stat].to_list()])
-    else:
-        data_arr = e
-
-    fig, ax = plt.subplots(figsize=(len(data_arr) + 4, 8))
-
-    bp = ax.violinplot(data_arr.T, showmeans=True)
-
-    for patch, mod in zip(bp["bodies"], label):
-        patch.set_facecolor(get_colour(mod))
-        patch.set_alpha(1.0)
-
-    for partname in ("cbars", "cmins", "cmaxes", "cmeans"):
-        vp = bp[partname]
-        vp.set_edgecolor("#000000")
-        vp.set_linewidth(1)
-
-    ax.set_ylabel(stat)
-    ax.set_ylim(bottom=0, top=4)
-
-    legend_handles = [
-        f"({a})" for i, a in zip(data.sim.to_list(), data["rank"].tolist())
-    ]
-    plt.legend(legend_handles, loc="lower left")
-    if save:
-        plt.savefig(f"plotting/out/violin.png")
-    return fig
+stat_bounds = {"BIAS": [-13, 10], "R": [-1, 1], "MAE": [0, 12.5]}
 
 
-def boxplot(exp, szn="", stat="", terr="", save=True, bw=False):
+def boxplot(data, bounds=False, save=False, bw=False):
     """
-    Function takes and df with x columns
-    If you want colour coordination with models,
-    column name must start with "mod_"
-
-    i.e. "era5_jan_rock" -> c="#1ce1ce"
-
-    Box and whisker plots results
-    Will always plot in order: Best -> Worst
+    Data = []
     """
-    pth = f"/home/hma000/accomatic-web/plotting/out/box/box{stat}{terr}{szn}.png"
-    if szn == "":
-        szn = list(set(exp.szn_list))
-    if stat == "":
-        stat = list(exp.stat_list)
-    if terr == "":
-        terr = list(set(exp.terr_list))
-
-    # Selecting data from results
-    idx = pd.IndexSlice
-    df = exp.results.loc[idx[["res"], terr, szn, stat]].droplevel("mode")
-
-    # Pulling out arrays into 1D arr for each mod
-    data = {}
-    for mod in df.columns:
-        data[mod] = np.concatenate([cell.arr for cell in df[mod]], axis=0)
-
     # Building figure
     fig_box, ax = plt.subplots(figsize=(1.1 * len(data.keys()), 8))
     bp = ax.boxplot(data.values(), whis=1.5, sym="", patch_artist=True, showmeans=True)
-    ax.set_xticklabels(["Model 1", "Model 2", "Model 3", "Ensemble"], rotation=25)
-    ax.set_ylim(0, 25)
-    if stat == "BIAS":
-        ax.set_ylim(-25, 25)
+    ax.set_xticklabels(data.keys())
 
-    if stat == "WILL":
-        plt.gca().yaxis.set_major_formatter(
-            StrMethodFormatter("{x:,.2f}")
-        )  # 2 decimal places
-        ax.set_ylim(0, 1)
+    if bounds:
+        ax.set_ylim(bounds[0], bounds[1])
+
+    plt.gca().yaxis.set_major_formatter(StrMethodFormatter("{x:,.2f}"))
 
     # Setting the color of each box
-    for patch, mod in zip(bp["boxes"], ["Model 1", "Model 2", "Model 3", "Ensemble"]):
+    for patch, mod in zip(bp["boxes"], data.keys()):
         if bw:
             patch.set_facecolor("#FFFFFF")
         else:
-            patch.set_facecolor(get_colour[mod])
+            patch.set_facecolor(get_colour[mod.split("-")[0]])
 
     # making the mean a nice little black diamond
     for mean in bp["means"]:
@@ -130,17 +68,58 @@ def boxplot(exp, szn="", stat="", terr="", save=True, bw=False):
         median.set_color("#000000")
     plt.tight_layout()
     if save:
-        plt.savefig(pth)
-        print(f"New plot saved to: {pth}")
+        plt.savefig(save)
+        print(f"New plot saved to: {save}")
     else:
-        return fig_box
+        return ax
 
 
-import pickle
+def one_exp(exp, szn="", stat="", terr="", save=False):
+    """
+    Function organizes data for four boxplots.
+    Can represent x1 stat, x1 terrain, x 1 season at a time OR aggregated values.
+    Max 1 boxplot per mode though.
+    """
+    pth, bounds = False, False
+    if save:
+        pth = f"/home/hma000/accomatic-web/plotting/out/box/box{stat}{terr}{szn}.png"
+    if szn == "":
+        szn = list(set(exp.szn_list))
+    if stat == "":
+        print("No! We need a stat for a boxplot.")
+        sys.exit()
+    if terr == "":
+        terr = list(set(exp.terr_list))
 
-if sys.argv[0] == "t":
-    pth = "/home/hma000/accomatic-web/plotting/plotting.pickle"
+    bounds = stat_bounds[stat]
+
+    # Selecting data from results
+    idx = pd.IndexSlice
+    df = exp.results.loc[idx[["res"], terr, szn, stat]].droplevel("mode")
+
+    # Pulling out arrays into 1D arr for each mod
+    data = {}
+    for mod in df.columns:
+        name = get_model[mod]
+        data[name] = np.concatenate([cell.arr for cell in df[mod]], axis=0)
+    print(bounds)
+    # Building figure
+    boxplot(data, bounds=bounds, save=pth)
+
+
+try:
+    arg = sys.argv[1]
+except IndexError:
+    arg = False
+
+if __name__ == "__main__":
+    pth = "/home/hma000/accomatic-web/data/pickles/29Feb_0.1_0.pickle"
     with open(pth, "rb") as f_gst:
         exp = pickle.load(f_gst)
 
-    boxplot(exp, save=True)
+    print(exp.stats_list)
+    sys.exit()
+    for s in exp.stat_list:
+        for t in set(exp.terr_list):
+            one_exp(exp, terr=t, stat=s, save=True)
+        one_exp(exp, stat=s, save=True)

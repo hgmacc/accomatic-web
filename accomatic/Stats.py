@@ -9,6 +9,7 @@ import time
 import pickle
 from datetime import date
 from typing import List
+import math
 
 
 class Cell:
@@ -103,7 +104,7 @@ def variance(mod_ensemble):
 def d(p, o):
     o_mean = np.mean(o)
     sq_err = sum((p - o) ** 2)
-    sq_dev = sum(((p - o_mean) + (o - o_mean)) ** 2)
+    sq_dev = sum((abs(p - o_mean) + abs(o - o_mean)) ** 2)
     return 1 - (sq_err / sq_dev)
 
 
@@ -126,7 +127,13 @@ def d_r(p, o):
 
 
 def r_score(p, o):
-    return np.corrcoef(o, p)[0][1]
+    p_mean = np.mean(p)
+    o_mean = np.mean(o)
+
+    numer = sum((p - p_mean) * (o - o_mean))
+    denom = sum((p - p_mean) ** 2) * sum((o - o_mean) ** 2)
+    res = numer / math.sqrt(denom)
+    return res
 
 
 def nse_one(p, o):
@@ -225,6 +232,7 @@ def evaluate(exp, block):
         if stat == "BIAS" or stat == "MAE":
             rank = res.abs().rank(method="min", axis=1)
         if stat == "d" or stat == "R":
+            res = res * -1
             rank = res.rank(method="max", axis=1)
 
         stat_dict[stat]["res"] = res
@@ -265,7 +273,7 @@ def build(exp):
     )
 
     concatenate(exp)
-    pth = f"{exp.rank_csv_path}/{date.today()}.pickle"
+    pth = f"{exp.rank_csv_path}/{date.today().strftime('%d%b')}_{exp.depth}_{exp.missing_data}.pickle"
     with open(pth, "wb") as handle:
         pickle.dump(exp, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print("Concatenation complete.")
@@ -274,9 +282,11 @@ def build(exp):
 
 def rank_distribution(exp, stat="", terr="", szn=""):
     print("Generating rank distribution...")
+    if stat == "BIAS":
+        return bias_distribution(exp, terr=terr, szn=szn)
     idx = pd.IndexSlice
     if stat == "":
-        stat = list(exp.stat_list)
+        stat = [i for i in list(exp.stat_list) if i != "BIAS"]
     if terr == "":
         terr = list(set(exp.terr_list))
     if szn == "":
@@ -308,11 +318,13 @@ def rank_distribution(exp, stat="", terr="", szn=""):
     return rank_dist
 
 
-def bias_distribution(exp, terr=""):
+def bias_distribution(exp, terr="", szn=""):
     idx = pd.IndexSlice
     if terr == "":
         terr = list(set(exp.terr_list))
-    df = exp.results.loc[idx[["res"], terr, :, ["BIAS"]]].droplevel("mode")
+    if szn == "":
+        szn = list(set(exp.szn_list))
+    df = exp.results.loc[idx[["res"], terr, szn, ["BIAS"]]].droplevel("mode")
     total_rankings = exp.boot_size * len(df)
     total_bias = []
     for mod in df.columns:

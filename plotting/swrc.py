@@ -1,7 +1,6 @@
 # These are the van Genuchten (1980) equations
 # The input is matric potential, psi and the hydraulic parameters.
 # psi must be sent in as a numpy array.
-# The pars variable is like a MATLAB structure.
 import math
 
 import numpy as np
@@ -52,7 +51,7 @@ def PlotProps(pars_l):
     secax = ax.secondary_xaxis("top")
     secax.set_xlabel("hPa")
     locs, labels = plt.xticks()
-    secax.set_xticks(locs, [f"$10^{round(np.abs(i))}$" for i in locs])
+    secax.set_xticks(locs, [f"$10^\u007b{round(np.abs(i))}\u007d$" for i in locs])
     plt.savefig("/home/hma000/accomatic-web/plotting/out/swrc.png")
 
 
@@ -129,7 +128,7 @@ def clay():
 
 def sand():
     pars = {}
-    pars["name"] = "Course grain"
+    pars["name"] = "Coarse grain"
     pars["ThetaRes"] = 0.055
     pars["ThetaSat"] = 0.374
     pars["AlphaVanGenuchten"] = 0.3  # 0.003

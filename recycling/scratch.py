@@ -216,3 +216,66 @@ for m in all_accordance_funcs:
     # Set the CI min and max values for this measure on all models
     rank_comparison_dict[m]["ci_min"] = ci_min_series
     rank_comparison_dict[m]["ci_max"] = ci_max_series
+
+    def weird_aug(exp):
+        df = exp.obs().reset_index(drop=False)
+        df["time"] = pd.to_datetime(df.level_0)
+        df.drop(columns=["level_0"], inplace=True)
+        df.set_index("time", inplace=True)
+
+        df = df[df.index.month.isin([8, 9])]
+        df["day"] = df.index.strftime("%m-%d")
+
+        # fig, ax = plt.subplots(figsize=(8, 12), sharey=True, ncols=1, nrows=7)
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        for year in range(2016, 2023):
+            i = int(year) - 2015
+            # plt.subplot(7, 1, i)
+            sns.lineplot(
+                data=df[df.index.year == year],
+                y="obs",
+                x="day",
+                hue="sitename",
+                legend=False,
+            )
+            locs, labels = plt.xticks()
+            plt.xticks(locs[::10], labels[::10])
+
+            plt.savefig(
+                f"/home/hma000/accomatic-web/plotting/out/august/weird_aug{year}.png"
+            )
+            plt.clf()
+            print(f"{year} Complete!")
+
+
+def dynamic_peatland(exp):
+
+    o = exp.obs().reset_index(drop=False)
+    o.level_0 = pd.to_datetime(o.level_0)
+    o["day-month"] = o.level_0.dt.strftime("%m-%d")
+    o["year"] = o.level_0.dt.strftime("%y")
+    o.set_index("day-month", inplace=True)
+    o = o.drop(columns="level_0")
+    o["terr"] = [exp.terr_dict()[x] for x in o.sitename]
+    terr_desc = [
+        "Dry",
+        "Wet",
+    ]
+    terr_dict = dict(zip(range(1, 7), terr_desc))
+    o.terr = [terr_dict[i] for i in o.terr]
+
+    fig = plt.figure(figsize=(10, 6))
+
+    sns.lineplot(
+        data=o.dropna(),
+        x="day-month",
+        y="obs",
+        hue="terr",
+        legend="brief",
+    )
+    months = exp.szn_list
+    plt.xticks(ticks=range(1, 365, 31), labels=months)
+    plt.savefig("peatland.png")
+    print("saved!")
+    plt.clf()

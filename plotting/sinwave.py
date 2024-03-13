@@ -155,12 +155,14 @@ def test():
         "neg_offset": sin(x, off=-5),
         "reduced_amp": sin(x, amp=2.5),
         "lag_0": sin(x, lag=1.5, amp=1) * -0.01,
-        "lag": sin(x, lag=0.25),
+        "reduced_amp_lag": sin(x, amp=1, lag=0.5),
         "offset = 0.5": sin(x, off=0.5),
         "step_wise": np.around(sin(x) * 1 / 6) / (1 / 6),
         "low_corr": sin(x, outliers=True, outliers_val=[40, 10]),
         "real": sin(x, noise=True),
+        "reduced_amp_real": sin(x, amp=1, noise=True, noise_val=0.1),
         "real_outliers": sin(x, noise=True, outliers=True),
+        "reduced_amp_perfect": sin(x, amp=1),
         "real_zero": sin(x, lag=1.5, amp=1) * 0.01
         + np.random.randint(low=-10, high=10, size=120) / 10000,
     }
@@ -195,9 +197,12 @@ def test():
     ax[1].plot(x, datasets["step_wise"], c="#8fbdbc")
 
     # CORRELATION
-    ax[2].plot(x, datasets["real"], "k", linewidth=3, label="_Real_", zorder=4)
-    ax[2].plot(x, datasets["lag"], c="#f28e89", label="lag", zorder=5)
+    ax[2].plot(
+        x, datasets["reduced_amp_real"], "k", linewidth=3, label="_Real_", zorder=-1
+    )
+    ax[2].plot(x, datasets["reduced_amp_lag"], c="#f28e89", label="lag", zorder=5)
     ax[2].plot(x, datasets["reduced_amp"], c="#f4c18e")
+    ax[2].plot(x, datasets["reduced_amp_perfect"], c="#8fbdbc")
 
     df = build_df(x, datasets)
 
@@ -227,17 +232,19 @@ def test():
     ax1_table.set_fontsize(20)
     ax1_table.scale(1, 1.7)
 
-    ax2_df = df.loc[["r", "r2", "d", "d_r", "sum_error"]][["reduced_amp", "lag"]]
+    ax2_df = df.loc[["r", "r2", "d_r", "sum_error"]][
+        ["reduced_amp", "reduced_amp_lag", "reduced_amp_perfect"]
+    ]
     ax2_table = ax[2].table(
         cellText=ax2_df.to_numpy(),
-        colWidths=[0.1] * 2,
-        rowLabels=["$r$     ", "$r^2$", "$d$", "$d_r$", "Total error"],
-        colLabels=["Model 1", "Model 2"],
-        colColours=["#f4c18e", "#f28e89"],
+        colWidths=[0.1] * 3,
+        rowLabels=["$r$", "$r^2$", "$d_r$", "Total error"],
+        colLabels=["Model 1", "Model 2", "Model 3"],
+        colColours=["#f4c18e", "#f28e89", "#8fbdbc"],
         loc="upper right",
     )
     ax2_table.set_fontsize(18)
-    ax2_table.scale(1, 1.5)
+    ax2_table.scale(1, 1.7)
 
     alpha = ["A", "B", "C", "D", "E"]
     for i, l in zip(range(n), alpha[:n]):
@@ -250,6 +257,10 @@ def test():
     ax[n - 1].set_xticks(
         [i * 10 for i in range(13)], labels=[str(i) for i in range(13)]
     )
+
+    ax[2].set_ylim(-3, 3)
+    ax[i].set_yticks([-3, -1.5, 0, 1.5, 3])
+
     plt.savefig("/home/hma000/accomatic-web/plotting/out/sinwave.png")
 
 
