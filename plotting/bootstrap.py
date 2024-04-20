@@ -16,13 +16,16 @@ plt.rcParams["font.size"] = "16"
 sys.path.append("/home/hma000/accomatic-web/accomatic/")
 from Experiment import *
 
+pth = "data/pickles/14Mar_0.1_0.pickle"
 
-with open("/home/hma000/accomatic-web/data/pickles/30Jan_0.1_0.pickle", "rb") as f_gst:
+with open(pth, "rb") as f_gst:
     exp = pickle.load(f_gst)
+
+stat = "MAE"
 
 df = exp.results
 idx = pd.IndexSlice
-df = exp.results.loc[idx[["res"], :, :, "BIAS"]].droplevel("mode")
+df = exp.results.loc[idx[["res"], :, :, stat]].droplevel("mode")
 data = {}
 for mod in df.columns:
     name = get_model[mod]
@@ -36,9 +39,9 @@ x[-1] = 10000
 
 for mod in data.keys():
     y = [np.mean(data[mod][: round(i)]) for i in x]
-    plt.plot(x, y, label=mod, c=get_colour[mod])
+    plt.plot(x[:1220], y[:1220], label=mod, c=get_colour[mod])
 
 plt.xscale("log")
 
-plt.legend(loc="upper right", fontsize="x-small")
-plt.savefig("/home/hma000/accomatic-web/plotting/out/bootstrap.png")
+# plt.legend(loc="upper right", fontsize="x-small")
+plt.savefig(f"/home/hma000/accomatic-web/plotting/out/bootstrap{stat}.png")

@@ -17,7 +17,7 @@ from Experiment import *
 from plotting.box import get_model
 
 
-def heat(exp, terr="", stat=""):
+def heat(exp, terr="", stat="", save=False):
 
     df = rank_distribution(exp, terr=terr, stat=stat)
     df = df.round(2)
@@ -40,5 +40,29 @@ def heat(exp, terr="", stat=""):
     ax.tick_params(length=0, labelsize=24)
 
     plt.tight_layout()
-    plt.savefig(f"/home/hma000/accomatic-web/plotting/out/heat/heatmap{terr}{stat}.png")
+    if save:
+        plt.savefig(
+            f"/home/hma000/accomatic-web/plotting/out/heat/heatmap{terr}{stat}.png"
+        )
+    else:
+        return ax
     plt.clf()
+
+
+try:
+    arg = sys.argv[1]
+except IndexError:
+    arg = False
+
+if __name__ == "__main__":
+    pth = "data/pickles/final_wee.pickle"
+    with open(pth, "rb") as f_gst:
+        exp = pickle.load(f_gst)
+
+    for s in exp.stat_list:
+        for t in set(exp.terr_list):
+            heat(exp, terr=t, stat=s, save=True)
+            if s == "MAE":
+                heat(exp, terr=t, save=True)
+        heat(exp, stat=s, save=True)
+    heat(exp, save=True)

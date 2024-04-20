@@ -234,6 +234,7 @@ def evaluate(exp, block):
         if stat == "d" or stat == "R":
             res = res * -1
             rank = res.rank(method="max", axis=1)
+            res = res * -1
 
         stat_dict[stat]["res"] = res
         stat_dict[stat]["rank"] = rank
@@ -259,7 +260,7 @@ def build(exp):
                     )
                 except ValueError:
                     print(terr, szn, len(df_list))
-                    sys.exit()
+                    break
                 for stat in result.keys():
                     for model in exp.mod_names():
                         exp.results[terr][szn]["res"].loc[stat, model].ap(

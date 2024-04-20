@@ -66,6 +66,7 @@ def boxplot(data, bounds=False, save=False, bw=False):
     # Setting median line to black
     for median in bp["medians"]:
         median.set_color("#000000")
+
     plt.tight_layout()
     if save:
         plt.savefig(save)
@@ -102,7 +103,6 @@ def one_exp(exp, szn="", stat="", terr="", save=False):
     for mod in df.columns:
         name = get_model[mod]
         data[name] = np.concatenate([cell.arr for cell in df[mod]], axis=0)
-    print(bounds)
     # Building figure
     boxplot(data, bounds=bounds, save=pth)
 
@@ -113,12 +113,10 @@ except IndexError:
     arg = False
 
 if __name__ == "__main__":
-    pth = "/home/hma000/accomatic-web/data/pickles/29Feb_0.1_0.pickle"
+    pth = "data/pickles/final_wee.pickle"
     with open(pth, "rb") as f_gst:
         exp = pickle.load(f_gst)
 
-    print(exp.stats_list)
-    sys.exit()
     for s in exp.stat_list:
         for t in set(exp.terr_list):
             one_exp(exp, terr=t, stat=s, save=True)

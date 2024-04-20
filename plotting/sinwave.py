@@ -248,8 +248,10 @@ def test():
 
     alpha = ["A", "B", "C", "D", "E"]
     for i, l in zip(range(n), alpha[:n]):
-        if i > 0:
+        if l == "B":
             ax[i].text(1, 15, l, fontsize=20, fontweight="bold")
+        elif l == "C":
+            ax[i].text(1, 2, l, fontsize=20, fontweight="bold")
         else:
             ax[i].text(1, 22, l, fontsize=20, fontweight="bold")
         ax[i].set_yticks([i for i in range(-20, 30, 10)])
@@ -264,4 +266,5 @@ def test():
     plt.savefig("/home/hma000/accomatic-web/plotting/out/sinwave.png")
 
 
-test()
+if __name__ == "__main__":
+    test()

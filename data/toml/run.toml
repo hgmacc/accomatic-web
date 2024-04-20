@@ -3,7 +3,7 @@ title = "Accomatic Control File"
 # ALL SITES
 
 [data]
-model_pth = '/home/hma000/accomatic-web/data/nc/mod_stephan_recco.nc'
+model_pth = '/home/hma000/accomatic-web/data/nc/mod_88.nc'
 observations_pth = '/home/hma000/accomatic-web/data/nc/obs_88.nc'
 
 rank_csv_path = '/home/hma000/accomatic-web/data/pickles'
@@ -11,9 +11,8 @@ rank_csv_path = '/home/hma000/accomatic-web/data/pickles'
 depth = 0.1
 
 # 1000 = 8 minutes
-boot_size = 1000
+boot_size = 10000
 missing_data = 0
-
 
 sites_list = ['NGO-DD-1009','NGO-DD-1005','KDI-W-Org2','KDI-E-Org2','KDI-E-Wet','YK16-SO07',
                 'NGO-DD-2020', 'NGO-DD-2023', 'NGO-DD-2008', 'NGO-DD-2029', 
@@ -26,7 +25,7 @@ stat_list = ['MAE','BIAS','R'] # List of acco measures
 szn_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 
             'NOV', 'DEC']
 
-terr_list = [1, 1, 1, 1, 1,  1,
+terr_list = [1, 1, 1, 1, 1, 1,
             2, 2, 2, 2, 
             3, 3, 3, 3, 3, 
             4, 4, 4, 4, 

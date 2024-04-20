@@ -58,7 +58,7 @@ def timeseries(exp, sites="", save=False):
 
 
 if __name__ == "__main__":
-    pth = "/home/hma000/accomatic-web/data/pickles/06Feb_0.1_0.pickle"
+    pth = "/home/hma000/accomatic-web/data/pickles/final_wee.pickle"
     with open(pth, "rb") as f_gst:
         exp = pickle.load(f_gst)
         timeseries(exp, save=True)

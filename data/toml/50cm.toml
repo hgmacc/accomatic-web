@@ -1,7 +1,7 @@
 title = "Accomatic Control File"
 
 [data]
-model_pth = '/home/hma000/accomatic-web/data/nc/mod_50cm.nc'
+model_pth = '/home/hma000/accomatic-web/data/nc/mod_88.nc'
 observations_pth = '/home/hma000/accomatic-web/data/nc/obs_88.nc'
 rank_csv_path = '/home/hma000/accomatic-web/data/pickles'
 
