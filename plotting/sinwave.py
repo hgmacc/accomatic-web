@@ -74,11 +74,13 @@ def build_df(x, datasets):
             "rmse_outlier",
             "bias",
             "d",
+            "d_1",
             "d_r",
             "sum_error",
             "nse",
         ]
     )
+
     df = pd.concat(
         [
             df,
@@ -103,6 +105,7 @@ def build_df(x, datasets):
         ],
         ignore_index=True,
     )
+
     df = df.set_index(["model"]).T.astype(float)
     # print(df.to_latex())
 
@@ -232,13 +235,13 @@ def test():
     ax1_table.set_fontsize(20)
     ax1_table.scale(1, 1.7)
 
-    ax2_df = df.loc[["r", "r2", "d_r", "sum_error"]][
+    ax2_df = df.loc[["r", "r2", "d_r"]][
         ["reduced_amp", "reduced_amp_lag", "reduced_amp_perfect"]
     ]
     ax2_table = ax[2].table(
         cellText=ax2_df.to_numpy(),
         colWidths=[0.1] * 3,
-        rowLabels=["$r$", "$r^2$", "$d_r$", "Total error"],
+        rowLabels=["$r$", "$r^2$", "$d_r$"],
         colLabels=["Model 1", "Model 2", "Model 3"],
         colColours=["#f4c18e", "#f28e89", "#8fbdbc"],
         loc="upper right",
@@ -263,7 +266,7 @@ def test():
     ax[2].set_ylim(-3, 3)
     ax[i].set_yticks([-3, -1.5, 0, 1.5, 3])
 
-    plt.savefig("/home/hma000/accomatic-web/plotting/out/sinwave.png")
+    plt.savefig("/home/hma000/accomatic-web/plotting/out/examples/sinwave.png")
 
 
 if __name__ == "__main__":

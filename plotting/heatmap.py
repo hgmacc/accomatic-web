@@ -17,16 +17,19 @@ from Experiment import *
 from plotting.box import get_model
 
 
-def heat(exp, terr="", stat="", save=False):
+def heat(exp, terr="", stat="", szn="", save=False):
 
-    df = rank_distribution(exp, terr=terr, stat=stat)
+    df = rank_distribution(exp, terr=terr, stat=stat, szn=szn)
     df = df.round(2)
     df.index = [get_model[mod] for mod in df.index]
-    c, size = "YlOrRd", (8, 8)
+    c, size = sns.blend_palette(["#FFFFFF", "#000000"], as_cmap=True), (
+        8,
+        8,
+    )
     if stat == "BIAS":
         c, size = "bwr", (3, 8)
     fig_heat, ax = plt.subplots(figsize=size)
-    sns.set(font_scale=2)
+    sns.set_theme(font_scale=2)
 
     sns.heatmap(
         df,
@@ -42,7 +45,7 @@ def heat(exp, terr="", stat="", save=False):
     plt.tight_layout()
     if save:
         plt.savefig(
-            f"/home/hma000/accomatic-web/plotting/out/heat/heatmap{terr}{stat}.png"
+            f"/home/hma000/accomatic-web/plotting/out/heat/{exp.depth}/heatmap{terr}{stat}{szn}.png"
         )
     else:
         return ax
@@ -55,9 +58,16 @@ except IndexError:
     arg = False
 
 if __name__ == "__main__":
-    pth = "data/pickles/final_wee.pickle"
+    pth = "/home/hma000/accomatic-web/plotting/data/pickles/24May_0.5_0.pickle"
+    # pth = "/home/hma000/accomatic-web/plotting/data/pickles/09May_0.1_0.pickle"
     with open(pth, "rb") as f_gst:
         exp = pickle.load(f_gst)
+
+    heat(exp, terr=1, stat="MAE", szn="MAY", save=True)
+    heat(exp, terr=1, stat="MAE", szn="JAN", save=True)
+    heat(exp, terr=1, stat="MAE", save=True)
+    heat(exp, terr=1, stat="R", save=True)
+    heat(exp, terr=1, stat="BIAS", save=True)
 
     for s in exp.stat_list:
         for t in set(exp.terr_list):

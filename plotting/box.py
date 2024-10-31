@@ -41,15 +41,17 @@ def boxplot(data, bounds=False, save=False, bw=False):
     Data = []
     """
     # Building figure
-    fig_box, ax = plt.subplots(figsize=(1.1 * len(data.keys()), 8))
+    # fig_box, ax = plt.subplots(figsize=(1.1 * len(data.keys()), 8))
+    fig_box, ax = plt.subplots(figsize=(3, 6))
     bp = ax.boxplot(data.values(), whis=1.5, sym="", patch_artist=True, showmeans=True)
     ax.set_xticklabels(data.keys())
 
     if bounds:
         ax.set_ylim(bounds[0], bounds[1])
 
-    plt.gca().yaxis.set_major_formatter(StrMethodFormatter("{x:,.2f}"))
-
+    plt.gca().yaxis.set_major_formatter(StrMethodFormatter("{x:,.1f}"))
+    loc, labels = plt.yticks()
+    plt.yticks(loc[::2], labels[::2])
     # Setting the color of each box
     for patch, mod in zip(bp["boxes"], data.keys()):
         if bw:
@@ -83,7 +85,7 @@ def one_exp(exp, szn="", stat="", terr="", save=False):
     """
     pth, bounds = False, False
     if save:
-        pth = f"/home/hma000/accomatic-web/plotting/out/box/box{stat}{terr}{szn}.png"
+        pth = f"/home/hma000/accomatic-web/plotting/out/box/{exp.depth}/icopPoster_box{stat}{terr}{szn}.png"
     if szn == "":
         szn = list(set(exp.szn_list))
     if stat == "":
@@ -92,8 +94,10 @@ def one_exp(exp, szn="", stat="", terr="", save=False):
     if terr == "":
         terr = list(set(exp.terr_list))
 
-    bounds = stat_bounds[stat]
-
+    try:
+        bounds = stat_bounds[stat]
+    except KeyError:
+        bounds = False
     # Selecting data from results
     idx = pd.IndexSlice
     df = exp.results.loc[idx[["res"], terr, szn, stat]].droplevel("mode")
@@ -113,10 +117,18 @@ except IndexError:
     arg = False
 
 if __name__ == "__main__":
-    pth = "data/pickles/final_wee.pickle"
+    pth = "data/pickles/24May_0.5_0.pickle"
+    # pth = "data/pickles/09May_0.1_0.pickle"
+
     with open(pth, "rb") as f_gst:
         exp = pickle.load(f_gst)
+    one_exp(exp, stat="R", save=True)
+    one_exp(exp, stat="MAE", save=True)
+    one_exp(exp, stat="BIAS", save=True)
 
+    # one_exp(exp, terr=1, stat="MAE", szn="JAN", save=True)
+    # one_exp(exp, terr=1, stat="MAE", szn="MAY", save=True)
+    sys.exit()
     for s in exp.stat_list:
         for t in set(exp.terr_list):
             one_exp(exp, terr=t, stat=s, save=True)

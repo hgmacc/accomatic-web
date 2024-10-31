@@ -11,6 +11,12 @@ from accomatic.Settings import *
 from accomatic.Stats import average_data, time_code_months, Cell
 
 
+def read_exp(file_path=""):
+    with open(file_path, "rb") as f_gst:
+        exp = pickle.load(f_gst)
+        return exp
+
+
 class Experiment(Settings):
     _mod_dict: Dict
     _obs_dict: Dict

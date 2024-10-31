@@ -18,22 +18,26 @@ terr_desc = [
     "Coarse Hilltop",
     "Fine Hilltop",
     "Snowdrift",
-    "Hor. Rock",
+    # "Hor. Rock",
     "MEAN",
 ]
 
 
 def spider(exp, save=False):
-    fig, ax = plt.subplots(figsize=(14, 10), sharex=True, ncols=3, nrows=6)
+    fig, ax = plt.subplots(
+        figsize=(14, 10), sharex=True, ncols=3, nrows=len(list(set(exp.terr_list))) + 1
+    )
 
     idx = pd.IndexSlice
 
     terrains = list(set(exp.terr_list))
     stats = exp.stat_list
     limits = [(0, 15), (-10, 7.5), (0, 1)]
-    for row in range(6):
+    for row in range(len(terrains) + 1):
+        print(row)
         for col in range(3):
-            if row == 5:  # MEAN bottom row
+            if row == 4:  # MEAN bottom row
+                print("row == 4")
                 df = exp.results.loc[idx[["res"], :, :, stats[col]]].droplevel("mode")
             else:
                 df = exp.results.loc[
@@ -41,7 +45,9 @@ def spider(exp, save=False):
                 ].droplevel("mode")
 
             for reanalysis in df.columns:
-                if row == 5:  # MEAN bottom row
+                if row == 4:  # MEAN bottom row
+                    print("row == 4")
+
                     df[reanalysis] = [
                         np.mean(cell.arr) for cell in list(df[reanalysis].values)
                     ]
@@ -63,13 +69,13 @@ def spider(exp, save=False):
     plt.xticks(locs[::2], labels[::2])
     plt.tight_layout()
     if save:
-        plt.savefig("/home/hma000/accomatic-web/plotting/out/spider.png")
+        plt.savefig("/home/hma000/accomatic-web/plotting/out/spider05.png")
     else:
         return ax
 
 
 if __name__ == "__main__":
-    pth = "/home/hma000/accomatic-web/data/pickles/final_wee.pickle"
+    pth = "/home/hma000/accomatic-web/data/pickles/24May_0.5_0.pickle"
     with open(pth, "rb") as f_gst:
         exp = pickle.load(f_gst)
-    spider(exp)
+    spider(exp, save=True)

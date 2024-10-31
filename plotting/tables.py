@@ -5,9 +5,11 @@ import sys
 sys.path.append("/home/hma000/accomatic-web/accomatic/")
 import pickle
 from Stats import *
+
 from Experiment import *
-import pandas as pd
-from plotting.box import get_model
+from NcReader import read_exp
+# import pandas as pd
+# from plotting.box import get_model
 
 
 def terrain_std_var(exp):
@@ -38,35 +40,31 @@ def terrain_rank_distribution(exp):
         print(df.round(2))
 
 
-# import os
-
-# for root, dirs, files in os.walk(
-#     "/home/hma000/accomatic-web/data/pickles/", topdown=False
-# ):
-#     for name in files:
-#         pth = os.path.join(root, name)
-#         print(pth)
-#         with open(pth, "rb") as f_gst:
-#             exp = pickle.load(f_gst)
-#             df = rank_distribution(exp)
-#             print(df.round(2))lk
-#             f_gst.close()
-
-
 def get_overall_values(exp):
-    """
-    TALK ABOUT BIAS!! WOOOOW
-    """
-
-    o = exp.obs()
+    o = exp.obs().copy()
     o["t"] = o.index.get_level_values(1) + "-" + o.index.get_level_values(0).astype(str)
     o.reset_index(drop=True, inplace=True)
     o.set_index("t", inplace=True)
 
-    m = exp.mod()
+    m = exp.mod().copy()
     m["t"] = m.index.get_level_values(1) + "-" + m.index.get_level_values(0).astype(str)
     m.reset_index(drop=True, inplace=True)
     m.set_index("t", inplace=True)
 
-    df = exp.obs().join(exp.mod()).dropna()
-    return df
+    df = o.join(m)
+    print(df.head())
+
+    print("--- MAE ---")
+    for mod in exp.mod_names():
+        print(mod, mean_absolute_error(df[mod], df["obs"]))
+
+    print("--- MBE ---")
+    for mod in exp.mod_names():
+        print(mod, bias(df[mod], df["obs"]))
+
+    print("--- R ---")
+    for mod in exp.mod_names():
+        print(mod, r_score(df[mod], df["obs"]))
+
+
+get_overall_values(read_exp('data/pickles/24May_0.5_0.pickle'))

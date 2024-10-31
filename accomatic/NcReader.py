@@ -11,16 +11,7 @@ import numpy as np
 import pandas as pd
 import sklearn
 import xarray as xr
-
-
-def create_acco_nc(exp) -> None:
-    acco = xr.Dataset(
-        str(exp.model_pth + "_acco_old_results.nc"), mode="w", format="NETCDF4"
-    )
-    # build stats
-    # populate file
-
-    acco.close()
+import pickle
 
 
 def read_geotop(file_path="", sitename="", ens=False, depth=False) -> pd.DataFrame:
@@ -154,14 +145,15 @@ def read_nc(file_path, sitename="", avg=True, depth=False) -> pd.DataFrame:
     odf = odf.drop(["sitename"], axis=1)
     if depth:
         odf = odf[odf.depth.round(1) == float(depth)]
-    odf = odf.drop(["depth"], axis=1)
+        odf = odf.drop(["depth"], axis=1)
 
     # avg toggle used to average gst observations where > 1 logger
     if avg:
         odf = average_obs_site(odf)
 
     # Selecting only sites specified in toml file
-    odf = odf[odf.index.get_level_values(1).isin(sitename)]
+    if sitename != "":
+        odf = odf[odf.index.get_level_values(1).isin(sitename)]
     odf = odf.dropna()
     print(
         f"Observations: {len(odf.index.get_level_values(1).unique())} sites at {depth}m depth."

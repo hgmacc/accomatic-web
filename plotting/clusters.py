@@ -1,7 +1,7 @@
 import pickle
 import sys
 import seaborn as sns
-from matplotlib.patches import Patch
+import matplotlib.patches as mpatches
 
 sys.path.append("../")
 
@@ -12,6 +12,40 @@ from accomatic.Experiment import *
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 plt.rcParams["font.size"] = "16"
+
+
+def terrain_pieplot(exp):
+    exp = read_exp("/home/hma000/accomatic-web/data/pickles/09May_0.1_0.pickle")
+    df = exp.obs().reset_index()
+    df["terr"] = df.sitename.apply(lambda s: exp.terr_dict()[s])
+    df = df.groupby(["terr", "sitename"]).count()["obs"].reset_index()
+    import plotly.express as px
+
+    terr_names = [
+        "Peatland",
+        "Coarse Hilltop",
+        "Fine Hilltop",
+        "Snowdrift",
+        "Horizontal Rock",
+    ]
+    df["terr"] = df.terr.apply(lambda t: terr_names[t - 1])
+    df.head()
+
+    fig = px.sunburst(
+        df,
+        path=["terr", "sitename"],
+        values="obs",
+        color="terr",
+        color_discrete_map=dict(
+            zip(terr_names, ["#FF7F50", "#00CED1", "#FFD700", "#4682B4", "#778899"])
+        ),
+    )
+
+    fig.update_layout(
+        width=600,
+        height=600,
+    )
+    fig.write_image("figure.png", scale=2)
 
 
 def terrain_timeseries(exp, mod=False, save=False):
@@ -29,7 +63,9 @@ def terrain_timeseries(exp, mod=False, save=False):
     # merge all the sites into one sns lineplot spread
     # o = o.groupby(["day-month", "sitename"]).mean().drop(columns="level_0")
     o["terr"] = [exp.terr_dict()[x] for x in o.sitename]
-
+    o["sitename"] = o.sitename.str[:2]
+    o.loc[o.sitename.isin(["RO", "NG"]), 'sitename'] = "LDG"
+    o.loc[o.sitename == "KD", 'sitename'] = "KDI"
     terr_desc = [
         "Peatland",
         "Coarse Hilltop",
@@ -37,7 +73,8 @@ def terrain_timeseries(exp, mod=False, save=False):
         "Snowdrift",
         "Horizontal Rock",
     ]
-
+    sitename_colors = {"KDI":"#F50B00", "YK":"#F3700E", "LDG":"#1ce1ce"}
+    sns.set_palette(sns.color_palette([sitename_colors.get(k, 'grey') for k in sorted(sitename_colors.keys())]))
     terr_dict = dict(zip(range(1, 7), terr_desc))
     o.terr = [terr_dict[i] for i in o.terr]
     for i in terr_dict.keys():
@@ -47,9 +84,15 @@ def terrain_timeseries(exp, mod=False, save=False):
             x="day-month",
             y="obs",
             hue="sitename",
+            hue_order=["KDI","YK","LDG"],
+            palette=sitename_colors,
             errorbar=("sd", 1),
             legend=False,
         )
+        if i == 1:
+            legend_handles = [mpatches.Patch(color=color, label=label) for label, color in sitename_colors.items()]
+            plt.legend(handles=legend_handles, loc='lower left', frameon=False)
+            
         plt.axhline(y=0, color="k", linestyle="-", linewidth=0.5, zorder=-1)
         # l = plt.legend(
         #     title="",
@@ -64,7 +107,7 @@ def terrain_timeseries(exp, mod=False, save=False):
     fig.supylabel("Observed Temperature ˚C")
     plt.tight_layout()
     if save:
-        plt.savefig("/home/hma000/accomatic-web/plotting/out/terrains.png")
+        plt.savefig("/home/hma000/accomatic-web/plotting/out/examples/terrains.png")
 
 
 def cluster_timeseries(exp, bw=False, save=False):
@@ -109,7 +152,7 @@ def cluster_timeseries(exp, bw=False, save=False):
     plt.plot(df.zero[:365], c="k", linewidth=1, zorder=-1)
     plt.legend(
         handles=[
-            Patch(facecolor=hex, edgecolor=hex, label=cluster)
+            mpatches.Patch(facecolor=hex, edgecolor=hex, label=cluster)
             for hex, cluster in zip(
                 ["#F50B00", "#F3700E", "#1ce1ce"],
                 [
@@ -127,11 +170,11 @@ def cluster_timeseries(exp, bw=False, save=False):
     plt.ylabel("Observed Temperature ˚C")
 
     if save:
-        plt.savefig("/home/hma000/accomatic-web/plotting/out/clusters.png")
+        plt.savefig("/home/hma000/accomatic-web/plotting/out/examples/clusters.png")
 
 
 if sys.argv[1] == "-terr":
-    exp = Experiment("/home/hma000/accomatic-web/data/toml/test.toml")
+    exp = Experiment("/home/hma000/accomatic-web/data/toml/run.toml")
     terrain_timeseries(exp, mod=True, save=True)
 
 

@@ -51,14 +51,16 @@ def timeseries(exp, sites="", save=False):
         if save:
             plt.tight_layout()
             plt.savefig(
-                f"/home/hma000/accomatic-web/plotting/out/ts/{terr_dict[site]}_{site}_gst.png"
+                f"/home/hma000/accomatic-web/plotting/out/ts/{exp.depth}/{terr_dict[site]}_{site}_gst.png"
             )
         plt.clf()
         plt.close()
 
 
 if __name__ == "__main__":
-    pth = "/home/hma000/accomatic-web/data/pickles/final_wee.pickle"
+    pth = "data/pickles/29Mar_0.1_0.pickle"
+    pth = "data/pickles/24May_0.5_0.pickle"
+
     with open(pth, "rb") as f_gst:
         exp = pickle.load(f_gst)
         timeseries(exp, save=True)

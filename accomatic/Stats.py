@@ -116,14 +116,13 @@ def d_1(p, o):
 
 
 def d_r(p, o):
-    # From Luis (2020)
     o_mean = np.mean(o)
-    o_dev_2 = 2 * sum(abs(o - o_mean))
+    o_dev_x2 = 2 * sum(abs(o - o_mean))
     abs_err = sum(abs(p - o))
-    if abs_err <= o_dev_2:
-        return 1 - (abs_err / o_dev_2)
-    if abs_err > o_dev_2:
-        return (o_dev_2 / abs_err) - 1
+    if abs_err <= o_dev_x2:
+        return 1 - (abs_err / o_dev_x2)
+    if abs_err > o_dev_x2:
+        return (o_dev_x2 / abs_err) - 1
 
 
 def r_score(p, o):
@@ -138,9 +137,9 @@ def r_score(p, o):
 
 def nse_one(p, o):
     o_mean = o.mean()
-    a = sum(abs(o - p))
-    b = sum(abs(o - o_mean))
-    return 1 - (a / b)
+    abs_err = sum(abs(o - p))
+    o_dev = sum(abs(o - o_mean))
+    return 1 - (abs_err / o_dev)
 
 
 def bias(p, o):
@@ -195,25 +194,6 @@ time_code_months = {
     "DEC": [12],
 }
 
-
-def get_block(df_list):
-    """
-    Takes list of terrain-szn-plot dataframes.
-    Returns timeseries of length n where:
-        n = len_of_obs / b
-        b = window (10 days)
-    """
-    b = 10
-    n = int(round(sum([len(df_i) for df_i in df_list]) / b))
-
-    block_ts = []
-    for i in range(n):
-        df = df_list[random.randint(0, len(df_list) - 1)].reset_index(drop=False)
-        nrows = range(df.shape[0])
-        ix = random.randint(nrows.start, nrows.stop - (b + 1))
-        block_ts.append(df.iloc[ix : ix + b].set_index("Date"))
-    block_ts = pd.concat(block_ts)
-    return block_ts
 
 
 def evaluate(exp, block):

@@ -33,18 +33,10 @@ def get_toml_pth(argv):
     return arg_input
 
 
-# python accomatic/acco.py -f /home/hma000/accomatic-web/data/toml/test.toml
+# python accomatic/acco.py -f /home/hma000/accomatic-web/data/toml/50cm.toml
 
 if __name__ == "__main__":
     arg_input = get_toml_pth(sys.argv)
-
-    # exp = Experiment(arg_input)
-    # build(exp)
-
-    pth = "/home/hma000/accomatic-web/data/pickles/29Mar_0.1_0.pickle"
-    with open(pth, "rb") as f_gst:
-        exp = pickle.load(f_gst)
-
-    from plotting.spiderline import *
-
-    spider(exp, save=True)
+    exp = Experiment(arg_input)
+    build(exp)
+    
